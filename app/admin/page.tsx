@@ -1,0 +1,79 @@
+import { AppShell } from "@/components/AppShell";
+import { TicketRow, type TicketRowData } from "@/components/TicketRow";
+import { TicketRealtime } from "@/components/TicketRealtime";
+import { requireProfile } from "@/lib/guard";
+import { createClient } from "@/lib/supabase/server";
+import type { TicketStatus } from "@/lib/db-types";
+import Link from "next/link";
+
+export const dynamic = "force-dynamic";
+
+const FILTERS: { key: string; label: string; statuses: TicketStatus[] | null }[] = [
+  { key: "open",     label: "Open",        statuses: ["submitted", "assigned", "in_progress", "on_hold", "reopened"] },
+  { key: "new",      label: "New",         statuses: ["submitted"] },
+  { key: "assigned", label: "In progress", statuses: ["assigned", "in_progress", "on_hold"] },
+  { key: "resolved", label: "Resolved",    statuses: ["resolved"] },
+  { key: "all",      label: "All",         statuses: null },
+];
+
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
+  const profile = await requireProfile(["admin"]);
+  const { filter: filterKey = "open" } = await searchParams;
+  const filter = FILTERS.find((f) => f.key === filterKey) ?? FILTERS[0];
+
+  const supabase = await createClient();
+  let query = supabase
+    .from("tickets")
+    .select(`
+      *,
+      category:ticket_categories(name),
+      client:clients(name, location),
+      tenant:client_tenants(name)
+    `)
+    .order("created_at", { ascending: false });
+  if (filter.statuses) query = query.in("status", filter.statuses);
+
+  const { data: tickets } = await query.returns<TicketRowData[]>();
+  const rows = tickets ?? [];
+
+  return (
+    <AppShell profile={profile}>
+      <TicketRealtime listMode />
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-semibold">Ticket queue</h1>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {FILTERS.map((f) => (
+          <Link
+            key={f.key}
+            href={`/admin?filter=${f.key}`}
+            className={
+              f.key === filter.key
+                ? "text-sm rounded-full bg-brand text-white px-3 py-1"
+                : "text-sm rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50 px-3 py-1"
+            }
+          >
+            {f.label}
+          </Link>
+        ))}
+      </div>
+
+      {rows.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500 text-sm">
+          No tickets in this filter.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((t) => (
+            <TicketRow key={t.id} ticket={t} hrefBase="/admin/tickets" />
+          ))}
+        </div>
+      )}
+    </AppShell>
+  );
+}
