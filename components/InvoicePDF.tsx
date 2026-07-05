@@ -91,20 +91,37 @@ const styles = StyleSheet.create({
   qrImg:     { width: 90, height: 90, marginBottom: 4 },
   qrTxt:     { fontSize: 8, textAlign: "center" },
 
-  sigRow: { flexDirection: "row", marginTop: 28, justifyContent: "space-between" },
-  sigCell:{ flex: 1, alignItems: "center", paddingHorizontal: 6 },
-  sigLine:{ borderTopWidth: 1, borderTopColor: BLACK, width: "100%", marginBottom: 3 },
-  sigTxt: { fontSize: 8 },
-  sigImg: { width: 100, height: 40, objectFit: "contain", marginBottom: 2 },
+  // Signature row: fixed height, everything bottom-anchored so labels always align.
+  sigRow: {
+    flexDirection: "row",
+    marginTop: 28,
+    justifyContent: "space-between",
+    height: 90,
+  },
+  sigCell: {
+    flex: 1,
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "flex-end",   // stack children toward the bottom
+    paddingHorizontal: 6,
+  },
+  // Fixed slot above the line/label so images can't push the label around.
+  sigImgSlot: {
+    width: "100%",
+    height: 55,
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginBottom: 2,
+  },
+  sigLine: { borderTopWidth: 1, borderTopColor: BLACK, width: "100%", marginBottom: 3 },
+  sigTxt: { fontSize: 8, textAlign: "center" },
+  sigImg: { maxWidth: 110, height: 50, objectFit: "contain" },
 
   ackTxt: { textAlign: "center", marginTop: 18, fontFamily: "Helvetica-Bold", fontSize: 9 },
 
-  stampBox: {
-    width: 70, height: 70,
-    justifyContent: "center", alignItems: "center", marginBottom: 3,
-  },
   stampImg: {
-    width: 70, height: 70,
+    maxWidth: 65,
+    height: 55,
     objectFit: "contain",
   },
 });
@@ -280,20 +297,29 @@ export function InvoicePDF({
           I/We confirm the acceptance of the above service been completed satisfactory
         </Text>
         <View style={styles.sigRow}>
+          {/* Customer — empty slot above line, then line, then label */}
           <View style={styles.sigCell}>
+            <View style={styles.sigImgSlot} />
             <View style={styles.sigLine} />
             <Text style={styles.sigTxt}>Customer&apos;s Signature</Text>
           </View>
+
+          {/* Company Stamp — stamp fills slot; line + label still align with other cells */}
           <View style={styles.sigCell}>
-            <View style={styles.stampBox}>
+            <View style={styles.sigImgSlot}>
               <Image src="/invoice-stamp.png" style={styles.stampImg} />
             </View>
+            <View style={styles.sigLine} />
             <Text style={styles.sigTxt}>Company Stamp</Text>
           </View>
+
+          {/* Technician — signature (if any) fills slot */}
           <View style={styles.sigCell}>
-            {technicianSignatureUrl ? (
-              <Image src={technicianSignatureUrl} style={styles.sigImg} />
-            ) : null}
+            <View style={styles.sigImgSlot}>
+              {technicianSignatureUrl ? (
+                <Image src={technicianSignatureUrl} style={styles.sigImg} />
+              ) : null}
+            </View>
             <View style={styles.sigLine} />
             <Text style={styles.sigTxt}>Technical Team Leader</Text>
           </View>
