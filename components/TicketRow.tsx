@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { StatusBadge } from "./StatusBadge";
 import { PriorityBadge } from "./PriorityBadge";
+import { CategoryPill } from "./CategoryPill";
 import type { Ticket, TicketCategory, Client, ClientTenant } from "@/lib/db-types";
 
 export interface TicketRowData extends Ticket {
-  category?: Pick<TicketCategory, "name"> | null;
+  category?: Pick<TicketCategory, "name" | "color"> | null;
   client?:   Pick<Client, "name" | "location"> | null;
   tenant?:   Pick<ClientTenant, "name"> | null;
 }
@@ -26,7 +27,6 @@ function locationLine(t: TicketRowData) {
   if (t.client) parts.push(`${t.client.name} · ${t.client.location}`);
   if (t.tenant) parts.push(t.tenant.name);
   if (t.specific_area) parts.push(t.specific_area);
-  if (t.category?.name) parts.push(t.category.name);
   return parts.join(" · ") || "—";
 }
 
@@ -34,16 +34,19 @@ export function TicketRow({ ticket, hrefBase }: { ticket: TicketRowData; hrefBas
   return (
     <Link
       href={`${hrefBase}/${ticket.id}`}
-      className="block bg-white border border-slate-200 rounded-xl px-4 py-3 hover:border-brand hover:shadow-sm transition"
+      className="block bg-white border border-slate-200 rounded-xl px-4 py-3 hover:border-brand hover:shadow-card transition"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-xs text-slate-500">
+          <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
             <span className="font-mono">{ticket.ticket_number}</span>
             <span>·</span>
             <span>{fmtWhen(ticket.created_at)}</span>
+            {ticket.category?.name && (
+              <CategoryPill name={ticket.category.name} color={ticket.category.color} />
+            )}
           </div>
-          <div className="mt-0.5 font-medium text-slate-900 truncate">{ticket.title}</div>
+          <div className="mt-1 font-medium text-slate-900 truncate">{ticket.title}</div>
           <div className="mt-0.5 text-xs text-slate-500 truncate">{locationLine(ticket)}</div>
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">

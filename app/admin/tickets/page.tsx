@@ -6,6 +6,7 @@ import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import type { TicketStatus } from "@/lib/db-types";
 import Link from "next/link";
+import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +48,7 @@ export default async function AdminTicketQueue({
     .from("tickets")
     .select(`
       *,
-      category:ticket_categories(name),
+      category:ticket_categories(name, color),
       client:clients(name, location),
       tenant:client_tenants(name)
     `)
@@ -107,9 +108,11 @@ export default async function AdminTicketQueue({
       </div>
 
       {rows.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500 text-sm">
-          No tickets match these filters.
-        </div>
+        <EmptyState
+          variant="tickets"
+          title="No tickets match these filters"
+          message="Try clearing filters or picking a different status."
+        />
       ) : (
         <div className="space-y-2">
           {rows.map((t) => (

@@ -8,7 +8,7 @@ import type {
 export interface TicketWithRelations extends Ticket {
   client: { id: string; name: string; location: string } | null;
   tenant: { id: string; name: string } | null;
-  category: { id: string; name: string } | null;
+  category: { id: string; name: string; color: string } | null;
   raiser: { id: string; full_name: string } | null;
   assignee: { id: string; full_name: string; signature_path: string | null } | null;
 }
@@ -22,7 +22,7 @@ export async function getTicketDetail(ticketId: string) {
       *,
       client:clients(id, name, location),
       tenant:client_tenants(id, name),
-      category:ticket_categories(id, name),
+      category:ticket_categories(id, name, color),
       raiser:profiles!tickets_raised_by_fkey(id, full_name),
       assignee:profiles!tickets_assigned_to_fkey(id, full_name, signature_path)
     `)

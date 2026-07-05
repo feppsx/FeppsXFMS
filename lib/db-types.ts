@@ -63,6 +63,7 @@ export interface TicketCategory {
   id: string;
   name: string;
   description: string | null;
+  color: string;   // hex like "#f59e0b"
   is_active: boolean;
   created_at: string;
 }

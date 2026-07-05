@@ -5,6 +5,7 @@ import { TicketRealtime } from "@/components/TicketRealtime";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { PlusCircle } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export default async function MyTicketsPage() {
     .from("tickets")
     .select(`
       *,
-      category:ticket_categories(name),
+      category:ticket_categories(name, color),
       client:clients(name, location),
       tenant:client_tenants(name)
     `)
@@ -40,9 +41,12 @@ export default async function MyTicketsPage() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500 text-sm">
-          No tickets yet. Click <span className="font-medium">Raise ticket</span> to report an issue.
-        </div>
+        <EmptyState
+          variant="tickets"
+          title="No tickets yet"
+          message="When something needs fixing at your site, raise a ticket and 360 Integrated will take it from there."
+          action={{ href: "/client/tickets/new", label: "Raise your first ticket" }}
+        />
       ) : (
         <div className="space-y-2">
           {rows.map((t) => (

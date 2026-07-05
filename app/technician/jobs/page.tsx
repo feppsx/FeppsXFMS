@@ -14,7 +14,7 @@ export default async function TechnicianJobsPage() {
     .from("tickets")
     .select(`
       *,
-      category:ticket_categories(name),
+      category:ticket_categories(name, color),
       client:clients(name, location),
       tenant:client_tenants(name)
     `)

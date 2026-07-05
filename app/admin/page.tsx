@@ -8,7 +8,7 @@ import { TicketRealtime } from "@/components/TicketRealtime";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import type { Ticket, TicketStatusHistoryRow } from "@/lib/db-types";
-import { ArrowRight, Zap } from "lucide-react";
+import { ArrowRight, Zap, Ticket, Sparkles, CheckCircle2, Clock, DollarSign } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -101,12 +101,12 @@ export default async function AdminDashboardPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <KpiCard label="Open tickets"      value={openCount}       href="/admin/tickets?filter=open" tone="brand" />
-        <KpiCard label="New today"         value={newTodayCount}   href="/admin/tickets?filter=new" />
-        <KpiCard label="Resolved this week"value={resolvedWeekCount} tone="emerald" />
-        <KpiCard label="Urgent open"       value={urgentOpenCount} tone={urgentOpenCount > 0 ? "red" : "default"} href="/admin/tickets?filter=open&priority=urgent" />
-        <KpiCard label="Overdue > 3 days"  value={overdueCount}    tone={overdueCount > 0 ? "amber" : "default"} hint="Submitted/Assigned only" />
-        <KpiCard label="Revenue this month" value={`S$ ${revenueThisMonth.toLocaleString("en-SG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} tone="emerald" hint="From paid invoices" href="/admin/invoices" />
+        <KpiCard label="Open tickets"      value={openCount}       href="/admin/tickets?filter=open" tone="brand" icon={<Ticket className="w-6 h-6" />} />
+        <KpiCard label="New today"         value={newTodayCount}   href="/admin/tickets?filter=new" tone="accent" icon={<Sparkles className="w-6 h-6" />} />
+        <KpiCard label="Resolved this week" value={resolvedWeekCount} tone="emerald" icon={<CheckCircle2 className="w-6 h-6" />} />
+        <KpiCard label="Urgent open"       value={urgentOpenCount} tone={urgentOpenCount > 0 ? "red" : "default"} href="/admin/tickets?filter=open&priority=urgent" icon={<Zap className="w-6 h-6" />} />
+        <KpiCard label="Overdue > 3 days"  value={overdueCount}    tone={overdueCount > 0 ? "amber" : "default"} hint="Submitted/Assigned only" icon={<Clock className="w-6 h-6" />} />
+        <KpiCard label="Revenue this month" value={`S$ ${revenueThisMonth.toLocaleString("en-SG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} tone="purple" hint="From paid invoices" href="/admin/invoices" icon={<DollarSign className="w-6 h-6" />} />
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">

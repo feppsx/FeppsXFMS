@@ -1,5 +1,6 @@
 import { StatusBadge } from "./StatusBadge";
 import { PriorityBadge } from "./PriorityBadge";
+import { CategoryPill } from "./CategoryPill";
 import type { Ticket } from "@/lib/db-types";
 
 export function TicketDetailHeader({
@@ -8,7 +9,7 @@ export function TicketDetailHeader({
   ticket: Ticket;
   client?: { name: string; location: string } | null;
   tenant?: { name: string } | null;
-  category?: { name: string } | null;
+  category?: { name: string; color?: string | null } | null;
 }) {
   return (
     <div className="mb-4">
@@ -17,11 +18,11 @@ export function TicketDetailHeader({
         <span>·</span>
         <span>{new Date(ticket.created_at).toLocaleString("en-SG")}</span>
       </div>
-      <h1 className="text-xl font-semibold mt-1">{ticket.title}</h1>
-      <div className="flex items-center gap-2 mt-2">
+      <h1 className="text-xl font-semibold mt-1 text-slate-900">{ticket.title}</h1>
+      <div className="flex items-center gap-2 mt-2 flex-wrap">
         <StatusBadge status={ticket.status} />
         <PriorityBadge priority={ticket.priority} />
-        {category?.name && <span className="text-xs text-slate-500">{category.name}</span>}
+        {category?.name && <CategoryPill name={category.name} color={category.color ?? undefined} />}
       </div>
       <div className="text-sm text-slate-600 mt-2">
         {client ? `${client.name} · ${client.location}` : "—"}
