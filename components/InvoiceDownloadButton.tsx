@@ -1,24 +1,21 @@
 "use client";
 
-// Client wrapper — generates the PayNow QR data URL and hands it to the PDF
-// via @react-pdf/renderer's PDFDownloadLink. Renders a Download button.
+// Client wrapper — generates the PayNow QR data URL, exposes an "Include photo
+// evidence" checkbox when before/after photos exist, and hands everything to
+// @react-pdf/renderer's PDFDownloadLink.
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import QRCode from "qrcode";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Camera } from "lucide-react";
 import type { Invoice, InvoiceItem } from "@/lib/db-types";
 import { InvoicePDF } from "./InvoicePDF";
 
-// PDFDownloadLink pulls in @react-pdf/renderer's whole runtime — dynamic import
-// keeps it out of the main JS bundle.
 const PDFDownloadLink = dynamic(
   () => import("@react-pdf/renderer").then((m) => m.PDFDownloadLink),
   { ssr: false, loading: () => <ButtonShell disabled label="Preparing…" spinning /> }
 );
 
-// UEN → simple encoded PayNow string. Real SGQR needs a CRC-16 checksum which
-// is overkill for MVP. Any PayNow app can still show "UEN 202212959Z" from this.
 const PAYNOW_UEN = "202212959Z";
 const QR_TEXT    = `PAYNOW UEN ${PAYNOW_UEN}`;
 
@@ -36,6 +33,7 @@ export function InvoiceDownloadButton({
   label?: string;
 }) {
   const [qr, setQr] = useState<string | null>(null);
+  const [includePhotos, setIncludePhotos] = useState(false);
 
   useEffect(() => {
     QRCode.toDataURL(QR_TEXT, { margin: 1, width: 220 })
@@ -45,26 +43,67 @@ export function InvoiceDownloadButton({
 
   if (qr === null) return <ButtonShell disabled label="Preparing…" spinning />;
 
+  const hasPhotos = beforePhotos.length > 0 || afterPhotos.length > 0;
+
+  // Only include photos in the PDF when the user opted in AND photos exist.
+  const before = includePhotos ? beforePhotos : [];
+  const after  = includePhotos ? afterPhotos  : [];
+
+  // Filename hint so users can tell the two variants apart on disk.
+  const fileName = includePhotos && hasPhotos
+    ? `${invoice.receipt_no}-with-photos.pdf`
+    : `${invoice.receipt_no}.pdf`;
+
   return (
-    <PDFDownloadLink
-      document={<InvoicePDF invoice={invoice} items={items} qrDataUrl={qr} technicianSignatureUrl={technicianSignatureUrl ?? null} beforePhotos={beforePhotos} afterPhotos={afterPhotos} />}
-      fileName={`${invoice.receipt_no}.pdf`}
-      className={
-        className ??
-        "inline-flex items-center gap-1.5 bg-brand hover:bg-brand-600 text-white rounded-lg px-3 py-2 text-sm font-medium"
-      }
-    >
-      {({ loading }) => (
-        <>
-          {loading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Download className="w-4 h-4" />
-          )}
-          {loading ? "Rendering…" : label}
-        </>
+    <div className="space-y-2">
+      {hasPhotos && (
+        <label className="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={includePhotos}
+            onChange={(e) => setIncludePhotos(e.target.checked)}
+            className="w-4 h-4 rounded border-slate-300 text-brand focus:ring-brand"
+          />
+          <Camera className="w-4 h-4 text-slate-500" />
+          <span>
+            Add photo evidence{" "}
+            <span className="text-slate-500">
+              ({beforePhotos.length} before · {afterPhotos.length} after)
+            </span>
+          </span>
+        </label>
       )}
-    </PDFDownloadLink>
+
+      <PDFDownloadLink
+        key={includePhotos ? "with-photos" : "no-photos"}
+        document={
+          <InvoicePDF
+            invoice={invoice}
+            items={items}
+            qrDataUrl={qr}
+            technicianSignatureUrl={technicianSignatureUrl ?? null}
+            beforePhotos={before}
+            afterPhotos={after}
+          />
+        }
+        fileName={fileName}
+        className={
+          className ??
+          "inline-flex items-center gap-1.5 bg-brand hover:bg-brand-600 text-white rounded-lg px-3 py-2 text-sm font-medium"
+        }
+      >
+        {({ loading }) => (
+          <>
+            {loading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {loading ? "Rendering…" : label}
+          </>
+        )}
+      </PDFDownloadLink>
+    </div>
   );
 }
 
