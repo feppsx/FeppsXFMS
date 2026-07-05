@@ -8,7 +8,7 @@ import { TicketRealtime } from "@/components/TicketRealtime";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import type { Ticket, TicketStatusHistoryRow } from "@/lib/db-types";
-import { ArrowRight, Zap, Ticket, Sparkles, CheckCircle2, Clock, DollarSign } from "lucide-react";
+import { ArrowRight, Zap, Ticket as TicketIcon, Sparkles, CheckCircle2, Clock, DollarSign } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -101,7 +101,7 @@ export default async function AdminDashboardPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <KpiCard label="Open tickets"      value={openCount}       href="/admin/tickets?filter=open" tone="brand" icon={<Ticket className="w-6 h-6" />} />
+        <KpiCard label="Open tickets"      value={openCount}       href="/admin/tickets?filter=open" tone="brand" icon={<TicketIcon className="w-6 h-6" />} />
         <KpiCard label="New today"         value={newTodayCount}   href="/admin/tickets?filter=new" tone="accent" icon={<Sparkles className="w-6 h-6" />} />
         <KpiCard label="Resolved this week" value={resolvedWeekCount} tone="emerald" icon={<CheckCircle2 className="w-6 h-6" />} />
         <KpiCard label="Urgent open"       value={urgentOpenCount} tone={urgentOpenCount > 0 ? "red" : "default"} href="/admin/tickets?filter=open&priority=urgent" icon={<Zap className="w-6 h-6" />} />
