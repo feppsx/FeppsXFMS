@@ -93,3 +93,31 @@ export async function createInvoice(
   revalidatePath(`/client/tickets/${input.ticket_id}`);
   return { id: inserted.id, receipt_no: inserted.receipt_no };
 }
+
+// ---------------------------------------------------------------------------
+// Admin: toggle paid / unpaid.
+// ---------------------------------------------------------------------------
+export async function toggleInvoicePaid(
+  invoiceId: string,
+  isPaid: boolean
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { error } = await supabase
+    .from("invoices")
+    .update({
+      is_paid: isPaid,
+      paid_at: isPaid ? new Date().toISOString() : null,
+      paid_by: isPaid ? user.id : null,
+    })
+    .eq("id", invoiceId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/invoices");
+  return {};
+}

@@ -136,6 +136,9 @@ export interface Invoice {
   deposit_amount: number;
   grand_total: number;
   notes: string | null;
+  is_paid: boolean;
+  paid_at: string | null;
+  paid_by: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -13,9 +13,12 @@ function navLinksForRole(role: Profile["role"]): { href: string; label: string }
   switch (role) {
     case "admin":
       return [
-        { href: "/admin", label: "Tickets" },
+        { href: "/admin", label: "Dashboard" },
+        { href: "/admin/tickets", label: "Tickets" },
+        { href: "/admin/invoices", label: "Invoices" },
         { href: "/admin/clients", label: "Clients" },
         { href: "/admin/technicians", label: "Technicians" },
+        { href: "/admin/categories", label: "Categories" },
       ];
     case "technician":
       return [
