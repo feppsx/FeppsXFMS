@@ -9,6 +9,7 @@ import {
   LayoutDashboard, Ticket, Receipt, Building2, Users, Tag,
   Wrench, UserCircle2, PlusCircle, LogOut, Menu, X,
 } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface NavItem {
   href: string;
@@ -92,15 +93,18 @@ export function Sidebar({ profile }: { profile: Profile }) {
           <div className="text-xs text-slate-500">{ROLE_LABEL[profile.role]}</div>
         </div>
       </div>
-      <form action="/auth/signout" method="post">
-        <button
-          type="submit"
-          className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-        >
-          <LogOut className="w-4 h-4" />
-          Sign out
-        </button>
-      </form>
+      <div className="space-y-2">
+        <ThemeToggle />
+        <form action="/auth/signout" method="post">
+          <button
+            type="submit"
+            className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </button>
+        </form>
+      </div>
     </div>
   );
 
@@ -139,6 +143,9 @@ export function Sidebar({ profile }: { profile: Profile }) {
           unoptimized
           priority
         />
+        <div className="ml-auto">
+          <ThemeToggle compact />
+        </div>
       </div>
 
       {/* Overlay */}

@@ -6,6 +6,10 @@
   color-scheme: light;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
 html, body {
   height: 100%;
 }
@@ -13,3 +17,71 @@ html, body {
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
 }
+
+/* -----------------------------------------------------------------------------
+ * Dark mode surface overrides.
+ * The app was built with light-mode surface classes (bg-white, border-slate-200,
+ * text-slate-500 …). Rather than dark: every className, we remap those tokens
+ * inside .dark so components adapt automatically.
+ * -------------------------------------------------------------------------- */
+html.dark body { @apply bg-slate-950 text-slate-100; }
+
+html.dark .bg-white          { background-color: theme("colors.slate.900"); }
+html.dark .bg-slate-50       { background-color: theme("colors.slate.950"); }
+html.dark .bg-slate-100      { background-color: theme("colors.slate.800"); }
+
+html.dark .border-slate-100  { border-color: theme("colors.slate.800"); }
+html.dark .border-slate-200  { border-color: theme("colors.slate.800"); }
+html.dark .border-slate-300  { border-color: theme("colors.slate.700"); }
+
+html.dark .text-slate-900    { color: theme("colors.slate.100"); }
+html.dark .text-slate-800    { color: theme("colors.slate.200"); }
+html.dark .text-slate-700    { color: theme("colors.slate.300"); }
+html.dark .text-slate-600    { color: theme("colors.slate.400"); }
+html.dark .text-slate-500    { color: theme("colors.slate.500"); }
+html.dark .text-slate-400    { color: theme("colors.slate.500"); }
+
+/* Inputs need a slightly lighter surface in dark */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: theme("colors.slate.900");
+  color: theme("colors.slate.100");
+  border-color: theme("colors.slate.700");
+}
+
+/* Hover backgrounds — the light hover:bg-slate-50/100 stays subtle in dark */
+html.dark .hover\:bg-slate-50:hover   { background-color: theme("colors.slate.800"); }
+html.dark .hover\:bg-slate-100:hover  { background-color: theme("colors.slate.800"); }
+
+/* Brand backgrounds keep their gradient but the tinted variants need more contrast */
+html.dark .bg-brand-50       { background-color: rgba(15, 76, 129, 0.20); }
+html.dark .bg-brand-100      { background-color: rgba(15, 76, 129, 0.30); }
+html.dark .text-brand        { color: theme("colors.brand.300"); }
+
+/* Emerald/amber/rose/accent/purple gradient KPI cards — soften in dark */
+html.dark .from-emerald-50 { --tw-gradient-from: rgba(16, 185, 129, 0.14) var(--tw-gradient-from-position); }
+html.dark .to-emerald-100  { --tw-gradient-to:   rgba(16, 185, 129, 0.28) var(--tw-gradient-to-position); }
+html.dark .from-amber-50   { --tw-gradient-from: rgba(245, 158, 11, 0.14) var(--tw-gradient-from-position); }
+html.dark .to-amber-100    { --tw-gradient-to:   rgba(245, 158, 11, 0.28) var(--tw-gradient-to-position); }
+html.dark .from-rose-50    { --tw-gradient-from: rgba(244, 63, 94, 0.14) var(--tw-gradient-from-position); }
+html.dark .to-rose-100     { --tw-gradient-to:   rgba(244, 63, 94, 0.28) var(--tw-gradient-to-position); }
+html.dark .from-purple-50  { --tw-gradient-from: rgba(168, 85, 247, 0.14) var(--tw-gradient-from-position); }
+html.dark .to-purple-100   { --tw-gradient-to:   rgba(168, 85, 247, 0.28) var(--tw-gradient-to-position); }
+html.dark .from-accent-50  { --tw-gradient-from: rgba(249, 115, 22, 0.14) var(--tw-gradient-from-position); }
+html.dark .to-accent-100   { --tw-gradient-to:   rgba(249, 115, 22, 0.28) var(--tw-gradient-to-position); }
+html.dark .from-brand-50   { --tw-gradient-from: rgba(15, 76, 129, 0.14) var(--tw-gradient-from-position); }
+html.dark .to-brand-100    { --tw-gradient-to:   rgba(15, 76, 129, 0.32) var(--tw-gradient-to-position); }
+
+/* Emphasis text on tinted card headers/values — pull toward light in dark */
+html.dark .text-emerald-900  { color: theme("colors.emerald.300"); }
+html.dark .text-emerald-800  { color: theme("colors.emerald.300"); }
+html.dark .text-emerald-700  { color: theme("colors.emerald.400"); }
+html.dark .text-amber-900    { color: theme("colors.amber.300"); }
+html.dark .text-amber-800    { color: theme("colors.amber.300"); }
+html.dark .text-amber-700    { color: theme("colors.amber.400"); }
+html.dark .text-rose-900     { color: theme("colors.rose.300"); }
+html.dark .text-rose-800     { color: theme("colors.rose.300"); }
+html.dark .text-rose-700     { color: theme("colors.rose.400"); }
+html.dark .text-purple-900   { color: theme("colors.purple.300"); }
+html.dark .text-brand-700    { color: theme("colors.brand.300"); }
