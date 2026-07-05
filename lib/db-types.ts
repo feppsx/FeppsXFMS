@@ -1,7 +1,8 @@
-// Mirrors the enums and row shapes defined in supabase/v2.sql.
-// Later we'll auto-generate this from Supabase.
+// Mirrors the schema in supabase/. See patches for evolution.
+// UI/type naming uses "Estate" everywhere; the underlying DB table is still
+// called `clients` (patch 11 chose the safer path — see patch header).
 
-export type UserRole = "admin" | "technician" | "requester";
+export type UserRole = "admin" | "technician" | "requester" | "manager";
 
 export type TicketStatus =
   | "submitted"
@@ -21,10 +22,18 @@ export type AttachmentKind =
   | "resolution_photo"
   | "other";
 
-export interface Client {
+/** Retail = shops. MCST = strata-titled buildings. SBS = single business site. */
+export type EstateCategory = "Retail" | "MCST" | "SBS";
+
+/**
+ * A managed site (e.g. Wipro Chennai CDC5, Prestige Centre Singapore).
+ * DB table: `clients`. Renamed to Estate in UI/types per Phase-1 refactor.
+ */
+export interface Estate {
   id: string;
-  name: string;              // e.g. "Wipro"
-  location: string;          // e.g. "Chennai CDC5"
+  name: string;
+  location: string;
+  category: EstateCategory;
   address: string | null;
   contact_email: string | null;
   contact_phone: string | null;
@@ -34,10 +43,14 @@ export interface Client {
   updated_at: string;
 }
 
-/** A tenant company at a multi-tenant client site (e.g. "Google" at Prestige Centre). */
-export interface ClientTenant {
+/** Kept as a legacy alias so any lingering `Client` imports still typecheck.
+ *  New code should use `Estate`. */
+export type Client = Estate;
+
+/** A tenant/company inside a multi-tenant estate. DB table: `client_tenants`. */
+export interface EstateTenant {
   id: string;
-  client_id: string;
+  client_id: string;   // DB column stays client_id
   name: string;
   contact_email: string | null;
   contact_phone: string | null;
@@ -46,6 +59,7 @@ export interface ClientTenant {
   created_at: string;
   updated_at: string;
 }
+export type ClientTenant = EstateTenant;
 
 export interface Profile {
   id: string;
@@ -63,7 +77,7 @@ export interface TicketCategory {
   id: string;
   name: string;
   description: string | null;
-  color: string;   // hex like "#f59e0b"
+  color: string;
   is_active: boolean;
   created_at: string;
 }
@@ -76,7 +90,7 @@ export interface Ticket {
   status: TicketStatus;
   priority: TicketPriority;
   category_id: string | null;
-  client_id: string;
+  client_id: string;   // DB column — represents the estate the ticket belongs to
   tenant_id: string | null;
   specific_area: string | null;
   raised_by: string | null;
@@ -127,12 +141,14 @@ export interface TicketComment {
 export interface Invoice {
   id: string;
   receipt_no: string;
-  ticket_id: string;
+  ticket_id: string | null;    // null when the invoice was raised manually
+  client_id: string | null;    // set on manual invoices (the estate being billed)
+  category: EstateCategory | null;   // Retail/MCST/SBS for reporting
   created_by: string | null;
   customer_name: string;
   customer_address: string | null;
   contact_no: string | null;
-  invoice_date: string;   // YYYY-MM-DD
+  invoice_date: string;
   time_in: string | null;
   time_out: string | null;
   subtotal: number;

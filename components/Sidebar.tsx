@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import type { Profile, UserRole } from "@/lib/db-types";
 import {
   LayoutDashboard, Ticket, Receipt, Building2, Users, Tag,
-  Wrench, UserCircle2, PlusCircle, LogOut, Menu, X, QrCode,
+  Wrench, UserCircle2, PlusCircle, LogOut, Menu, X, QrCode, ShieldCheck,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Avatar } from "./Avatar";
@@ -21,6 +21,7 @@ interface NavItem {
 const ROLE_LABEL: Record<UserRole, string> = {
   admin: "360 Admin",
   technician: "Technician",
+  manager: "Manager",
   requester: "Requester",
 };
 
@@ -28,15 +29,18 @@ function navFor(role: UserRole): NavItem[] {
   switch (role) {
     case "admin":
       return [
-        { href: "/admin",              label: "Dashboard",   icon: LayoutDashboard },
-        { href: "/admin/tickets",      label: "Tickets",     icon: Ticket },
-        { href: "/admin/invoices",     label: "Invoices",    icon: Receipt },
-        { href: "/admin/clients",      label: "Clients",     icon: Building2 },
-        { href: "/admin/technicians",  label: "Technicians", icon: Users },
-        { href: "/admin/categories",   label: "Categories",  icon: Tag },
-        { href: "/admin/qr",           label: "Report QR",   icon: QrCode },
+        { href: "/admin",              label: "Dashboard",       icon: LayoutDashboard },
+        { href: "/admin/tickets",      label: "Tickets",         icon: Ticket },
+        { href: "/admin/invoices",     label: "Invoices",        icon: Receipt },
+        { href: "/admin/clients",      label: "Estates",         icon: Building2 },
+        { href: "/admin/technicians",  label: "Technicians",     icon: Users },
+        { href: "/admin/invoices/generate", label: "Generate Invoice", icon: PlusCircle },
+        { href: "/admin/managers",     label: "Managers",        icon: ShieldCheck },
+        { href: "/admin/categories",   label: "Categories",      icon: Tag },
+        { href: "/admin/qr",           label: "Report QR",       icon: QrCode },
       ];
     case "technician":
+    case "manager":
       return [
         { href: "/technician/jobs",    label: "My jobs",    icon: Wrench },
         { href: "/technician/profile", label: "My profile", icon: UserCircle2 },

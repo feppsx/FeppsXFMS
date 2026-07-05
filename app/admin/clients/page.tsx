@@ -25,19 +25,19 @@ export default async function AdminClientsPage() {
   return (
     <AppShell profile={profile}>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold">Clients</h1>
+        <h1 className="text-xl font-semibold">Estates</h1>
         <Link
           href="/admin/clients/new"
           className="inline-flex items-center gap-1.5 bg-brand hover:bg-brand-600 text-white rounded-lg px-3 py-2 text-sm font-medium"
         >
           <PlusCircle className="w-4 h-4" />
-          Add client
+          Add estate
         </Link>
       </div>
 
       {rows.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500 text-sm">
-          No clients yet. Add your first one so requesters can raise tickets.
+          No estates yet. Add your first one so requesters can raise tickets.
         </div>
       ) : (
         <div className="space-y-2">

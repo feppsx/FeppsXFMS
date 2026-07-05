@@ -4,10 +4,12 @@
 
 import { useState, useTransition } from "react";
 import { createClientRecord, updateClientRecord } from "@/lib/actions/clients";
-import type { Client } from "@/lib/db-types";
+import type { Estate, EstateCategory } from "@/lib/db-types";
 import { Loader2, Save } from "lucide-react";
 
-export function NewClientForm({ initial }: { initial?: Client }) {
+const CATEGORIES: EstateCategory[] = ["Retail", "MCST", "SBS"];
+
+export function NewClientForm({ initial }: { initial?: Estate }) {
   const isEdit = !!initial;
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +29,25 @@ export function NewClientForm({ initial }: { initial?: Client }) {
       <div className="grid sm:grid-cols-2 gap-4">
         <Field label="Name"     name="name"     required defaultValue={initial?.name}     placeholder="e.g. Wipro" />
         <Field label="Location" name="location" required defaultValue={initial?.location} placeholder="e.g. Chennai CDC5" />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          Category <span className="text-red-500">*</span>
+        </label>
+        <select
+          name="category"
+          required
+          defaultValue={initial?.category ?? "MCST"}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white"
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <p className="text-xs text-slate-500 mt-1">
+          Retail = shopfronts. MCST = strata-titled buildings. SBS = single business site.
+        </p>
       </div>
 
       <Field label="Address" name="address" defaultValue={initial?.address ?? ""} placeholder="e.g. Sholinganallur, Chennai 600119" />

@@ -88,7 +88,7 @@ export function TicketFilterBar({
           onChange={(e) => push({ client_id: e.target.value })}
           className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm bg-white"
         >
-          <option value="">All clients</option>
+          <option value="">All estates</option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}

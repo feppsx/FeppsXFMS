@@ -11,6 +11,7 @@ export function homeForRole(role: string | null | undefined): string {
     case "admin":
       return "/admin";
     case "technician":
+    case "manager":
       return "/technician/jobs";
     case "requester":
       return "/client/tickets";

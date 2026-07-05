@@ -35,21 +35,21 @@ export default async function EditClientPage({
         className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 mb-3"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to clients
+        Back to estates
       </Link>
 
       <h1 className="text-xl font-semibold mb-4">
-        Edit client — {client.name} · {client.location}
+        Edit estate — {client.name} · {client.location}
       </h1>
 
       <div className="grid md:grid-cols-2 gap-4">
         <section className="bg-white border border-slate-200 rounded-2xl p-5">
-          <h2 className="text-sm font-medium text-slate-500 mb-3">Client details</h2>
+          <h2 className="text-sm font-medium text-slate-500 mb-3">Estate details</h2>
           <NewClientForm initial={client} />
         </section>
 
         <section className="bg-white border border-slate-200 rounded-2xl p-5">
-          <h2 className="text-sm font-medium text-slate-500 mb-3">Tenants inside this site</h2>
+          <h2 className="text-sm font-medium text-slate-500 mb-3">Tenants inside this estate</h2>
           <TenantManager clientId={client.id} tenants={tenants ?? []} />
         </section>
       </div>

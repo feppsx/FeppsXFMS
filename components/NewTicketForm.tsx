@@ -99,7 +99,7 @@ export function NewTicketForm({
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          Location (Client) <span className="text-red-500">*</span>
+          Location (Estate) <span className="text-red-500">*</span>
         </label>
         <select
           name="client_id"
@@ -108,7 +108,7 @@ export function NewTicketForm({
           onChange={(e) => { setClientId(e.target.value); setTenantId(""); }}
           className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white"
         >
-          <option value="" disabled>Select a client…</option>
+          <option value="" disabled>Select an estate…</option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>{c.name} — {c.location}</option>
           ))}

@@ -8,9 +8,15 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 function readFields(formData: FormData) {
+  const rawCategory = (formData.get("category") as string | null)?.trim() ?? "MCST";
+  const category =
+    rawCategory === "Retail" || rawCategory === "MCST" || rawCategory === "SBS"
+      ? rawCategory
+      : "MCST";
   return {
     name:          (formData.get("name") as string | null)?.trim() ?? "",
     location:      (formData.get("location") as string | null)?.trim() ?? "",
+    category,
     address:       (formData.get("address") as string | null)?.trim() || null,
     contact_email: (formData.get("contact_email") as string | null)?.trim() || null,
     contact_phone: (formData.get("contact_phone") as string | null)?.trim() || null,
