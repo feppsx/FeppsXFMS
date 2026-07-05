@@ -73,16 +73,14 @@ export default async function AdminInvoicesPage({
         <div className="text-xs text-slate-500">{totals.count} shown</div>
       </div>
 
-      {/* Filter chips */}
+      {/* Filter chips — the URL param and the server-side check both use the SAME key */}
       <div className="flex flex-wrap gap-2 mb-4">
         {FILTERS.map((f) => (
           <Link
             key={f.key}
-            href={`/admin/invoices${f.key === "all" ? "" : `?paid=${f.key === "paid" ? "yes" : "no"}`}`}
+            href={f.key === "all" ? "/admin/invoices" : `/admin/invoices?paid=${f.key}`}
             className={
-              (f.key === "all" ? paidFilter === "all" :
-               f.key === "paid" ? paidFilter === "yes" :
-               paidFilter === "no")
+              f.key === paidFilter
                 ? "text-sm rounded-full bg-brand text-white px-3 py-1"
                 : "text-sm rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50 px-3 py-1"
             }
