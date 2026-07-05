@@ -79,12 +79,16 @@ export interface Ticket {
   client_id: string;
   tenant_id: string | null;
   specific_area: string | null;
-  raised_by: string;
+  raised_by: string | null;
   assigned_to: string | null;
   assigned_by: string | null;
   assigned_at: string | null;
   resolved_at: string | null;
   closed_at: string | null;
+  requester_name: string | null;
+  requester_email: string | null;
+  requester_phone: string | null;
+  tracking_token: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -72,9 +72,22 @@ export default async function AdminTicketDetail({
           <Section title="Photos">
             <TicketPhotoSections attachments={attachments} urls={urls} />
           </Section>
-          <Section title="Raised by">
-            <p className="text-sm text-slate-700">{ticket.raiser?.full_name ?? "—"}</p>
-          </Section>
+          {ticket.raised_by ? (
+            <Section title="Raised by">
+              <p className="text-sm text-slate-700">{ticket.raiser?.full_name ?? "—"}</p>
+            </Section>
+          ) : (
+            <Section title="Anonymous submission — contact">
+              <div className="space-y-1 text-sm">
+                <div><span className="text-slate-500">Name:</span> <span className="text-slate-800 font-medium">{ticket.requester_name ?? "—"}</span></div>
+                <div><span className="text-slate-500">Email:</span> {ticket.requester_email ? (<a href={`mailto:${ticket.requester_email}`} className="text-brand hover:underline">{ticket.requester_email}</a>) : "—"}</div>
+                <div><span className="text-slate-500">Phone:</span> {ticket.requester_phone ? (<a href={`tel:${ticket.requester_phone}`} className="text-brand hover:underline">{ticket.requester_phone}</a>) : "—"}</div>
+                {ticket.tracking_token && (
+                  <div className="pt-1"><span className="text-slate-500">Tracking code:</span> <span className="font-mono font-medium text-slate-800">{ticket.tracking_token}</span></div>
+                )}
+              </div>
+            </Section>
+          )}
           {invoiceBundle && (
             <Section title="Invoice">
               <div className="space-y-2">

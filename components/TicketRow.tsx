@@ -10,6 +10,17 @@ export interface TicketRowData extends Ticket {
   tenant?:   Pick<ClientTenant, "name"> | null;
 }
 
+function AnonChip() {
+  return (
+    <span
+      className="inline-flex items-center rounded-full border border-purple-200 bg-purple-50 text-purple-700 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+      title="Anonymous submission"
+    >
+      Anon
+    </span>
+  );
+}
+
 function fmtWhen(iso: string) {
   const d = new Date(iso);
   const mins = Math.floor((Date.now() - d.getTime()) / 60000);
@@ -48,6 +59,7 @@ export function TicketRow({ ticket, hrefBase }: { ticket: TicketRowData; hrefBas
             <span className="font-mono">{ticket.ticket_number}</span>
             <span>·</span>
             <span>{fmtWhen(ticket.created_at)}</span>
+            {!ticket.raised_by && <AnonChip />}
             {ticket.category?.name && (
               <CategoryPill name={ticket.category.name} color={ticket.category.color} />
             )}

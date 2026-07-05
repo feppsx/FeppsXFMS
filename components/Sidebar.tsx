@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import type { Profile, UserRole } from "@/lib/db-types";
 import {
   LayoutDashboard, Ticket, Receipt, Building2, Users, Tag,
-  Wrench, UserCircle2, PlusCircle, LogOut, Menu, X,
+  Wrench, UserCircle2, PlusCircle, LogOut, Menu, X, QrCode,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -33,6 +33,7 @@ function navFor(role: UserRole): NavItem[] {
         { href: "/admin/clients",      label: "Clients",     icon: Building2 },
         { href: "/admin/technicians",  label: "Technicians", icon: Users },
         { href: "/admin/categories",   label: "Categories",  icon: Tag },
+        { href: "/admin/qr",           label: "Report QR",   icon: QrCode },
       ];
     case "technician":
       return [
