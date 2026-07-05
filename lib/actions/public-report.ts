@@ -44,7 +44,7 @@ export async function createAnonymousTicket(
     .from("clients")
     .select("id, is_active")
     .eq("id", input.client_id)
-    .maybeSingle();
+    .maybeSingle<{ id: string; is_active: boolean }>();
   if (!client || !client.is_active) {
     return { error: "That location is not accepting tickets right now." };
   }
@@ -55,7 +55,7 @@ export async function createAnonymousTicket(
       .from("client_tenants")
       .select("id, client_id, is_active")
       .eq("id", input.tenant_id)
-      .maybeSingle();
+      .maybeSingle<{ id: string; client_id: string; is_active: boolean }>();
     if (!tenant || !tenant.is_active || tenant.client_id !== input.client_id) {
       return { error: "That company isn't valid for the chosen location." };
     }
@@ -79,7 +79,7 @@ export async function createAnonymousTicket(
       requester_phone:  input.phone?.trim() || null,
     })
     .select("id, tracking_token")
-    .single();
+    .single<{ id: string; tracking_token: string }>();
 
   if (error || !inserted) {
     return { error: error?.message ?? "Could not submit the ticket." };
@@ -98,5 +98,5 @@ export async function createAnonymousTicket(
     if (attErr) console.error("attachment insert failed:", attErr.message);
   }
 
-  return { token: inserted.tracking_token as string };
+  return { token: inserted.tracking_token };
 }
