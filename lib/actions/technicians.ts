@@ -21,11 +21,12 @@ export async function createTechnician(formData: FormData): Promise<{ error?: st
   await assertAdmin();
   const admin = createAdminClient();
 
-  const full_name = (formData.get("full_name") as string | null)?.trim();
-  const email     = (formData.get("email") as string | null)?.trim().toLowerCase();
-  const password  = (formData.get("password") as string | null) ?? "";
-  const phone     = (formData.get("phone") as string | null)?.trim() || null;
-  const tradeIds  = formData.getAll("trade_ids").filter(Boolean) as string[];
+  const full_name      = (formData.get("full_name") as string | null)?.trim();
+  const email          = (formData.get("email") as string | null)?.trim().toLowerCase();
+  const password       = (formData.get("password") as string | null) ?? "";
+  const phone          = (formData.get("phone") as string | null)?.trim() || null;
+  const signature_path = (formData.get("signature_path") as string | null) || null;
+  const tradeIds       = formData.getAll("trade_ids").filter(Boolean) as string[];
 
   if (!full_name)             return { error: "Name is required." };
   if (!email)                 return { error: "Email is required." };
@@ -48,7 +49,7 @@ export async function createTechnician(formData: FormData): Promise<{ error?: st
   // we overwrite name/role/phone here.
   const { error: profErr } = await admin
     .from("profiles")
-    .upsert({ id: userId, full_name, role: "technician", phone, is_active: true }, { onConflict: "id" });
+    .upsert({ id: userId, full_name, role: "technician", phone, signature_path, is_active: true }, { onConflict: "id" });
   if (profErr) return { error: `Auth ok but profile failed: ${profErr.message}` };
 
   // 3. Insert trades.
@@ -70,16 +71,17 @@ export async function updateTechnician(
   await assertAdmin();
   const supabase = await createClient(); // RLS admin policy allows this
 
-  const full_name = (formData.get("full_name") as string | null)?.trim();
-  const phone     = (formData.get("phone") as string | null)?.trim() || null;
-  const tradeIds  = formData.getAll("trade_ids").filter(Boolean) as string[];
+  const full_name      = (formData.get("full_name") as string | null)?.trim();
+  const phone          = (formData.get("phone") as string | null)?.trim() || null;
+  const signature_path = (formData.get("signature_path") as string | null) || null;
+  const tradeIds       = formData.getAll("trade_ids").filter(Boolean) as string[];
 
   if (!full_name)            return { error: "Name is required." };
   if (tradeIds.length === 0) return { error: "Pick at least one trade." };
 
   const { error: profErr } = await supabase
     .from("profiles")
-    .update({ full_name, phone })
+    .update({ full_name, phone, signature_path })
     .eq("id", id);
   if (profErr) return { error: profErr.message };
 

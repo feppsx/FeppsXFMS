@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
   sigCell:{ flex: 1, alignItems: "center", paddingHorizontal: 6 },
   sigLine:{ borderTopWidth: 1, borderTopColor: BLACK, width: "100%", marginBottom: 3 },
   sigTxt: { fontSize: 8 },
+  sigImg: { width: 100, height: 40, objectFit: "contain", marginBottom: 2 },
 
   ackTxt: { textAlign: "center", marginTop: 18, fontFamily: "Helvetica-Bold", fontSize: 9 },
 
@@ -113,11 +114,13 @@ function money(n: number) {
 }
 
 export function InvoicePDF({
-  invoice, items, qrDataUrl,
+  invoice, items, qrDataUrl, technicianSignatureUrl,
 }: {
   invoice: Invoice;
   items: InvoiceItem[];
   qrDataUrl: string;
+  /** Public URL to the assigned technician's signature image. */
+  technicianSignatureUrl?: string | null;
 }) {
   return (
     <Document title={invoice.receipt_no}>
@@ -288,6 +291,9 @@ export function InvoicePDF({
             <Text style={styles.sigTxt}>Company Stamp</Text>
           </View>
           <View style={styles.sigCell}>
+            {technicianSignatureUrl ? (
+              <Image src={technicianSignatureUrl} style={styles.sigImg} />
+            ) : null}
             <View style={styles.sigLine} />
             <Text style={styles.sigTxt}>Technical Team Leader</Text>
           </View>

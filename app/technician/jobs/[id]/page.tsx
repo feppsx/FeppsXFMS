@@ -11,6 +11,7 @@ import { TicketRealtime } from "@/components/TicketRealtime";
 import { requireProfile } from "@/lib/guard";
 import { getTicketDetail } from "@/lib/ticket-data";
 import { getInvoiceForTicket } from "@/lib/invoice-data";
+import { signatureUrl } from "@/lib/signature-url";
 import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,7 @@ export default async function TechnicianJobDetail({
   const { id } = await params;
   const { ticket, history, attachments, comments, actors, urls } = await getTicketDetail(id);
   const invoiceBundle = await getInvoiceForTicket(id);
+  const techSigUrl = await signatureUrl(ticket.assignee?.signature_path);
 
   const customerName =
     (ticket.tenant?.name && ticket.client?.name)
@@ -81,6 +83,7 @@ export default async function TechnicianJobDetail({
               existingItems={invoiceBundle?.items ?? []}
               ticketIsResolved={ticket.status === "resolved" || ticket.status === "closed"}
               prefill={prefill}
+              technicianSignatureUrl={techSigUrl}
             />
           </Section>
           <Section title="Raised by">

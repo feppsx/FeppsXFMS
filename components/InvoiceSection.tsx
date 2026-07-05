@@ -23,12 +23,14 @@ export function InvoiceSection({
   existingItems,
   ticketIsResolved,
   prefill,
+  technicianSignatureUrl,
 }: {
   ticketId: string;
   existingInvoice: Invoice | null;
   existingItems: InvoiceItem[];
   ticketIsResolved: boolean;
   prefill: Prefill;
+  technicianSignatureUrl?: string | null;
 }) {
   const [showForm, setShowForm] = useState(false);
 
@@ -43,7 +45,7 @@ export function InvoiceSection({
             })}
           </span>
         </div>
-        <InvoiceDownloadButton invoice={existingInvoice} items={existingItems} />
+        <InvoiceDownloadButton invoice={existingInvoice} items={existingItems} technicianSignatureUrl={technicianSignatureUrl} />
       </div>
     );
   }

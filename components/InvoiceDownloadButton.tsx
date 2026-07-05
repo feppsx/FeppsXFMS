@@ -23,10 +23,11 @@ const PAYNOW_UEN = "202212959Z";
 const QR_TEXT    = `PAYNOW UEN ${PAYNOW_UEN}`;
 
 export function InvoiceDownloadButton({
-  invoice, items, className, label = "Download PDF",
+  invoice, items, technicianSignatureUrl, className, label = "Download PDF",
 }: {
   invoice: Invoice;
   items: InvoiceItem[];
+  technicianSignatureUrl?: string | null;
   className?: string;
   label?: string;
 }) {
@@ -42,7 +43,7 @@ export function InvoiceDownloadButton({
 
   return (
     <PDFDownloadLink
-      document={<InvoicePDF invoice={invoice} items={items} qrDataUrl={qr} />}
+      document={<InvoicePDF invoice={invoice} items={items} qrDataUrl={qr} technicianSignatureUrl={technicianSignatureUrl ?? null} />}
       fileName={`${invoice.receipt_no}.pdf`}
       className={
         className ??

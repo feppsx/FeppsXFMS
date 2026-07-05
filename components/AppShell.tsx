@@ -18,7 +18,10 @@ function navLinksForRole(role: Profile["role"]): { href: string; label: string }
         { href: "/admin/technicians", label: "Technicians" },
       ];
     case "technician":
-      return [{ href: "/technician/jobs", label: "My jobs" }];
+      return [
+        { href: "/technician/jobs", label: "My jobs" },
+        { href: "/technician/profile", label: "My profile" },
+      ];
     case "requester":
       return [
         { href: "/client/tickets", label: "My tickets" },

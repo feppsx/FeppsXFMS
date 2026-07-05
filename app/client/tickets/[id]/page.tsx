@@ -10,6 +10,7 @@ import { TicketRealtime } from "@/components/TicketRealtime";
 import { requireProfile } from "@/lib/guard";
 import { getTicketDetail } from "@/lib/ticket-data";
 import { getInvoiceForTicket } from "@/lib/invoice-data";
+import { signatureUrl } from "@/lib/signature-url";
 import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,7 @@ export default async function RequesterTicketDetail({
   const { id } = await params;
   const { ticket, history, attachments, comments, actors, urls } = await getTicketDetail(id);
   const invoiceBundle = await getInvoiceForTicket(id);
+  const techSigUrl = await signatureUrl(ticket.assignee?.signature_path);
 
   const canCloseOrReopen =
     ticket.status === "resolved" && ticket.raised_by === profile.id;
@@ -70,7 +72,7 @@ export default async function RequesterTicketDetail({
                     S$ {invoiceBundle.invoice.grand_total.toLocaleString("en-SG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
-                <InvoiceDownloadButton invoice={invoiceBundle.invoice} items={invoiceBundle.items} />
+                <InvoiceDownloadButton invoice={invoiceBundle.invoice} items={invoiceBundle.items} technicianSignatureUrl={techSigUrl} />
               </div>
             </Section>
           )}

@@ -10,6 +10,7 @@ import { TicketRealtime } from "@/components/TicketRealtime";
 import { requireProfile } from "@/lib/guard";
 import { getTicketDetail } from "@/lib/ticket-data";
 import { getInvoiceForTicket } from "@/lib/invoice-data";
+import { signatureUrl } from "@/lib/signature-url";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowLeft } from "lucide-react";
 
@@ -30,6 +31,7 @@ export default async function AdminTicketDetail({
   const { id } = await params;
   const { ticket, history, attachments, comments, actors, urls } = await getTicketDetail(id);
   const invoiceBundle = await getInvoiceForTicket(id);
+  const techSigUrl = await signatureUrl(ticket.assignee?.signature_path);
 
   const supabase = await createClient();
   const { data: techRows } = await supabase
@@ -82,7 +84,7 @@ export default async function AdminTicketDetail({
                     S$ {invoiceBundle.invoice.grand_total.toLocaleString("en-SG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
-                <InvoiceDownloadButton invoice={invoiceBundle.invoice} items={invoiceBundle.items} />
+                <InvoiceDownloadButton invoice={invoiceBundle.invoice} items={invoiceBundle.items} technicianSignatureUrl={techSigUrl} />
               </div>
             </Section>
           )}

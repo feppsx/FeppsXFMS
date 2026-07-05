@@ -53,6 +53,7 @@ export interface Profile {
   role: UserRole;
   phone: string | null;
   avatar_url: string | null;
+  signature_path: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

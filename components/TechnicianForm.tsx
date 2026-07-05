@@ -6,6 +6,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createTechnician, updateTechnician } from "@/lib/actions/technicians";
+import { SignatureUpload } from "@/components/SignatureUpload";
 import type { Profile, TicketCategory } from "@/lib/db-types";
 import { Loader2, Save } from "lucide-react";
 
@@ -20,6 +21,9 @@ export function TechnicianForm({ categories, initial }: Props) {
 
   const [selectedTrades, setSelectedTrades] = useState<Set<string>>(
     new Set(initial?.trades ?? [])
+  );
+  const [signaturePath, setSignaturePath] = useState<string | null>(
+    initial?.signature_path ?? null
   );
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +42,7 @@ export function TechnicianForm({ categories, initial }: Props) {
     // Wipe whatever the browser might auto-serialize and set the current selection.
     formData.delete("trade_ids");
     selectedTrades.forEach((id) => formData.append("trade_ids", id));
+    formData.set("signature_path", signaturePath ?? "");
 
     startTransition(async () => {
       const res = isEdit
@@ -74,6 +79,22 @@ export function TechnicianForm({ categories, initial }: Props) {
             type="text"
             required
             placeholder="min 8 characters"
+          />
+        </div>
+      )}
+
+      {isEdit && initial && (
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Signature <span className="text-xs font-normal text-slate-500">(optional)</span>
+          </label>
+          <p className="text-xs text-slate-500 mb-2">
+            Shows on the &ldquo;Technical Team Leader&rdquo; line of invoices this tech generates.
+          </p>
+          <SignatureUpload
+            userId={initial.id}
+            value={signaturePath}
+            onChange={setSignaturePath}
           />
         </div>
       )}
