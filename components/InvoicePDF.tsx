@@ -98,12 +98,14 @@ const styles = StyleSheet.create({
 
   ackTxt: { textAlign: "center", marginTop: 18, fontFamily: "Helvetica-Bold", fontSize: 9 },
 
-  stampCircle: {
-    width: 60, height: 60, borderRadius: 30,
-    borderWidth: 1, borderColor: GREY,
+  stampBox: {
+    width: 70, height: 70,
     justifyContent: "center", alignItems: "center", marginBottom: 3,
   },
-  stampTxt: { fontSize: 7, color: GREY },
+  stampImg: {
+    width: 70, height: 70,
+    objectFit: "contain",
+  },
 });
 
 function money(n: number) {
@@ -280,10 +282,10 @@ export function InvoicePDF({
             <Text style={styles.sigTxt}>Customer&apos;s Signature</Text>
           </View>
           <View style={styles.sigCell}>
-            <View style={styles.stampCircle}>
-              <Text style={styles.stampTxt}>Company Stamp</Text>
+            <View style={styles.stampBox}>
+              <Image src="/invoice-stamp.png" style={styles.stampImg} />
             </View>
-            <Text style={styles.sigTxt}> </Text>
+            <Text style={styles.sigTxt}>Company Stamp</Text>
           </View>
           <View style={styles.sigCell}>
             <View style={styles.sigLine} />
