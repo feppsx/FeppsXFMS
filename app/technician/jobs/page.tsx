@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 export default async function TechnicianJobsPage() {
-  const profile = await requireProfile(["technician"]);
+  const profile = await requireProfile(["technician", "manager"]);
   const supabase = await createClient();
 
   const { data: tickets } = await supabase

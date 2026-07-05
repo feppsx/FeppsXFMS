@@ -29,7 +29,7 @@ export default async function TechnicianJobDetail({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const profile = await requireProfile(["technician"]);
+  const profile = await requireProfile(["technician", "manager"]);
   const { id } = await params;
   const { ticket, history, attachments, comments, actors, urls } = await getTicketDetail(id);
   const invoiceBundle = await getInvoiceForTicket(id);

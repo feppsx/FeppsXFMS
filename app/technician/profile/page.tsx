@@ -5,7 +5,7 @@ import { requireProfile } from "@/lib/guard";
 export const dynamic = "force-dynamic";
 
 export default async function TechnicianProfilePage() {
-  const profile = await requireProfile(["technician"]);
+  const profile = await requireProfile(["technician", "manager"]);
 
   return (
     <AppShell profile={profile}>
