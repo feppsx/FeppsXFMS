@@ -117,6 +117,38 @@ const styles = StyleSheet.create({
   sigTxt: { fontSize: 8, textAlign: "center" },
   sigImg: { maxWidth: 110, height: 50, objectFit: "contain" },
 
+  // Photo-evidence page (page 2, only if before/after exist)
+  evidencePageTitle: { fontSize: 14, fontFamily: "Helvetica-Bold", marginBottom: 4 },
+  evidenceSubtitle:  { fontSize: 9, color: GREY, marginBottom: 12 },
+  evidenceRow:       { flexDirection: "row", gap: 14 },
+  evidenceCol:       { flex: 1 },
+  evidenceHeader: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: "#fff",
+    padding: 6,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  evidenceBeforeHeader: { backgroundColor: "#94a3b8" },
+  evidenceAfterHeader:  { backgroundColor: "#10b981" },
+  evidencePhoto: {
+    width: "100%",
+    marginBottom: 8,
+    borderWidth: 0.5,
+    borderColor: GREY,
+    objectFit: "cover",
+  },
+  evidenceEmpty: {
+    borderWidth: 1,
+    borderColor: GREY,
+    borderStyle: "dashed",
+    padding: 20,
+    textAlign: "center",
+    color: GREY,
+    fontSize: 9,
+  },
+
   ackTxt: { textAlign: "center", marginTop: 18, fontFamily: "Helvetica-Bold", fontSize: 9 },
 
   stampImg: {
@@ -132,13 +164,19 @@ function money(n: number) {
 
 export function InvoicePDF({
   invoice, items, qrDataUrl, technicianSignatureUrl,
+  beforePhotos = [], afterPhotos = [],
 }: {
   invoice: Invoice;
   items: InvoiceItem[];
   qrDataUrl: string;
   /** Public URL to the assigned technician's signature image. */
   technicianSignatureUrl?: string | null;
+  /** Signed URLs for photos captured by the requester (before). */
+  beforePhotos?: string[];
+  /** Signed URLs for the technician's proof-of-fix photos (after). */
+  afterPhotos?: string[];
 }) {
+  const hasEvidence = beforePhotos.length > 0 || afterPhotos.length > 0;
   return (
     <Document title={invoice.receipt_no}>
       <Page size="A4" style={styles.page}>
@@ -325,6 +363,46 @@ export function InvoicePDF({
           </View>
         </View>
       </Page>
+
+      {/* ── PAGE 2 — Photo evidence (only if any exist) ────────────────────── */}
+      {hasEvidence && (
+        <Page size="A4" style={styles.page}>
+          <Text style={styles.evidencePageTitle}>Photo evidence — {invoice.receipt_no}</Text>
+          <Text style={styles.evidenceSubtitle}>
+            Attached to this service. All photos captured on the day of work.
+          </Text>
+
+          <View style={styles.evidenceRow}>
+            {/* Before column */}
+            <View style={styles.evidenceCol}>
+              <Text style={[styles.evidenceHeader, styles.evidenceBeforeHeader]}>
+                BEFORE (from requester)
+              </Text>
+              {beforePhotos.length > 0 ? (
+                beforePhotos.map((url, i) => (
+                  <Image key={`b-${i}`} src={url} style={styles.evidencePhoto} />
+                ))
+              ) : (
+                <Text style={styles.evidenceEmpty}>No before photos on record.</Text>
+              )}
+            </View>
+
+            {/* After column */}
+            <View style={styles.evidenceCol}>
+              <Text style={[styles.evidenceHeader, styles.evidenceAfterHeader]}>
+                AFTER (proof of fix)
+              </Text>
+              {afterPhotos.length > 0 ? (
+                afterPhotos.map((url, i) => (
+                  <Image key={`a-${i}`} src={url} style={styles.evidencePhoto} />
+                ))
+              ) : (
+                <Text style={styles.evidenceEmpty}>No after photos on record.</Text>
+              )}
+            </View>
+          </View>
+        </Page>
+      )}
     </Document>
   );
 }

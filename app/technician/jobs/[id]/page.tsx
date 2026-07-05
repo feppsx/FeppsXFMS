@@ -84,6 +84,8 @@ export default async function TechnicianJobDetail({
               ticketIsResolved={ticket.status === "resolved" || ticket.status === "closed"}
               prefill={prefill}
               technicianSignatureUrl={techSigUrl}
+              beforePhotos={invoiceBundle?.beforePhotos ?? []}
+              afterPhotos={invoiceBundle?.afterPhotos ?? []}
             />
           </Section>
           <Section title="Raised by">

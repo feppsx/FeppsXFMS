@@ -2,9 +2,9 @@ import Image from "next/image";
 import type { TicketAttachment, AttachmentKind } from "@/lib/db-types";
 
 const KIND_LABEL: Record<AttachmentKind, string> = {
-  issue_photo:      "Issue photos (from requester)",
-  progress_photo:   "Progress photos (from technician)",
-  resolution_photo: "Resolution photos (proof of fix)",
+  issue_photo:      "Before — from requester",
+  progress_photo:   "During work — from technician",
+  resolution_photo: "After — from technician",
   other:            "Other files",
 };
 

@@ -97,7 +97,7 @@ export default async function AdminTicketDetail({
                     S$ {invoiceBundle.invoice.grand_total.toLocaleString("en-SG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
-                <InvoiceDownloadButton invoice={invoiceBundle.invoice} items={invoiceBundle.items} technicianSignatureUrl={techSigUrl} />
+                <InvoiceDownloadButton invoice={invoiceBundle.invoice} items={invoiceBundle.items} technicianSignatureUrl={techSigUrl} beforePhotos={invoiceBundle.beforePhotos} afterPhotos={invoiceBundle.afterPhotos} />
               </div>
             </Section>
           )}
