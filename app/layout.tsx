@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PWARegister } from "@/components/PWARegister";
 import { themeInitScript } from "@/components/ThemeToggle";
+import { ToastProvider } from "@/components/ToastProvider";
 
 export const metadata: Metadata = {
   title: "360 Integrated — Facility Ticketing",
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <PWARegister />
         {children}
+        <ToastProvider />
       </body>
     </html>
   );

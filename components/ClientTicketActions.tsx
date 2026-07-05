@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
+import { toast } from "sonner";
 import { clientCloseOrReopen } from "@/lib/actions/tickets";
 import { CheckCircle2, RotateCcw, Loader2 } from "lucide-react";
 
@@ -13,7 +14,12 @@ export function ClientTicketActions({ ticketId }: { ticketId: string }) {
     setError(null);
     startTransition(async () => {
       const res = await clientCloseOrReopen(ticketId, action);
-      if (res.error) setError(res.error);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+      } else {
+        toast.success(action === "close" ? "Fix confirmed. Ticket closed." : "Ticket reopened.");
+      }
     });
   }
 

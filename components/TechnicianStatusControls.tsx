@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
+import { toast } from "sonner";
 import { updateTicketStatus } from "@/lib/actions/tickets";
 import type { TicketStatus } from "@/lib/db-types";
 import { Play, Pause, CheckCircle2, Loader2 } from "lucide-react";
@@ -20,7 +21,17 @@ export function TechnicianStatusControls({
     setError(null);
     startTransition(async () => {
       const res = await updateTicketStatus(ticketId, next);
-      if (res.error) setError(res.error);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+      } else {
+        const msg =
+          next === "in_progress" ? "Work started" :
+          next === "on_hold"     ? "Paused" :
+          next === "resolved"    ? "Marked resolved" :
+                                    "Status updated";
+        toast.success(msg);
+      }
     });
   }
 

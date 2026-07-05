@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { toggleInvoicePaid } from "@/lib/actions/invoices";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 
@@ -20,6 +21,9 @@ export function InvoicePaidToggle({
       if (res.error) {
         setCurrent(!next);
         setError(res.error);
+        toast.error(res.error);
+      } else {
+        toast.success(next ? "Marked as paid" : "Marked as unpaid");
       }
     });
   }

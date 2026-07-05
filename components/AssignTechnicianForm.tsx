@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { assignTechnician } from "@/lib/actions/tickets";
 import { UserCheck, Loader2, Sparkles } from "lucide-react";
 
@@ -50,7 +51,13 @@ export function AssignTechnicianForm({
     setError(null);
     startTransition(async () => {
       const res = await assignTechnician(ticketId, selected);
-      if (res.error) setError(res.error);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+      } else {
+        const tech = technicians.find((t) => t.id === selected);
+        toast.success(tech ? `Assigned to ${tech.full_name}` : "Assigned");
+      }
     });
   }
 

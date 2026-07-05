@@ -31,10 +31,16 @@ function locationLine(t: TicketRowData) {
 }
 
 export function TicketRow({ ticket, hrefBase }: { ticket: TicketRowData; hrefBase: string }) {
+  // Flash rows that were updated within the last 6 seconds (from realtime).
+  const isRecent = Date.now() - new Date(ticket.updated_at).getTime() < 6000;
+
   return (
     <Link
       href={`${hrefBase}/${ticket.id}`}
-      className="block bg-white border border-slate-200 rounded-xl px-4 py-3 hover:border-brand hover:shadow-card transition"
+      className={
+        "card-lift block bg-white border border-slate-200 rounded-xl px-4 py-3 hover:border-brand transition " +
+        (isRecent ? "row-flash" : "")
+      }
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">

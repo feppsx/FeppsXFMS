@@ -85,3 +85,75 @@ html.dark .text-rose-800     { color: theme("colors.rose.300"); }
 html.dark .text-rose-700     { color: theme("colors.rose.400"); }
 html.dark .text-purple-900   { color: theme("colors.purple.300"); }
 html.dark .text-brand-700    { color: theme("colors.brand.300"); }
+
+/* =============================================================================
+ * ANIMATIONS
+ * ========================================================================== */
+
+/* Route entry fade — main content softly fades in on navigation */
+main > div { animation: fadeIn 180ms ease-out; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Skeleton shimmer — bright wave sweeps across pulsing bars */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.4s infinite;
+}
+html.dark .shimmer::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 100%
+  );
+}
+
+/* Card hover lift — apply .card-lift to any card/row that's clickable */
+.card-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -12px rgb(15 76 129 / 0.25);
+}
+
+/* Button press feedback — pushes any button slightly on active */
+button:not(:disabled):active,
+[role="button"]:not([aria-disabled="true"]):active {
+  transform: scale(0.98);
+  transition: transform 0.08s ease;
+}
+
+/* Urgent pulse — red halo pulses around the urgent priority badge */
+@keyframes urgentPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55); }
+  50%      { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+.urgent-pulse { animation: urgentPulse 1.8s infinite; }
+
+/* Recent-update row flash — highlights ticket rows updated in the last few seconds */
+@keyframes rowFlash {
+  0%   { background-color: rgba(15, 76, 129, 0.18); }
+  100% { background-color: transparent; }
+}
+.row-flash { animation: rowFlash 2.5s ease-out; }
+

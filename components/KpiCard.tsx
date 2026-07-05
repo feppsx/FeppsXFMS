@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
+import { AnimatedNumber } from "./AnimatedNumber";
 
 /** Colorful KPI card for the admin dashboard. */
 export function KpiCard({
@@ -51,7 +52,9 @@ export function KpiCard({
         tone === "accent"  && "text-accent-600",
         tone === "purple"  && "text-purple-900",
         tone === "default" && "text-slate-900",
-      )}>{value}</div>
+      )}>
+        {typeof value === "number" ? <AnimatedNumber to={value} /> : value}
+      </div>
       {hint && <div className="text-xs text-slate-600 mt-1">{hint}</div>}
     </div>
   );
