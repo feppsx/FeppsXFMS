@@ -16,6 +16,7 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  indent?: boolean;
 }
 
 const ROLE_LABEL: Record<UserRole, string> = {
@@ -31,13 +32,16 @@ function navFor(role: UserRole): NavItem[] {
       return [
         { href: "/admin",              label: "Dashboard",       icon: LayoutDashboard },
         { href: "/admin/tickets",      label: "Tickets",         icon: Ticket },
-        { href: "/admin/invoices",     label: "Invoices",        icon: Receipt },
-        { href: "/admin/clients",      label: "Estates",         icon: Building2 },
-        { href: "/admin/technicians",  label: "Technicians",     icon: Users },
+        { href: "/admin/invoices",         label: "Invoices",       icon: Receipt },
+        { href: "/admin/invoices/retail",  label: "Invoice Retail", icon: Receipt, indent: true },
+        { href: "/admin/invoices/mcst",    label: "Invoice MCST",   icon: Receipt, indent: true },
+        { href: "/admin/invoices/sbs",     label: "Invoice SBS",    icon: Receipt, indent: true },
+        { href: "/admin/clients",          label: "Estates",        icon: Building2 },
+        { href: "/admin/technicians",      label: "Technicians",    icon: Users },
         { href: "/admin/invoices/generate", label: "Generate Invoice", icon: PlusCircle },
-        { href: "/admin/managers",     label: "Managers",        icon: ShieldCheck },
-        { href: "/admin/categories",   label: "Categories",      icon: Tag },
-        { href: "/admin/qr",           label: "Report QR",       icon: QrCode },
+        { href: "/admin/managers",         label: "Managers",       icon: ShieldCheck },
+        { href: "/admin/categories",       label: "Categories",     icon: Tag },
+        { href: "/admin/qr",               label: "Report QR",      icon: QrCode },
       ];
     case "technician":
     case "manager":
@@ -61,23 +65,33 @@ export function Sidebar({ profile }: { profile: Profile }) {
   const NavLinks = () => (
     <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
       {items.map((item) => {
-        const active =
-          item.href === "/admin"
-            ? pathname === "/admin"
-            : pathname.startsWith(item.href);
+        // Exact match for indented sub-items (so /admin/invoices/retail
+        // doesn't also highlight the parent /admin/invoices link).
+        const active = item.indent
+          ? pathname === item.href
+          : item.href === "/admin"
+              ? pathname === "/admin"
+              : pathname === item.href ||
+                (pathname.startsWith(item.href + "/") &&
+                 // don't let /admin/invoices claim its sub-menu routes
+                 !items.some((i) => i.indent && pathname.startsWith(i.href)));
         const Icon = item.icon;
+        const baseCls = item.indent
+          ? "pl-8 pr-3 py-1.5 text-xs"
+          : "px-3 py-2 text-sm";
         return (
           <Link
             key={item.href}
             href={item.href}
             onClick={() => setOpen(false)}
             className={
-              active
-                ? "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-brand-50 text-brand"
-                : "flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"
+              (active
+                ? "flex items-center gap-3 rounded-lg font-medium bg-brand-50 text-brand "
+                : "flex items-center gap-3 rounded-lg text-slate-700 hover:bg-slate-100 ") +
+              baseCls
             }
           >
-            <Icon className="w-4 h-4 shrink-0" />
+            <Icon className={item.indent ? "w-3 h-3 shrink-0" : "w-4 h-4 shrink-0"} />
             {item.label}
           </Link>
         );

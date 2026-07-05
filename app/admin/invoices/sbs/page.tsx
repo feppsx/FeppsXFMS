@@ -4,31 +4,22 @@ import { requireProfile } from "@/lib/guard";
 
 export const dynamic = "force-dynamic";
 
-interface SP {
-  paid?: string;
-  category?: string;
-}
-
-export default async function AdminInvoicesPage({
+export default async function InvoicesSbsPage({
   searchParams,
 }: {
-  searchParams: Promise<SP>;
+  searchParams: Promise<{ paid?: string }>;
 }) {
   const profile = await requireProfile(["admin"]);
-  const sp = await searchParams;
-  const paid = sp.paid ?? "all";
-  const category = sp.category ?? "all";
+  const { paid = "all" } = await searchParams;
 
   return (
     <AppShell profile={profile}>
       <InvoicesListView
-        title="Invoices"
+        title="Invoices — SBS"
+        subtitle="Only invoices tied to SBS estates."
+        backHref="/admin/invoices"
         paidFilter={paid}
-        selectableCategory={{
-          current: category,
-          basePath: "/admin/invoices",
-          paid,
-        }}
+        forcedCategory="SBS"
       />
     </AppShell>
   );
