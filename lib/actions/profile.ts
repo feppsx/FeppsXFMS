@@ -18,12 +18,13 @@ export async function updateOwnProfile(
   const full_name       = (formData.get("full_name") as string | null)?.trim();
   const phone           = (formData.get("phone") as string | null)?.trim() || null;
   const signature_path  = (formData.get("signature_path") as string | null) || null;
+  const avatar_url      = (formData.get("avatar_url") as string | null) || null;
 
   if (!full_name) return { error: "Name is required." };
 
   const { error } = await supabase
     .from("profiles")
-    .update({ full_name, phone, signature_path })
+    .update({ full_name, phone, signature_path, avatar_url })
     .eq("id", user.id);
 
   if (error) return { error: error.message };

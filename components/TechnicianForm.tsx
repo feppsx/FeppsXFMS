@@ -7,6 +7,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createTechnician, updateTechnician } from "@/lib/actions/technicians";
 import { SignatureUpload } from "@/components/SignatureUpload";
+import { AvatarUpload } from "@/components/AvatarUpload";
 import type { Profile, TicketCategory } from "@/lib/db-types";
 import { Loader2, Save } from "lucide-react";
 
@@ -24,6 +25,13 @@ export function TechnicianForm({ categories, initial }: Props) {
   );
   const [signaturePath, setSignaturePath] = useState<string | null>(
     initial?.signature_path ?? null
+  );
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(
+    initial?.avatar_url ?? null
+  );
+  // For storage folder — real user id in edit mode, random in create mode.
+  const [uploadFolder] = useState<string>(() =>
+    initial?.id ?? (typeof crypto !== "undefined" ? crypto.randomUUID() : "new")
   );
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +51,7 @@ export function TechnicianForm({ categories, initial }: Props) {
     formData.delete("trade_ids");
     selectedTrades.forEach((id) => formData.append("trade_ids", id));
     formData.set("signature_path", signaturePath ?? "");
+    formData.set("avatar_url", avatarUrl ?? "");
 
     startTransition(async () => {
       const res = isEdit
@@ -82,6 +91,17 @@ export function TechnicianForm({ categories, initial }: Props) {
           />
         </div>
       )}
+
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          Profile photo <span className="text-xs font-normal text-slate-500">(optional)</span>
+        </label>
+        <AvatarUpload
+          userId={uploadFolder}
+          value={avatarUrl}
+          onChange={setAvatarUrl}
+        />
+      </div>
 
       {isEdit && initial && (
         <div>

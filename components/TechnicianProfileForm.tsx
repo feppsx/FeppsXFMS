@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateOwnProfile } from "@/lib/actions/profile";
 import { SignatureUpload } from "@/components/SignatureUpload";
+import { AvatarUpload } from "@/components/AvatarUpload";
 import { Loader2, Save } from "lucide-react";
 import type { Profile } from "@/lib/db-types";
 
@@ -12,6 +13,7 @@ export function TechnicianProfileForm({ profile }: { profile: Profile }) {
   const [fullName,  setFullName]  = useState(profile.full_name);
   const [phone,     setPhone]     = useState(profile.phone ?? "");
   const [signature, setSignature] = useState<string | null>(profile.signature_path);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatar_url);
   const [error,     setError]     = useState<string | null>(null);
   const [saved,     setSaved]     = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -26,6 +28,7 @@ export function TechnicianProfileForm({ profile }: { profile: Profile }) {
     fd.set("full_name",      fullName);
     fd.set("phone",          phone);
     fd.set("signature_path", signature ?? "");
+    fd.set("avatar_url",     avatarUrl ?? "");
 
     startTransition(async () => {
       const res = await updateOwnProfile(fd);
@@ -36,27 +39,35 @@ export function TechnicianProfileForm({ profile }: { profile: Profile }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} className="space-y-5">
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          Profile photo <span className="text-xs font-normal text-slate-500">(optional)</span>
+        </label>
+        <p className="text-xs text-slate-500 mb-2">
+          Shown on your profile and next to your name in the admin portal.
+        </p>
+        <AvatarUpload
+          userId={profile.id}
+          value={avatarUrl}
+          onChange={setAvatarUrl}
+        />
+      </div>
+
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">
             Full name <span className="text-red-500">*</span>
           </label>
           <input
-            type="text"
-            required
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)}
             className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
           />
         </div>
-
         <div>
           <label className="block text-sm font-medium mb-1">Phone</label>
           <input
-            type="text"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            type="text" value={phone} onChange={(e) => setPhone(e.target.value)}
             placeholder="+65 9000 0000"
             className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
           />

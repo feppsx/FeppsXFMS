@@ -10,6 +10,7 @@ import {
   Wrench, UserCircle2, PlusCircle, LogOut, Menu, X, QrCode,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { Avatar } from "./Avatar";
 
 interface NavItem {
   href: string;
@@ -53,9 +54,6 @@ export function Sidebar({ profile }: { profile: Profile }) {
   const [open, setOpen] = useState(false);
   const items = navFor(profile.role);
 
-  const initials = profile.full_name
-    .split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase();
-
   const NavLinks = () => (
     <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
       {items.map((item) => {
@@ -86,9 +84,7 @@ export function Sidebar({ profile }: { profile: Profile }) {
   const Footer = () => (
     <div className="border-t border-slate-100 p-4">
       <div className="flex items-center gap-2.5 mb-3">
-        <div className="w-9 h-9 rounded-full bg-brand text-white flex items-center justify-center text-sm font-semibold shrink-0">
-          {initials}
-        </div>
+        <Avatar name={profile.full_name} url={profile.avatar_url} size={36} />
         <div className="min-w-0">
           <div className="text-sm font-medium text-slate-900 truncate">{profile.full_name}</div>
           <div className="text-xs text-slate-500">{ROLE_LABEL[profile.role]}</div>

@@ -26,6 +26,7 @@ export async function createTechnician(formData: FormData): Promise<{ error?: st
   const password       = (formData.get("password") as string | null) ?? "";
   const phone          = (formData.get("phone") as string | null)?.trim() || null;
   const signature_path = (formData.get("signature_path") as string | null) || null;
+  const avatar_url     = (formData.get("avatar_url") as string | null) || null;
   const tradeIds       = formData.getAll("trade_ids").filter(Boolean) as string[];
 
   if (!full_name)             return { error: "Name is required." };
@@ -49,7 +50,7 @@ export async function createTechnician(formData: FormData): Promise<{ error?: st
   // we overwrite name/role/phone here.
   const { error: profErr } = await admin
     .from("profiles")
-    .upsert({ id: userId, full_name, role: "technician", phone, signature_path, is_active: true }, { onConflict: "id" });
+    .upsert({ id: userId, full_name, role: "technician", phone, signature_path, avatar_url, is_active: true }, { onConflict: "id" });
   if (profErr) return { error: `Auth ok but profile failed: ${profErr.message}` };
 
   // 3. Insert trades.
@@ -74,6 +75,7 @@ export async function updateTechnician(
   const full_name      = (formData.get("full_name") as string | null)?.trim();
   const phone          = (formData.get("phone") as string | null)?.trim() || null;
   const signature_path = (formData.get("signature_path") as string | null) || null;
+  const avatar_url     = (formData.get("avatar_url") as string | null) || null;
   const tradeIds       = formData.getAll("trade_ids").filter(Boolean) as string[];
 
   if (!full_name)            return { error: "Name is required." };
@@ -81,7 +83,7 @@ export async function updateTechnician(
 
   const { error: profErr } = await supabase
     .from("profiles")
-    .update({ full_name, phone, signature_path })
+    .update({ full_name, phone, signature_path, avatar_url })
     .eq("id", id);
   if (profErr) return { error: profErr.message };
 

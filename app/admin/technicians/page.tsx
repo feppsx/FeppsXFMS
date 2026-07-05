@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { TechnicianActiveToggle } from "@/components/TechnicianActiveToggle";
+import { Avatar } from "@/components/Avatar";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { PlusCircle, Pencil, Phone } from "lucide-react";
@@ -11,6 +12,7 @@ interface TechRow {
   id: string;
   full_name: string;
   phone: string | null;
+  avatar_url: string | null;
   is_active: boolean;
   technician_trades: { category: { name: string } | null }[];
 }
@@ -22,7 +24,7 @@ export default async function AdminTechniciansPage() {
   const { data: techs } = await supabase
     .from("profiles")
     .select(`
-      id, full_name, phone, is_active,
+      id, full_name, phone, avatar_url, is_active,
       technician_trades:technician_trades!technician_id(category:ticket_categories(name))
     `)
     .eq("role", "technician")
@@ -64,7 +66,9 @@ export default async function AdminTechniciansPage() {
                     : "bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 flex items-start justify-between gap-3 opacity-75"
                 }
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex items-start gap-3">
+                  <Avatar name={t.full_name} url={t.avatar_url} size={44} />
+                  <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-slate-900">{t.full_name}</span>
                     {!t.is_active && (
@@ -91,6 +95,7 @@ export default async function AdminTechniciansPage() {
                       ))}
                     </div>
                   )}
+                  </div>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                   <Link
