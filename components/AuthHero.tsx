@@ -15,15 +15,17 @@ export function AuthHero({ children }: { children: React.ReactNode }) {
         <div className="absolute -bottom-32 -left-16 w-96 h-96 rounded-full bg-white/5 blur-3xl" />
 
         <div className="relative">
-          <Image
-            src="/logo.png"
-            alt="360 Integrated"
-            width={180}
-            height={48}
-            className="h-12 w-auto object-contain brightness-0 invert"
-            unoptimized
-            priority
-          />
+          <div className="inline-block bg-white/95 rounded-xl p-3 shadow-lg">
+            <Image
+              src="/logo.png"
+              alt="360 Integrated"
+              width={180}
+              height={48}
+              className="h-12 w-auto object-contain block"
+              unoptimized
+              priority
+            />
+          </div>
         </div>
 
         <div className="relative space-y-6 max-w-md">
