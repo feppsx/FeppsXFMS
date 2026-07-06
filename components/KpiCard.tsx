@@ -30,7 +30,7 @@ export function KpiCard({
     >
       {icon && (
         <div className={cn(
-          "absolute top-3 right-3 opacity-70",
+          "absolute top-3 right-3 opacity-70 w-6 h-6 flex items-center justify-center pointer-events-none",
           tone === "brand"   && "text-brand",
           tone === "amber"   && "text-amber-700",
           tone === "red"     && "text-rose-700",
@@ -42,7 +42,10 @@ export function KpiCard({
           {icon}
         </div>
       )}
-      <div className="text-xs uppercase tracking-wide text-slate-600 font-semibold">{label}</div>
+      {/* pr-8 keeps the label out of the icon's slot on narrow cards */}
+      <div className={cn("text-xs uppercase tracking-wide text-slate-600 font-semibold", icon && "pr-8")}>
+        {label}
+      </div>
       <div className={cn(
         "text-2xl font-bold mt-1",
         tone === "brand"   && "text-brand-700",
