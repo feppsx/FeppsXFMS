@@ -87,14 +87,23 @@ export async function assignTechnician(
     .update({
       assigned_to: technicianId,
       assigned_by: user.id,
+      assigned_at: new Date().toISOString(),
       status: "assigned",
     })
     .eq("id", ticketId);
 
   if (error) return { error: error.message };
 
-  revalidatePath(`/admin/tickets/${ticketId}`);
+  // Admin surfaces
   revalidatePath("/admin");
+  revalidatePath("/admin/tickets");
+  revalidatePath(`/admin/tickets/${ticketId}`);
+  revalidatePath("/admin/calendar");
+  // Technician / Manager surfaces (the assignee needs to see it immediately)
+  revalidatePath("/technician/jobs");
+  revalidatePath(`/technician/jobs/${ticketId}`);
+  revalidatePath("/technician/calendar");
+  revalidatePath("/technician/estates");
   return {};
 }
 
@@ -118,6 +127,10 @@ export async function updateTicketStatus(
   revalidatePath(`/admin/tickets/${ticketId}`);
   revalidatePath(`/client/tickets/${ticketId}`);
   revalidatePath("/technician/jobs");
+  revalidatePath("/technician/calendar");
+  revalidatePath("/admin");
+  revalidatePath("/admin/tickets");
+  revalidatePath("/admin/calendar");
   return {};
 }
 
@@ -140,5 +153,10 @@ export async function clientCloseOrReopen(
 
   revalidatePath(`/client/tickets/${ticketId}`);
   revalidatePath("/client/tickets");
+  revalidatePath(`/admin/tickets/${ticketId}`);
+  revalidatePath("/admin/tickets");
+  revalidatePath("/admin");
+  revalidatePath(`/technician/jobs/${ticketId}`);
+  revalidatePath("/technician/jobs");
   return {};
 }
