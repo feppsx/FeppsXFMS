@@ -1,7 +1,7 @@
 // Server helper: fetches scheduled tickets and shapes them for the calendar.
 import { createClient } from "@/lib/supabase/server";
-import type { CalendarEvent } from "@/components/CalendarView";
 import type { TicketStatus } from "@/lib/db-types";
+import type { SerializedEvent } from "@/lib/calendar-types";
 
 interface Row {
   id: string;
@@ -12,12 +12,6 @@ interface Row {
   scheduled_duration_minutes: number | null;
   client: { name: string } | null;
   assignee: { full_name: string } | null;
-}
-
-/** Serialized shape that's safe to pass from server → client component. */
-export interface SerializedEvent extends Omit<CalendarEvent, "start" | "end"> {
-  startIso: string;
-  endIso: string;
 }
 
 export async function getScheduledEvents(): Promise<SerializedEvent[]> {
@@ -48,18 +42,4 @@ export async function getScheduledEvents(): Promise<SerializedEvent[]> {
       endIso:   end.toISOString(),
     };
   });
-}
-
-/** Client-side helper: convert the serialized events back to Date-bearing ones. */
-export function eventsWithDates(serialized: SerializedEvent[]): CalendarEvent[] {
-  return serialized.map((e) => ({
-    id: e.id,
-    title: e.title,
-    status: e.status,
-    ticket_number: e.ticket_number,
-    client_name: e.client_name,
-    assignee_name: e.assignee_name,
-    start: new Date(e.startIso),
-    end:   new Date(e.endIso),
-  }));
 }

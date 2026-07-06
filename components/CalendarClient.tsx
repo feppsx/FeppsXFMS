@@ -1,11 +1,10 @@
 "use client";
 
-// Thin client wrapper that hydrates serialized events → Date-bearing events
-// and hands them to <CalendarView>. Keeps CalendarView pure of hydration
-// concerns.
+// Thin client wrapper that hydrates serialized events → Date-bearing ones
+// and hands them to <CalendarView>. Imports only client-safe helpers.
 
 import { CalendarView } from "./CalendarView";
-import { eventsWithDates, type SerializedEvent } from "@/lib/calendar-data";
+import { eventsWithDates, type SerializedEvent } from "@/lib/calendar-types";
 
 export function CalendarClient({
   events, ticketHrefBase,
