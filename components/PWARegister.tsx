@@ -2,11 +2,6 @@
 
 import { useEffect } from "react";
 
-/**
- * Registers /sw.js on the client. Renders nothing.
- * Silently no-ops on browsers without SW support (older Safari on iOS < 11.3, etc).
- * Skipped in dev unless you set NEXT_PUBLIC_PWA_DEV=1, because Next dev + SW is fiddly.
- */
 export function PWARegister() {
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -16,10 +11,12 @@ export function PWARegister() {
     const devOverride = process.env.NEXT_PUBLIC_PWA_DEV === "1";
     if (!isProd && !devOverride) return;
 
-    // Wait for load so we don't compete with the initial paint for bandwidth.
     const onLoad = () => {
       navigator.serviceWorker
-        .register("/sw.js", { scope: "/" })
+        .register("/sw.js", { scope: "/", updateViaCache: "none" })
+        .then((reg) => {
+          reg.update().catch(() => {});
+        })
         .catch((err) => console.warn("SW registration failed:", err));
     };
 
