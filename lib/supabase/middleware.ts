@@ -1,11 +1,9 @@
-// Runs on every request via /middleware.ts. Refreshes the Supabase session
-// cookie and enforces the "logged-in-only" rule for app routes.
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 type CookieSet = { name: string; value: string; options: CookieOptions };
 
-const PUBLIC_PATHS = ["/login", "/signup", "/auth/callback", "/report", "/track"];
+const PUBLIC_PATHS = ["/login", "/signup", "/auth/callback", "/report", "/track", "/reset"];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
