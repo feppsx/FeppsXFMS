@@ -46,8 +46,14 @@ function navFor(role: UserRole): NavItem[] {
     case "technician":
     case "manager":
       return [
-        { href: "/technician/jobs",    label: "My jobs",    icon: Wrench },
-        { href: "/technician/profile", label: "My profile", icon: UserCircle2 },
+        { href: "/technician/jobs",              label: "My jobs",         icon: Wrench },
+        { href: "/technician/estates",           label: "My estates",      icon: Building2 },
+        { href: "/technician/invoices",          label: "Invoices",        icon: Receipt },
+        { href: "/technician/invoices/retail",   label: "Invoice Retail",  icon: Receipt, indent: true },
+        { href: "/technician/invoices/mcst",     label: "Invoice MCST",    icon: Receipt, indent: true },
+        { href: "/technician/invoices/sbs",      label: "Invoice SBS",     icon: Receipt, indent: true },
+        { href: "/technician/invoices/generate", label: "Generate Invoice", icon: PlusCircle },
+        { href: "/technician/profile",           label: "My profile",      icon: UserCircle2 },
       ];
     case "requester":
       return [

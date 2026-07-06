@@ -31,6 +31,7 @@ const PAID_FILTERS = [
 export async function InvoicesListView({
   title, subtitle, backHref,
   paidFilter = "all", forcedCategory, selectableCategory,
+  ticketHrefBase = "/admin/tickets",
 }: {
   title: string;
   subtitle?: string;
@@ -44,6 +45,8 @@ export async function InvoicesListView({
     basePath: string;    // e.g. "/admin/invoices"
     paid: string;
   };
+  /** Where "Ticket TKT-…" links point (admin queue vs tech jobs). */
+  ticketHrefBase?: string;
 }) {
   const supabase = await createClient();
   let query = supabase
@@ -173,7 +176,7 @@ export async function InvoicesListView({
                   <div className="font-medium text-slate-900 truncate mt-0.5">{r.customer_name}</div>
                   {r.ticket && (
                     <Link
-                      href={`/admin/tickets/${r.ticket.id}`}
+                      href={`${ticketHrefBase}/${r.ticket.id}`}
                       className="text-xs text-slate-500 hover:text-brand truncate block"
                     >
                       Ticket <span className="font-mono">{r.ticket.ticket_number}</span> — {r.ticket.title}
