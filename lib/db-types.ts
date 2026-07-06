@@ -160,6 +160,8 @@ export interface Invoice {
   is_paid: boolean;
   paid_at: string | null;
   paid_by: string | null;
+  before_photo_paths: string[];    // storage paths (ticket-attachments bucket)
+  after_photo_paths: string[];
   created_at: string;
   updated_at: string;
 }
