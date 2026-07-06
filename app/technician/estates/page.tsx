@@ -10,15 +10,10 @@ export const dynamic = "force-dynamic";
 
 export default async function TechEstatesPage() {
   const profile = await requireProfile(["technician", "manager"]);
-  const estatesAll = await getEstateCards();
-
-  // Technicians only see estates where they have at least one visible ticket
-  // (RLS restricts their ticket reads to assigned tickets). Managers see
-  // everything because their read policy covers all tickets.
-  const estates =
-    profile.role === "manager"
-      ? estatesAll
-      : estatesAll.filter((e) => e.newest_ticket_at !== null);
+  // Show ALL active estates to both technicians and managers — the ticket
+  // counts on each card reflect what they can see (RLS still hides tickets
+  // that aren't assigned to a technician).
+  const estates = await getEstateCards();
 
   return (
     <AppShell profile={profile}>
@@ -36,16 +31,8 @@ export default async function TechEstatesPage() {
       {estates.length === 0 ? (
         <EmptyState
           variant="clients"
-          title={
-            profile.role === "manager"
-              ? "No active estates yet."
-              : "No estates have work assigned to you."
-          }
-          message={
-            profile.role === "manager"
-              ? "Ask the admin to add an estate to get started."
-              : "You'll see an estate here as soon as a ticket is assigned to you."
-          }
+          title="No active estates yet."
+          message="Ask the admin to add an estate to get started."
         />
       ) : (
         <div className="space-y-2">
