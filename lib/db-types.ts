@@ -103,6 +103,8 @@ export interface Ticket {
   requester_email: string | null;
   requester_phone: string | null;
   tracking_token: string | null;
+  scheduled_at: string | null;
+  scheduled_duration_minutes: number;
   created_at: string;
   updated_at: string;
 }

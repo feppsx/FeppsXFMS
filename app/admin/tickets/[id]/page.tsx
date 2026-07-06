@@ -4,6 +4,7 @@ import { TicketDetailHeader } from "@/components/TicketDetailHeader";
 import { TicketTimeline } from "@/components/TicketTimeline";
 import { TicketPhotoSections } from "@/components/TicketPhotoSections";
 import { AssignTechnicianForm, type TechOption } from "@/components/AssignTechnicianForm";
+import { ScheduleWidget } from "@/components/ScheduleWidget";
 import { CommentsThread } from "@/components/CommentsThread";
 import { InvoiceDownloadButton } from "@/components/InvoiceDownloadButton";
 import { TicketRealtime } from "@/components/TicketRealtime";
@@ -124,6 +125,13 @@ export default async function AdminTicketDetail({
                 Currently assigned: <span className="font-medium">{ticket.assignee.full_name}</span>
               </p>
             )}
+          </Section>
+          <Section title="Scheduled visit">
+            <ScheduleWidget
+              ticketId={ticket.id}
+              scheduledAt={ticket.scheduled_at}
+              durationMinutes={ticket.scheduled_duration_minutes}
+            />
           </Section>
           <Section title="Timeline">
             <TicketTimeline history={history} actors={actors} />

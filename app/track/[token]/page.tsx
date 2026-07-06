@@ -111,6 +111,21 @@ export default async function TrackTicketPage({
               <span className="text-slate-500">Waiting for the team to pick this up…</span>
             )}
           </p>
+          {ticket.scheduled_at && (
+            <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 mt-3 inline-flex items-center gap-1.5">
+              <span aria-hidden>📅</span>
+              Scheduled for{" "}
+              <span className="font-medium">
+                {new Date(ticket.scheduled_at).toLocaleString("en-SG", {
+                  weekday: "short",
+                  day: "2-digit",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </p>
+          )}
         </section>
 
         <section className="bg-white border border-slate-200 rounded-2xl p-4 md:p-5 shadow-card">

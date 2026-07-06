@@ -8,6 +8,7 @@ import type { Profile, UserRole } from "@/lib/db-types";
 import {
   LayoutDashboard, Ticket, Receipt, Building2, Users, Tag,
   Wrench, UserCircle2, PlusCircle, LogOut, Menu, X, QrCode, ShieldCheck,
+  CalendarDays,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Avatar } from "./Avatar";
@@ -32,6 +33,7 @@ function navFor(role: UserRole): NavItem[] {
       return [
         { href: "/admin",              label: "Dashboard",       icon: LayoutDashboard },
         { href: "/admin/tickets",      label: "Tickets",         icon: Ticket },
+        { href: "/admin/calendar",     label: "Calendar",        icon: CalendarDays },
         { href: "/admin/invoices",         label: "Invoices",       icon: Receipt },
         { href: "/admin/invoices/retail",  label: "Invoice Retail", icon: Receipt, indent: true },
         { href: "/admin/invoices/mcst",    label: "Invoice MCST",   icon: Receipt, indent: true },
@@ -47,6 +49,7 @@ function navFor(role: UserRole): NavItem[] {
     case "manager":
       return [
         { href: "/technician/jobs",              label: "My jobs",         icon: Wrench },
+        { href: "/technician/calendar",          label: "My calendar",     icon: CalendarDays },
         { href: "/technician/estates",           label: "My estates",      icon: Building2 },
         { href: "/technician/invoices",          label: "Invoices",        icon: Receipt },
         { href: "/technician/invoices/retail",   label: "Invoice Retail",  icon: Receipt, indent: true },
