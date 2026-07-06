@@ -19,7 +19,7 @@ export function PublicShell({
               alt="360 Integrated"
               width={130}
               height={36}
-              className="h-9 w-auto object-contain"
+              className="h-9 w-auto object-contain logo-live"
               unoptimized
               priority
             />

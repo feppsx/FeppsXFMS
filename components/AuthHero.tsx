@@ -21,7 +21,7 @@ export function AuthHero({ children }: { children: React.ReactNode }) {
               alt="360 Integrated"
               width={180}
               height={48}
-              className="h-12 w-auto object-contain block"
+              className="h-12 w-auto object-contain block logo-live"
               unoptimized
               priority
             />
@@ -66,7 +66,7 @@ export function AuthHero({ children }: { children: React.ReactNode }) {
             alt="360 Integrated"
             width={130}
             height={36}
-            className="h-9 w-auto object-contain"
+            className="h-9 w-auto object-contain logo-live"
             unoptimized
             priority
           />

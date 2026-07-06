@@ -139,7 +139,7 @@ export function Sidebar({ profile }: { profile: Profile }) {
         alt="360 Integrated"
         width={160}
         height={44}
-        className="h-11 w-auto object-contain"
+        className="h-11 w-auto object-contain logo-live"
         unoptimized
         priority
       />
@@ -163,7 +163,7 @@ export function Sidebar({ profile }: { profile: Profile }) {
           alt="360 Integrated"
           width={110}
           height={30}
-          className="h-8 w-auto object-contain"
+          className="h-8 w-auto object-contain logo-live"
           unoptimized
           priority
         />
