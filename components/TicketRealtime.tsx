@@ -1,19 +1,18 @@
 "use client";
 
-// Subscribes to Postgres changes on tickets + related tables and refreshes
-// the server component when anything relevant changes.
-// Drop this into a page — it renders nothing.
+// Realtime + poll fallback so the tech's page catches assignments even if
+// the websocket event is dropped (which happens when RLS visibility changes).
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 interface Props {
-  /** If provided, only refresh when THIS ticket (or its rows) changes. */
   ticketId?: string;
-  /** If true, refresh on any ticket-table change (used for list/queue pages). */
   listMode?: boolean;
 }
+
+const POLL_MS = 15000;
 
 export function TicketRealtime({ ticketId, listMode }: Props) {
   const router = useRouter();
@@ -24,37 +23,26 @@ export function TicketRealtime({ ticketId, listMode }: Props) {
       ticketId ? `ticket-${ticketId}` : "tickets-list"
     );
 
-    // For a specific ticket, filter server-side so we only get events we care about.
     if (ticketId) {
       channel
         .on(
-          "postgres_changes",
+          "postgres_changes" as never,
           { event: "*", schema: "public", table: "tickets", filter: `id=eq.${ticketId}` },
           () => router.refresh()
         )
         .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "ticket_status_history",
-            filter: `ticket_id=eq.${ticketId}`,
-          },
+          "postgres_changes" as never,
+          { event: "*", schema: "public", table: "ticket_status_history", filter: `ticket_id=eq.${ticketId}` },
           () => router.refresh()
         )
         .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "ticket_attachments",
-            filter: `ticket_id=eq.${ticketId}`,
-          },
+          "postgres_changes" as never,
+          { event: "*", schema: "public", table: "ticket_attachments", filter: `ticket_id=eq.${ticketId}` },
           () => router.refresh()
         );
     } else if (listMode) {
       channel.on(
-        "postgres_changes",
+        "postgres_changes" as never,
         { event: "*", schema: "public", table: "tickets" },
         () => router.refresh()
       );
@@ -62,8 +50,22 @@ export function TicketRealtime({ ticketId, listMode }: Props) {
 
     channel.subscribe();
 
+    const onFocus = () => router.refresh();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") router.refresh();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    const pollId = window.setInterval(() => {
+      if (document.visibilityState === "visible") router.refresh();
+    }, POLL_MS);
+
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.clearInterval(pollId);
     };
   }, [ticketId, listMode, router]);
 
