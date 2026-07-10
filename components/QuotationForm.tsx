@@ -4,7 +4,9 @@ import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { createQuotation } from "@/lib/actions/quotations";
 import type { Estate, EstateCategory } from "@/lib/db-types";
-import { Loader2, Plus, Trash2, FileText, Download } from "lucide-react";
+import { Loader2, Plus, Trash2, FileText } from "lucide-react";
+import { QuotationDownloadButton } from "./QuotationDownloadButton";
+import type { QuotationPdfInput } from "./QuotationPDF";
 
 const CATEGORIES: EstateCategory[] = ["Retail", "MCST", "SBS"];
 
@@ -34,7 +36,7 @@ export function QuotationForm({
   const [gst, setGst] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [saved, setSaved] = useState<{ id: string; no: string } | null>(null);
+  const [saved, setSaved] = useState<QuotationPdfInput | null>(null);
 
   const subtotal = useMemo(
     () => rows.reduce((s, r) => s + (isFinite(r.unit_price) ? r.unit_price : 0), 0),
@@ -85,7 +87,20 @@ export function QuotationForm({
         return;
       }
       toast.success(`Quotation ${res.quotation_no} saved`);
-      setSaved({ id: res.id!, no: res.quotation_no! });
+      setSaved({
+        quotation_no: res.quotation_no!,
+        quotation_date: quotationDate,
+        valid_until: validUntil || null,
+        customer_name: customerName,
+        customer_address: customerAddress || null,
+        contact_no: contactNo || null,
+        subtotal,
+        discount,
+        gst_amount: gst,
+        grand_total: grandTotal,
+        notes: notes || null,
+        items: rows.filter((r) => r.description.trim()).map((r) => ({ description: r.description, unit_price: r.unit_price })),
+      });
     });
   }
 
@@ -95,15 +110,10 @@ export function QuotationForm({
         <FileText className="w-12 h-12 text-brand mx-auto mb-3" />
         <h2 className="text-lg font-semibold text-slate-900">Quotation saved</h2>
         <p className="text-sm text-slate-600 mt-1">
-          <span className="font-mono font-semibold">{saved.no}</span>
+          <span className="font-mono font-semibold">{saved.quotation_no}</span>
         </p>
         <div className="mt-4 flex justify-center gap-2">
-          <a
-            href={`/api/quotations/${saved.id}/pdf`}
-            className="inline-flex items-center gap-1.5 bg-brand hover:bg-brand-600 text-white rounded-lg px-4 py-2 text-sm font-medium"
-          >
-            <Download className="w-4 h-4" /> Download PDF
-          </a>
+          <QuotationDownloadButton q={saved} />
           <button
             type="button"
             onClick={() => { setSaved(null); setRows([{ key: crypto.randomUUID(), description: "", unit_price: 0 }]); setCustomerName(""); setCustomerAddress(""); setContactNo(""); setNotes(""); setDiscount(0); setGst(0); }}

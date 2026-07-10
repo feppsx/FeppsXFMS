@@ -4,7 +4,9 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { createServiceReport } from "@/lib/actions/service-reports";
 import type { Estate } from "@/lib/db-types";
-import { Loader2, ClipboardList, Download } from "lucide-react";
+import { Loader2, ClipboardList } from "lucide-react";
+import { ServiceReportDownloadButton } from "./ServiceReportDownloadButton";
+import type { ServiceReportPdfInput } from "./ServiceReportPDF";
 
 const SERVICES = [
   { key: "svc_electrical", label: "Electrical" },
@@ -53,7 +55,7 @@ export function ServiceReportForm({
 
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [saved, setSaved] = useState<{ id: string; no: string } | null>(null);
+  const [saved, setSaved] = useState<ServiceReportPdfInput | null>(null);
 
   function pickEstate(id: string) {
     setEstateId(id);
@@ -94,7 +96,26 @@ export function ServiceReportForm({
         return;
       }
       toast.success(`Service report ${res.sr_no} saved`);
-      setSaved({ id: res.id!, no: res.sr_no! });
+      setSaved({
+        sr_no: res.sr_no!,
+        project_name: projectName,
+        service_address: serviceAddress || null,
+        contact_person: contactPerson || null,
+        contact_no: contactNo || null,
+        is_term_agreement: isTermAgreement,
+        is_on_call: isOnCall,
+        is_contract: isContract,
+        is_chargeable: isChargeable,
+        ...svcFlags,
+        svc_others: svcOthers || null,
+        work_description: workDescription || null,
+        recommendation: recommendation || null,
+        customer_name: customerName || null,
+        service_attended_by: serviceAttendedBy || null,
+        date_attended: dateAttended || null,
+        time_in: timeIn || null,
+        time_out: timeOut || null,
+      });
     });
   }
 
@@ -103,14 +124,9 @@ export function ServiceReportForm({
       <div className="text-center py-8">
         <ClipboardList className="w-12 h-12 text-brand mx-auto mb-3" />
         <h2 className="text-lg font-semibold">Service report saved</h2>
-        <p className="text-sm text-slate-600 mt-1"><span className="font-mono font-semibold">{saved.no}</span></p>
+        <p className="text-sm text-slate-600 mt-1"><span className="font-mono font-semibold">{saved.sr_no}</span></p>
         <div className="mt-4 flex justify-center gap-2">
-          <a
-            href={`/api/service-reports/${saved.id}/pdf`}
-            className="inline-flex items-center gap-1.5 bg-brand hover:bg-brand-600 text-white rounded-lg px-4 py-2 text-sm font-medium"
-          >
-            <Download className="w-4 h-4" /> Download PDF
-          </a>
+          <ServiceReportDownloadButton sr={saved} />
           <button
             type="button"
             onClick={() => window.location.reload()}
