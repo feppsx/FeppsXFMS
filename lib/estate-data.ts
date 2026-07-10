@@ -1,12 +1,19 @@
 // Aggregate estate + ticket stats for dashboard estate cards.
 
 import { createClient } from "@/lib/supabase/server";
-import type { Estate, TicketStatus } from "@/lib/db-types";
+import type { Estate, TicketStatus, UserRole } from "@/lib/db-types";
 
-const NEW_STATUSES: TicketStatus[]  = ["submitted"];
 const OPEN_STATUSES: TicketStatus[] = [
   "submitted", "assigned", "in_progress", "on_hold", "reopened",
 ];
+
+// What counts as "new / needs attention" depends on the viewer:
+//   - admin / manager: tickets waiting for triage (still "submitted")
+//   - technician:      tickets freshly assigned to them (still "assigned")
+function newStatusesForRole(role: UserRole | null): TicketStatus[] {
+  if (role === "technician") return ["assigned"];
+  return ["submitted"];
+}
 
 export interface EstateCardData {
   id: string;
@@ -20,6 +27,19 @@ export interface EstateCardData {
 
 export async function getEstateCards(): Promise<EstateCardData[]> {
   const supabase = await createClient();
+
+  // Figure out the viewer's role so we know what "new" means for them.
+  const { data: { user } } = await supabase.auth.getUser();
+  let role: UserRole | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle<{ role: UserRole }>();
+    role = profile?.role ?? null;
+  }
+  const NEW_STATUSES = newStatusesForRole(role);
 
   const [{ data: estates }, { data: tickets }] = await Promise.all([
     supabase
@@ -51,7 +71,6 @@ export async function getEstateCards(): Promise<EstateCardData[]> {
     };
     if (NEW_STATUSES.includes(t.status))  s.new_count++;
     if (OPEN_STATUSES.includes(t.status)) s.open_count++;
-    // Use MOST RECENT event on the ticket so estates float up on assign/status change.
     const activityAt = t.updated_at || t.assigned_at || t.created_at;
     if (!s.newest_ticket_at || activityAt > s.newest_ticket_at) {
       s.newest_ticket_at = activityAt;
