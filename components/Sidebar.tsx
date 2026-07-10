@@ -8,7 +8,7 @@ import type { Profile, UserRole } from "@/lib/db-types";
 import {
   LayoutDashboard, Ticket, Receipt, Building2, Users, Tag,
   Wrench, UserCircle2, PlusCircle, LogOut, Menu, X, QrCode, ShieldCheck,
-  CalendarDays,
+  CalendarDays, FileText, ClipboardList,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Avatar } from "./Avatar";
@@ -40,7 +40,9 @@ function navFor(role: UserRole): NavItem[] {
         { href: "/admin/invoices/sbs",     label: "Invoice SBS",    icon: Receipt, indent: true },
         { href: "/admin/clients",          label: "Estates",        icon: Building2 },
         { href: "/admin/technicians",      label: "Technicians",    icon: Users },
-        { href: "/admin/invoices/generate", label: "Generate Invoice", icon: PlusCircle },
+        { href: "/admin/quotations/generate",       label: "Generate Quotation",       icon: FileText },
+        { href: "/admin/invoices/generate",         label: "Generate Invoice",         icon: PlusCircle },
+        { href: "/admin/service-reports/generate",  label: "Generate Service Report",  icon: ClipboardList },
         { href: "/admin/managers",         label: "Managers",       icon: ShieldCheck },
         { href: "/admin/categories",       label: "Categories",     icon: Tag },
         { href: "/admin/qr",               label: "Report QR",      icon: QrCode },
@@ -55,7 +57,9 @@ function navFor(role: UserRole): NavItem[] {
         { href: "/technician/invoices/retail",   label: "Invoice Retail",  icon: Receipt, indent: true },
         { href: "/technician/invoices/mcst",     label: "Invoice MCST",    icon: Receipt, indent: true },
         { href: "/technician/invoices/sbs",      label: "Invoice SBS",     icon: Receipt, indent: true },
-        { href: "/technician/invoices/generate", label: "Generate Invoice", icon: PlusCircle },
+        { href: "/technician/quotations/generate",       label: "Generate Quotation",       icon: FileText },
+        { href: "/technician/invoices/generate",         label: "Generate Invoice",         icon: PlusCircle },
+        { href: "/technician/service-reports/generate",  label: "Generate Service Report",  icon: ClipboardList },
         { href: "/technician/profile",           label: "My profile",      icon: UserCircle2 },
       ];
     case "requester":
@@ -74,15 +78,12 @@ export function Sidebar({ profile }: { profile: Profile }) {
   const NavLinks = () => (
     <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
       {items.map((item) => {
-        // Exact match for indented sub-items (so /admin/invoices/retail
-        // doesn't also highlight the parent /admin/invoices link).
         const active = item.indent
           ? pathname === item.href
           : item.href === "/admin"
               ? pathname === "/admin"
               : pathname === item.href ||
                 (pathname.startsWith(item.href + "/") &&
-                 // don't let /admin/invoices claim its sub-menu routes
                  !items.some((i) => i.indent && pathname.startsWith(i.href)));
         const Icon = item.icon;
         const baseCls = item.indent
@@ -148,7 +149,6 @@ export function Sidebar({ profile }: { profile: Profile }) {
 
   return (
     <>
-      {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 inset-x-0 h-14 z-20 bg-white/95 backdrop-blur border-b border-slate-200 flex items-center px-4 gap-3">
         <button
           type="button"
@@ -172,7 +172,6 @@ export function Sidebar({ profile }: { profile: Profile }) {
         </div>
       </div>
 
-      {/* Overlay */}
       {open && (
         <div
           className="fixed inset-0 bg-black/40 z-30 md:hidden"
@@ -180,7 +179,6 @@ export function Sidebar({ profile }: { profile: Profile }) {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={
           "fixed top-0 bottom-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col " +
