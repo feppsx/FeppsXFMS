@@ -16,19 +16,29 @@ function money(n: number) {
   return n.toLocaleString("en-SG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+export interface QuotationPrefill {
+  customer_name?: string;
+  customer_address?: string;
+  contact_no?: string;
+  client_id?: string;
+  category?: EstateCategory;
+}
+
 export function QuotationForm({
   estates,
+  prefill,
 }: {
   estates: Pick<Estate, "id" | "name" | "location" | "category" | "address" | "contact_phone">[];
+  prefill?: QuotationPrefill;
 }) {
-  const [customerName, setCustomerName] = useState("");
-  const [customerAddress, setCustomerAddress] = useState("");
-  const [contactNo, setContactNo] = useState("");
+  const [customerName, setCustomerName] = useState(prefill?.customer_name ?? "");
+  const [customerAddress, setCustomerAddress] = useState(prefill?.customer_address ?? "");
+  const [contactNo, setContactNo] = useState(prefill?.contact_no ?? "");
   const [quotationDate, setQuotationDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [validUntil, setValidUntil] = useState("");
   const [notes, setNotes] = useState("");
-  const [estateId, setEstateId] = useState("");
-  const [category, setCategory] = useState<EstateCategory>("MCST");
+  const [estateId, setEstateId] = useState(prefill?.client_id ?? "");
+  const [category, setCategory] = useState<EstateCategory>(prefill?.category ?? "MCST");
   const [rows, setRows] = useState<Row[]>([
     { key: crypto.randomUUID(), description: "", unit_price: 0 },
   ]);
@@ -81,11 +91,7 @@ export function QuotationForm({
         notes,
         items: rows.map((r) => ({ description: r.description, unit_price: r.unit_price })),
       });
-      if (res.error) {
-        setError(res.error);
-        toast.error(res.error);
-        return;
-      }
+      if (res.error) { setError(res.error); toast.error(res.error); return; }
       toast.success(`Quotation ${res.quotation_no} saved`);
       setSaved({
         quotation_no: res.quotation_no!,
@@ -94,10 +100,7 @@ export function QuotationForm({
         customer_name: customerName,
         customer_address: customerAddress || null,
         contact_no: contactNo || null,
-        subtotal,
-        discount,
-        gst_amount: gst,
-        grand_total: grandTotal,
+        subtotal, discount, gst_amount: gst, grand_total: grandTotal,
         notes: notes || null,
         items: rows.filter((r) => r.description.trim()).map((r) => ({ description: r.description, unit_price: r.unit_price })),
       });
@@ -109,16 +112,12 @@ export function QuotationForm({
       <div className="text-center py-8">
         <FileText className="w-12 h-12 text-brand mx-auto mb-3" />
         <h2 className="text-lg font-semibold text-slate-900">Quotation saved</h2>
-        <p className="text-sm text-slate-600 mt-1">
-          <span className="font-mono font-semibold">{saved.quotation_no}</span>
-        </p>
+        <p className="text-sm text-slate-600 mt-1"><span className="font-mono font-semibold">{saved.quotation_no}</span></p>
         <div className="mt-4 flex justify-center gap-2">
           <QuotationDownloadButton q={saved} />
-          <button
-            type="button"
-            onClick={() => { setSaved(null); setRows([{ key: crypto.randomUUID(), description: "", unit_price: 0 }]); setCustomerName(""); setCustomerAddress(""); setContactNo(""); setNotes(""); setDiscount(0); setGst(0); }}
-            className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50"
-          >
+          <button type="button"
+            onClick={() => { setSaved(null); setRows([{ key: crypto.randomUUID(), description: "", unit_price: 0 }]); }}
+            className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
             New quotation
           </button>
         </div>
@@ -133,9 +132,7 @@ export function QuotationForm({
           <label className="block text-xs font-medium text-slate-600 mb-1">Estate (optional)</label>
           <select value={estateId} onChange={(e) => pickEstate(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
             <option value="">— Pick estate to auto-fill —</option>
-            {estates.map((e) => (
-              <option key={e.id} value={e.id}>{e.name} · {e.location}</option>
-            ))}
+            {estates.map((e) => (<option key={e.id} value={e.id}>{e.name} · {e.location}</option>))}
           </select>
         </div>
         <div>
@@ -183,24 +180,9 @@ export function QuotationForm({
         <div className="space-y-2">
           {rows.map((row) => (
             <div key={row.key} className="grid grid-cols-12 gap-2">
-              <input
-                value={row.description}
-                onChange={(e) => updateRow(row.key, { description: e.target.value })}
-                placeholder="Description"
-                className="col-span-8 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              />
-              <input
-                type="number" step="0.01" min="0"
-                value={row.unit_price || ""}
-                onChange={(e) => updateRow(row.key, { unit_price: parseFloat(e.target.value) || 0 })}
-                placeholder="0.00"
-                className="col-span-3 rounded-lg border border-slate-300 px-3 py-2 text-sm text-right"
-              />
-              <button
-                type="button" onClick={() => removeRow(row.key)}
-                className="col-span-1 rounded-lg border border-slate-300 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
-                disabled={rows.length <= 1}
-              >
+              <input value={row.description} onChange={(e) => updateRow(row.key, { description: e.target.value })} placeholder="Description" className="col-span-8 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <input type="number" step="0.01" min="0" value={row.unit_price || ""} onChange={(e) => updateRow(row.key, { unit_price: parseFloat(e.target.value) || 0 })} placeholder="0.00" className="col-span-3 rounded-lg border border-slate-300 px-3 py-2 text-sm text-right" />
+              <button type="button" onClick={() => removeRow(row.key)} className="col-span-1 rounded-lg border border-slate-300 hover:bg-red-50 hover:border-red-300 hover:text-red-600" disabled={rows.length <= 1}>
                 <Trash2 className="w-4 h-4 mx-auto" />
               </button>
             </div>
@@ -230,10 +212,7 @@ export function QuotationForm({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <button
-        type="submit" disabled={isPending}
-        className="w-full inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-600 text-white rounded-lg px-4 py-2.5 text-sm font-semibold disabled:opacity-60"
-      >
+      <button type="submit" disabled={isPending} className="w-full inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-600 text-white rounded-lg px-4 py-2.5 text-sm font-semibold disabled:opacity-60">
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
         Save quotation
       </button>

@@ -22,16 +22,27 @@ const SERVICES = [
 
 type SvcKey = typeof SERVICES[number]["key"];
 
+export interface ServiceReportPrefill {
+  project_name?: string;
+  service_address?: string;
+  contact_person?: string;
+  contact_no?: string;
+  client_id?: string;
+  work_description?: string;
+}
+
 export function ServiceReportForm({
   estates,
+  prefill,
 }: {
   estates: Pick<Estate, "id" | "name" | "location" | "address" | "contact_phone">[];
+  prefill?: ServiceReportPrefill;
 }) {
-  const [estateId, setEstateId] = useState("");
-  const [projectName, setProjectName] = useState("");
-  const [serviceAddress, setServiceAddress] = useState("");
-  const [contactPerson, setContactPerson] = useState("");
-  const [contactNo, setContactNo] = useState("");
+  const [estateId, setEstateId] = useState(prefill?.client_id ?? "");
+  const [projectName, setProjectName] = useState(prefill?.project_name ?? "");
+  const [serviceAddress, setServiceAddress] = useState(prefill?.service_address ?? "");
+  const [contactPerson, setContactPerson] = useState(prefill?.contact_person ?? "");
+  const [contactNo, setContactNo] = useState(prefill?.contact_no ?? "");
 
   const [isTermAgreement, setIsTermAgreement] = useState(false);
   const [isOnCall, setIsOnCall] = useState(false);
@@ -44,7 +55,7 @@ export function ServiceReportForm({
   });
   const [svcOthers, setSvcOthers] = useState("");
 
-  const [workDescription, setWorkDescription] = useState("");
+  const [workDescription, setWorkDescription] = useState(prefill?.work_description ?? "");
   const [recommendation, setRecommendation] = useState("");
 
   const [customerName, setCustomerName] = useState("");
@@ -72,29 +83,16 @@ export function ServiceReportForm({
     startTransition(async () => {
       const res = await createServiceReport({
         client_id: estateId || null,
-        project_name: projectName,
-        service_address: serviceAddress,
-        contact_person: contactPerson,
-        contact_no: contactNo,
-        is_term_agreement: isTermAgreement,
-        is_on_call: isOnCall,
-        is_contract: isContract,
-        is_chargeable: isChargeable,
-        ...svcFlags,
-        svc_others: svcOthers,
-        work_description: workDescription,
-        recommendation: recommendation,
-        customer_name: customerName,
-        service_attended_by: serviceAttendedBy,
-        date_attended: dateAttended,
-        time_in: timeIn,
-        time_out: timeOut,
+        project_name: projectName, service_address: serviceAddress,
+        contact_person: contactPerson, contact_no: contactNo,
+        is_term_agreement: isTermAgreement, is_on_call: isOnCall,
+        is_contract: isContract, is_chargeable: isChargeable,
+        ...svcFlags, svc_others: svcOthers,
+        work_description: workDescription, recommendation: recommendation,
+        customer_name: customerName, service_attended_by: serviceAttendedBy,
+        date_attended: dateAttended, time_in: timeIn, time_out: timeOut,
       });
-      if (res.error) {
-        setError(res.error);
-        toast.error(res.error);
-        return;
-      }
+      if (res.error) { setError(res.error); toast.error(res.error); return; }
       toast.success(`Service report ${res.sr_no} saved`);
       setSaved({
         sr_no: res.sr_no!,
@@ -102,19 +100,15 @@ export function ServiceReportForm({
         service_address: serviceAddress || null,
         contact_person: contactPerson || null,
         contact_no: contactNo || null,
-        is_term_agreement: isTermAgreement,
-        is_on_call: isOnCall,
-        is_contract: isContract,
-        is_chargeable: isChargeable,
-        ...svcFlags,
-        svc_others: svcOthers || null,
+        is_term_agreement: isTermAgreement, is_on_call: isOnCall,
+        is_contract: isContract, is_chargeable: isChargeable,
+        ...svcFlags, svc_others: svcOthers || null,
         work_description: workDescription || null,
         recommendation: recommendation || null,
         customer_name: customerName || null,
         service_attended_by: serviceAttendedBy || null,
         date_attended: dateAttended || null,
-        time_in: timeIn || null,
-        time_out: timeOut || null,
+        time_in: timeIn || null, time_out: timeOut || null,
       });
     });
   }
@@ -127,11 +121,8 @@ export function ServiceReportForm({
         <p className="text-sm text-slate-600 mt-1"><span className="font-mono font-semibold">{saved.sr_no}</span></p>
         <div className="mt-4 flex justify-center gap-2">
           <ServiceReportDownloadButton sr={saved} />
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50"
-          >
+          <button type="button" onClick={() => window.location.reload()}
+            className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
             New report
           </button>
         </div>
@@ -142,7 +133,7 @@ export function ServiceReportForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-xs font-medium text-slate-600 mb-1">Estate (optional — auto-fills fields below)</label>
+        <label className="block text-xs font-medium text-slate-600 mb-1">Estate (auto-fills below)</label>
         <select value={estateId} onChange={(e) => pickEstate(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
           <option value="">— Pick estate —</option>
           {estates.map((e) => (<option key={e.id} value={e.id}>{e.name} · {e.location}</option>))}
@@ -169,44 +160,23 @@ export function ServiceReportForm({
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 border border-slate-200 rounded-lg p-3">
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={isTermAgreement} onChange={(e) => setIsTermAgreement(e.target.checked)} />
-          Term Agreement / MCST
-        </label>
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={isOnCall} onChange={(e) => setIsOnCall(e.target.checked)} />
-          On Call / Site Visit
-        </label>
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={isContract} onChange={(e) => setIsContract(e.target.checked)} />
-          Contract
-        </label>
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={isChargeable} onChange={(e) => setIsChargeable(e.target.checked)} />
-          Chargeable
-        </label>
+        <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={isTermAgreement} onChange={(e) => setIsTermAgreement(e.target.checked)} />Term Agreement / MCST</label>
+        <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={isOnCall} onChange={(e) => setIsOnCall(e.target.checked)} />On Call / Site Visit</label>
+        <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={isContract} onChange={(e) => setIsContract(e.target.checked)} />Contract</label>
+        <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={isChargeable} onChange={(e) => setIsChargeable(e.target.checked)} />Chargeable</label>
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-slate-800 mb-2">Service Rendered (Routine / Complaints / Feedback)</h3>
+        <h3 className="text-sm font-semibold text-slate-800 mb-2">Service Rendered</h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2 border border-slate-200 rounded-lg p-3">
           {SERVICES.map((s) => (
             <label key={s.key} className="inline-flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={svcFlags[s.key]}
-                onChange={(e) => setSvcFlags((f) => ({ ...f, [s.key]: e.target.checked }))}
-              />
+              <input type="checkbox" checked={svcFlags[s.key]} onChange={(e) => setSvcFlags((f) => ({ ...f, [s.key]: e.target.checked }))} />
               {s.label}
             </label>
           ))}
         </div>
-        <input
-          value={svcOthers}
-          onChange={(e) => setSvcOthers(e.target.value)}
-          placeholder="Others (specify)"
-          className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-        />
+        <input value={svcOthers} onChange={(e) => setSvcOthers(e.target.value)} placeholder="Others (specify)" className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
       </div>
 
       <div>
@@ -246,10 +216,7 @@ export function ServiceReportForm({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <button
-        type="submit" disabled={isPending}
-        className="w-full inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-600 text-white rounded-lg px-4 py-2.5 text-sm font-semibold disabled:opacity-60"
-      >
+      <button type="submit" disabled={isPending} className="w-full inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-600 text-white rounded-lg px-4 py-2.5 text-sm font-semibold disabled:opacity-60">
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <ClipboardList className="w-4 h-4" />}
         Save service report
       </button>

@@ -7,12 +7,15 @@ import { AssignTechnicianForm, type TechOption } from "@/components/AssignTechni
 import { ScheduleWidget } from "@/components/ScheduleWidget";
 import { CommentsThread } from "@/components/CommentsThread";
 import { InvoiceDownloadButton } from "@/components/InvoiceDownloadButton";
+import { QuotationSection } from "@/components/QuotationSection";
+import { ServiceReportSection } from "@/components/ServiceReportSection";
 import { TicketRealtime } from "@/components/TicketRealtime";
 import { requireProfile } from "@/lib/guard";
 import { getTicketDetail } from "@/lib/ticket-data";
 import { getInvoiceForTicket } from "@/lib/invoice-data";
 import { signatureUrl } from "@/lib/signature-url";
 import { createClient } from "@/lib/supabase/server";
+import type { Estate, EstateCategory } from "@/lib/db-types";
 import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -37,32 +40,48 @@ export default async function AdminTicketDetail({
   const supabase = await createClient();
   const { data: techRows } = await supabase
     .from("profiles")
-    .select(`
-      id, full_name,
-      technician_trades:technician_trades!technician_id(category:ticket_categories(name))
-    `)
-    .eq("role", "technician")
-    .eq("is_active", true)
+    .select(`id, full_name, technician_trades:technician_trades!technician_id(category:ticket_categories(name))`)
+    .eq("role", "technician").eq("is_active", true)
     .order("full_name")
     .returns<TechRow[]>();
 
   const technicians: TechOption[] = (techRows ?? []).map((t) => ({
     id: t.id,
     full_name: t.full_name,
-    trades: (t.technician_trades ?? [])
-      .map((tt) => tt.category?.name)
-      .filter(Boolean) as string[],
+    trades: (t.technician_trades ?? []).map((tt) => tt.category?.name).filter(Boolean) as string[],
   }));
+
+  const { data: estates } = await supabase
+    .from("clients")
+    .select("id, name, location, category, address, contact_phone")
+    .eq("is_active", true)
+    .order("name")
+    .returns<Pick<Estate, "id" | "name" | "location" | "category" | "address" | "contact_phone">[]>();
+
+  const customerName = ticket.client?.name ?? ticket.requester_name ?? "";
+  const customerAddress = [ticket.client?.location, ticket.specific_area].filter(Boolean).join(" · ");
+  const contactNo = ticket.requester_phone ?? "";
+  const quotationPrefill = {
+    customer_name: customerName,
+    customer_address: customerAddress,
+    contact_no: contactNo,
+    client_id: ticket.client?.id,
+    category: (ticket.client as { category?: EstateCategory } | null)?.category as EstateCategory | undefined,
+  };
+  const srPrefill = {
+    project_name: customerName,
+    service_address: customerAddress,
+    contact_person: ticket.requester_name ?? "",
+    contact_no: contactNo,
+    client_id: ticket.client?.id,
+    work_description: ticket.description,
+  };
 
   return (
     <AppShell profile={profile}>
       <TicketRealtime ticketId={ticket.id} />
-      <Link
-        href="/admin"
-        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 mb-3"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to queue
+      <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 mb-3">
+        <ArrowLeft className="w-4 h-4" /> Back to queue
       </Link>
       <TicketDetailHeader ticket={ticket} client={ticket.client} tenant={ticket.tenant} category={ticket.category} />
       <div className="grid md:grid-cols-3 gap-4">
@@ -89,7 +108,10 @@ export default async function AdminTicketDetail({
               </div>
             </Section>
           )}
-          {invoiceBundle && (
+          <Section title="Generate Quotation">
+            <QuotationSection estates={estates ?? []} prefill={quotationPrefill} />
+          </Section>
+          {invoiceBundle ? (
             <Section title="Invoice">
               <div className="space-y-2">
                 <div className="text-sm text-slate-700">
@@ -101,25 +123,21 @@ export default async function AdminTicketDetail({
                 <InvoiceDownloadButton invoice={invoiceBundle.invoice} items={invoiceBundle.items} technicianSignatureUrl={techSigUrl} beforePhotos={invoiceBundle.beforePhotos} afterPhotos={invoiceBundle.afterPhotos} />
               </div>
             </Section>
+          ) : (
+            <Section title="Invoice">
+              <p className="text-xs text-slate-500">No invoice yet. The assigned technician can generate one after resolving the ticket.</p>
+            </Section>
           )}
+          <Section title="Generate Service Report">
+            <ServiceReportSection estates={estates ?? []} prefill={srPrefill} />
+          </Section>
           <Section title="Comments">
-            <CommentsThread
-              ticketId={ticket.id}
-              currentUserRole={profile.role}
-              currentUserId={profile.id}
-              comments={comments}
-              actors={actors}
-            />
+            <CommentsThread ticketId={ticket.id} currentUserRole={profile.role} currentUserId={profile.id} comments={comments} actors={actors} />
           </Section>
         </div>
         <div className="space-y-4">
           <Section title="Assignment">
-            <AssignTechnicianForm
-              ticketId={ticket.id}
-              technicians={technicians}
-              currentAssignee={ticket.assigned_to}
-              ticketCategoryName={ticket.category?.name ?? null}
-            />
+            <AssignTechnicianForm ticketId={ticket.id} technicians={technicians} currentAssignee={ticket.assigned_to} ticketCategoryName={ticket.category?.name ?? null} />
             {ticket.assignee && (
               <p className="text-xs text-slate-500 mt-2">
                 Currently assigned: <span className="font-medium">{ticket.assignee.full_name}</span>
@@ -127,11 +145,7 @@ export default async function AdminTicketDetail({
             )}
           </Section>
           <Section title="Scheduled visit">
-            <ScheduleWidget
-              ticketId={ticket.id}
-              scheduledAt={ticket.scheduled_at}
-              durationMinutes={ticket.scheduled_duration_minutes}
-            />
+            <ScheduleWidget ticketId={ticket.id} scheduledAt={ticket.scheduled_at} durationMinutes={ticket.scheduled_duration_minutes} />
           </Section>
           <Section title="Timeline">
             <TicketTimeline history={history} actors={actors} />
