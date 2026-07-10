@@ -27,6 +27,7 @@ export async function createTicket(formData: FormData) {
   const category_id   = (formData.get("category_id") as string | null) || null;
   const priority      = (formData.get("priority") as string | null) ?? "medium";
   const specific_area = (formData.get("specific_area") as string | null)?.trim() || null;
+  const unit_number   = (formData.get("unit_number") as string | null)?.trim() || null;
 
   if (!title || title.length < 3) return { error: "Please enter a short title." };
   if (!description) return { error: "Please describe the problem." };
@@ -42,6 +43,7 @@ export async function createTicket(formData: FormData) {
       category_id,
       priority,
       specific_area,
+      unit_number,
       raised_by: user.id,
       status: "submitted",
     })

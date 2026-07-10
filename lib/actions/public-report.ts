@@ -18,6 +18,7 @@ export interface CreateAnonymousInput {
   category_id?: string | null;
   priority?: string;
   specific_area?: string | null;
+  unit_number?: string | null;
   terms_accepted: boolean;
   photos: { path: string; name: string }[];
 }
@@ -72,6 +73,7 @@ export async function createAnonymousTicket(
       category_id:      input.category_id ?? null,
       priority:         (input.priority as string) || "medium",
       specific_area:    input.specific_area?.trim() || null,
+      unit_number:      input.unit_number?.trim() || null,
       status:           "submitted",
       raised_by:        null,
       requester_name:   input.name.trim(),

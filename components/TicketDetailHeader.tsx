@@ -28,6 +28,7 @@ export function TicketDetailHeader({
         {client ? `${client.name} · ${client.location}` : "—"}
         {tenant ? ` · ${tenant.name}` : ""}
         {ticket.specific_area ? ` · ${ticket.specific_area}` : ""}
+        {ticket.unit_number ? ` · Unit ${ticket.unit_number}` : ""}
       </div>
     </div>
   );

@@ -38,6 +38,7 @@ function locationLine(t: TicketRowData) {
   if (t.client) parts.push(`${t.client.name} · ${t.client.location}`);
   if (t.tenant) parts.push(t.tenant.name);
   if (t.specific_area) parts.push(t.specific_area);
+  if (t.unit_number) parts.push(`Unit ${t.unit_number}`);
   return parts.join(" · ") || "—";
 }
 

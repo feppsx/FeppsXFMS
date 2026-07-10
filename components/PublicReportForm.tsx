@@ -29,6 +29,7 @@ export function PublicReportForm({
   const [clientId, setClientId] = useState<string>("");
   const [tenantId, setTenantId] = useState<string>("");
   const [specificArea, setSpecificArea] = useState("");
+  const [unitNumber, setUnitNumber] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
   const [priority, setPriority] = useState("medium");
   const [description, setDescription] = useState("");
@@ -93,6 +94,7 @@ export function PublicReportForm({
         category_id: categoryId || null,
         priority,
         specific_area: specificArea || null,
+        unit_number: unitNumber || null,
         terms_accepted: terms,
         photos: photos.map((p) => ({ path: p.path, name: p.name })),
       });
@@ -174,6 +176,13 @@ export function PublicReportForm({
             value={specificArea}
             onChange={setSpecificArea}
             placeholder="e.g. 4th floor B wing, near lift lobby"
+          />
+
+          <Field
+            label="Unit number (optional)"
+            value={unitNumber}
+            onChange={setUnitNumber}
+            placeholder="e.g. #06-11, Blk 71-A"
           />
 
           <div className="grid sm:grid-cols-2 gap-3">

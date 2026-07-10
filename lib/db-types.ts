@@ -93,6 +93,7 @@ export interface Ticket {
   client_id: string;   // DB column — represents the estate the ticket belongs to
   tenant_id: string | null;
   specific_area: string | null;
+  unit_number: string | null;
   raised_by: string | null;
   assigned_to: string | null;
   assigned_by: string | null;
