@@ -1,18 +1,15 @@
 "use client";
 
-// Realtime + poll fallback + new-assignment toast.
+// Bulletproof update loop for the tech portal.
 //
-// - Supabase Realtime is our primary signal, but can drop events for a tech
-//   when RLS visibility flips on assignment. So we also:
-// - Poll every 5s while the tab is visible.
-// - Refresh on focus / visibility change.
-// - Compare the visible ticket-ids to the previous snapshot and show a toast
-//   the moment a NEW ticket appears in the tech's assigned list.
+// Instead of connecting to Supabase from the browser (which fails if the
+// deployed bundle has a stale NEXT_PUBLIC_SUPABASE_URL), this polls our own
+// server route /api/my-tickets. The server has the current Supabase URL and
+// enforces RLS, so the client just gets a clean JSON list.
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
 
 interface Props {
   ticketId?: string;
@@ -21,97 +18,65 @@ interface Props {
 
 const POLL_MS = 5000;
 
-export function TicketRealtime({ ticketId, listMode }: Props) {
+interface Snap { id: string; ticket_number: string; title: string; status: string; }
+
+export function TicketRealtime({ listMode }: Props) {
   const router = useRouter();
-  const knownIds = useRef<Set<string> | null>(null);
+  const known = useRef<Map<string, string> | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase.channel(
-      ticketId ? `ticket-${ticketId}` : "tickets-list"
-    );
+    let cancelled = false;
 
-    if (ticketId) {
-      channel
-        .on(
-          "postgres_changes" as never,
-          { event: "*", schema: "public", table: "tickets", filter: `id=eq.${ticketId}` },
-          () => router.refresh()
-        )
-        .on(
-          "postgres_changes" as never,
-          { event: "*", schema: "public", table: "ticket_status_history", filter: `ticket_id=eq.${ticketId}` },
-          () => router.refresh()
-        )
-        .on(
-          "postgres_changes" as never,
-          { event: "*", schema: "public", table: "ticket_attachments", filter: `ticket_id=eq.${ticketId}` },
-          () => router.refresh()
-        );
-    } else if (listMode) {
-      channel.on(
-        "postgres_changes" as never,
-        { event: "*", schema: "public", table: "tickets" },
-        () => router.refresh()
-      );
-    }
+    async function poll() {
+      if (cancelled) return;
+      try {
+        const res = await fetch("/api/my-tickets", {
+          cache: "no-store",
+          headers: { "cache-control": "no-cache" },
+        });
+        if (!res.ok) return;
+        const json: { tickets: Snap[] } = await res.json();
+        const tickets = json.tickets ?? [];
+        const currentState = new Map<string, string>(tickets.map((t) => [t.id, t.status]));
 
-    channel.subscribe();
-
-    // In list mode, watch for new tickets appearing (server-side RLS decides
-    // what we see; we just diff the id set on the client).
-    async function detectNew() {
-      if (!listMode) return;
-      const { data } = await supabase
-        .from("tickets")
-        .select("id, ticket_number, title, status")
-        .order("created_at", { ascending: false });
-      if (!data) return;
-      const currentIds = new Set(data.map((t) => t.id as string));
-      if (knownIds.current !== null) {
-        for (const t of data) {
-          if (!knownIds.current.has(t.id as string)) {
-            toast.success(`New job assigned: ${t.ticket_number} — ${t.title}`, {
-              duration: 8000,
-            });
-            router.refresh();
-            break;
+        if (known.current !== null) {
+          for (const t of tickets) {
+            const prev = known.current.get(t.id);
+            const isBrandNew = prev === undefined;
+            const flippedToAssigned = prev !== undefined && prev !== "assigned" && t.status === "assigned";
+            if (isBrandNew || flippedToAssigned) {
+              const msg = isBrandNew
+                ? `New job assigned: ${t.ticket_number} — ${t.title}`
+                : `Job re-assigned to you: ${t.ticket_number} — ${t.title}`;
+              toast.success(msg, { duration: 8000 });
+              router.refresh();
+              break;
+            }
           }
         }
+        known.current = currentState;
+      } catch (err) {
+        console.warn("[TicketRealtime] poll failed", err);
       }
-      knownIds.current = currentIds;
     }
 
-    // Initial baseline so we don't toast on the first mount.
-    detectNew();
-
-    const onFocus = () => {
-      router.refresh();
-      detectNew();
-    };
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") {
-        router.refresh();
-        detectNew();
-      }
-    };
+    // Kick off immediately, then interval.
+    poll();
+    const onFocus = () => { router.refresh(); poll(); };
+    const onVis = () => { if (document.visibilityState === "visible") { router.refresh(); poll(); } };
     window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onVisibility);
-
-    const pollId = window.setInterval(() => {
-      if (document.visibilityState === "visible") {
-        router.refresh();
-        detectNew();
-      }
+    document.addEventListener("visibilitychange", onVis);
+    const id = window.setInterval(() => {
+      if (document.visibilityState === "visible") { router.refresh(); poll(); }
     }, POLL_MS);
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
       window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.clearInterval(pollId);
+      document.removeEventListener("visibilitychange", onVis);
+      window.clearInterval(id);
     };
-  }, [ticketId, listMode, router]);
+  }, [listMode, router]);
 
   return null;
 }
