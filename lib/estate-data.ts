@@ -1,5 +1,4 @@
 // Aggregate estate + ticket stats for dashboard estate cards.
-// Two lightweight queries + in-JS aggregation is fine at this scale.
 
 import { createClient } from "@/lib/supabase/server";
 import type { Estate, TicketStatus } from "@/lib/db-types";
@@ -16,10 +15,9 @@ export interface EstateCardData {
   category: string;
   new_count: number;
   open_count: number;
-  newest_ticket_at: string | null;   // ISO
+  newest_ticket_at: string | null;
 }
 
-/** Fetch active estates and enrich with per-estate ticket stats. */
 export async function getEstateCards(): Promise<EstateCardData[]> {
   const supabase = await createClient();
 
@@ -31,7 +29,7 @@ export async function getEstateCards(): Promise<EstateCardData[]> {
       .order("name"),
     supabase
       .from("tickets")
-      .select("client_id, status, created_at"),
+      .select("client_id, status, created_at, updated_at, assigned_at"),
   ]);
 
   const byEstate = new Map<
@@ -39,14 +37,24 @@ export async function getEstateCards(): Promise<EstateCardData[]> {
     { new_count: number; open_count: number; newest_ticket_at: string | null }
   >();
 
-  for (const t of (tickets ?? []) as { client_id: string; status: TicketStatus; created_at: string }[]) {
+  type TRow = {
+    client_id: string;
+    status: TicketStatus;
+    created_at: string;
+    updated_at: string;
+    assigned_at: string | null;
+  };
+
+  for (const t of (tickets ?? []) as TRow[]) {
     const s = byEstate.get(t.client_id) ?? {
       new_count: 0, open_count: 0, newest_ticket_at: null,
     };
     if (NEW_STATUSES.includes(t.status))  s.new_count++;
     if (OPEN_STATUSES.includes(t.status)) s.open_count++;
-    if (!s.newest_ticket_at || t.created_at > s.newest_ticket_at) {
-      s.newest_ticket_at = t.created_at;
+    // Use MOST RECENT event on the ticket so estates float up on assign/status change.
+    const activityAt = t.updated_at || t.assigned_at || t.created_at;
+    if (!s.newest_ticket_at || activityAt > s.newest_ticket_at) {
+      s.newest_ticket_at = activityAt;
     }
     byEstate.set(t.client_id, s);
   }
@@ -65,7 +73,6 @@ export async function getEstateCards(): Promise<EstateCardData[]> {
       };
     });
 
-  // Sort: newest ticket first; estates without any tickets go last, alphabetical.
   rows.sort((a, b) => {
     if (a.newest_ticket_at && b.newest_ticket_at) {
       return a.newest_ticket_at > b.newest_ticket_at ? -1 : 1;
