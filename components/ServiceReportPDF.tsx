@@ -1,30 +1,39 @@
-// FM Division Service Report — A4 fillable form PDF, matches the corporate spec.
-import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+// FM Division Service Report — A4 with corporate logo, fixed checkbox rendering.
+import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 
 const BLACK = "#000";
 const GREY = "#666";
 const BRAND = "#0f4c81";
 const LIGHT = "#f5f5f5";
+const RED = "#c8102e";
 
 const s = StyleSheet.create({
   page: { padding: 20, fontFamily: "Helvetica", fontSize: 9, color: BLACK },
 
   // Header
-  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", borderBottomWidth: 1.5, borderBottomColor: BLACK, paddingBottom: 6 },
-  brandBlock: { flex: 1 },
-  brandLogo: { fontFamily: "Helvetica-Bold", fontSize: 13, color: BRAND, letterSpacing: 1 },
-  companyName: { fontFamily: "Helvetica-Bold", fontSize: 12, marginTop: 2 },
-  tagline: { fontSize: 8, color: GREY, fontStyle: "italic", marginTop: 1 },
-  uen: { fontSize: 8, color: GREY, marginTop: 1 },
-  snBlock: { alignItems: "flex-end" },
+  headerRow: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start",
+    borderBottomWidth: 1.5, borderBottomColor: BLACK, paddingBottom: 8,
+  },
+  logoBox: { width: 130, height: 60, justifyContent: "center", alignItems: "flex-start" },
+  logoImg: { width: 130, height: 60, objectFit: "contain" },
+  brandBlock: { flex: 1, paddingHorizontal: 10 },
+  companyName: { fontFamily: "Helvetica-Bold", fontSize: 12, textAlign: "center" },
+  tagline: { fontSize: 8, color: GREY, fontStyle: "italic", marginTop: 2, textAlign: "center" },
+  uen: { fontSize: 8, color: GREY, marginTop: 2, textAlign: "center" },
+  snBlock: { alignItems: "flex-end", minWidth: 100 },
   snLabel: { fontSize: 8, color: GREY },
-  snVal: { fontFamily: "Helvetica-Bold", fontSize: 11, color: "#c8102e", marginTop: 1 },
+  snVal: { fontFamily: "Helvetica-Bold", fontSize: 11, color: RED, marginTop: 1 },
 
   titleBar: { backgroundColor: BRAND, padding: 6, marginVertical: 8, textAlign: "center" },
   titleText: { color: "white", fontFamily: "Helvetica-Bold", fontSize: 12, letterSpacing: 1 },
 
-  // Section: project & contact
-  sectionTitle: { fontFamily: "Helvetica-Bold", fontSize: 9, backgroundColor: LIGHT, padding: 4, borderWidth: 0.5, borderColor: BLACK, marginTop: 4 },
+  // Section
+  sectionTitle: {
+    fontFamily: "Helvetica-Bold", fontSize: 9,
+    backgroundColor: LIGHT, padding: 4,
+    borderWidth: 0.5, borderColor: BLACK, marginTop: 4,
+  },
   gridBox: { borderWidth: 0.5, borderColor: BLACK, borderTopWidth: 0 },
   gridRow: { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: BLACK },
   gridRowLast: { flexDirection: "row" },
@@ -33,35 +42,59 @@ const s = StyleSheet.create({
   fieldLabel: { fontFamily: "Helvetica-Bold", fontSize: 8 },
   fieldValue: { fontSize: 9, marginTop: 2, minHeight: 10 },
 
-  // checkbox row
-  checkRow: { flexDirection: "row", flexWrap: "wrap", padding: 4 },
-  checkItem: { flexDirection: "row", alignItems: "center", marginRight: 12, marginVertical: 2 },
-  chkBox: { width: 9, height: 9, borderWidth: 0.7, borderColor: BLACK, marginRight: 4, alignItems: "center", justifyContent: "center" },
-  chkMark: { fontFamily: "Helvetica-Bold", fontSize: 7 },
+  // Checkbox row  — the key fix: on-state fills the box with brand color so it
+  // is unambiguously "ticked" regardless of font glyphs.
+  checkRow: { flexDirection: "row", flexWrap: "wrap", padding: 5 },
+  checkItem: { flexDirection: "row", alignItems: "center", marginRight: 12, marginVertical: 3 },
+  chkBoxOff: {
+    width: 10, height: 10,
+    borderWidth: 0.8, borderColor: BLACK,
+    marginRight: 4,
+    backgroundColor: "#fff",
+  },
+  chkBoxOn: {
+    width: 10, height: 10,
+    borderWidth: 0.8, borderColor: BLACK,
+    marginRight: 4,
+    backgroundColor: BRAND,
+    justifyContent: "center", alignItems: "center",
+  },
+  chkTick: {
+    color: "#fff",
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    lineHeight: 1,
+  },
   chkLabel: { fontSize: 8 },
 
-  // large text boxes
+  // Large boxes
   bigBox: { borderWidth: 0.5, borderColor: BLACK, borderTopWidth: 0, padding: 6, minHeight: 90 },
 
-  // sign-off
+  // Sign-off
   signRow: { flexDirection: "row", marginTop: 8, gap: 6 },
   signCol: { flex: 1, borderWidth: 0.5, borderColor: BLACK, padding: 6 },
   signField: { flexDirection: "row", marginBottom: 8 },
   signLabel: { fontFamily: "Helvetica-Bold", fontSize: 8, width: 90 },
   signValue: { flex: 1, borderBottomWidth: 0.5, borderBottomColor: BLACK, fontSize: 8, paddingBottom: 1 },
 
-  // footer
+  // Footer
   disclaimer: { marginTop: 10, fontSize: 7, textAlign: "center", fontStyle: "italic", color: BLACK },
   contact: { marginTop: 6, fontSize: 6.5, textAlign: "center", color: GREY },
-  logoBadges: { marginTop: 4, fontSize: 7, textAlign: "center", fontFamily: "Helvetica-Bold", color: BRAND, letterSpacing: 1 },
+  logoBadges: {
+    marginTop: 4, fontSize: 7, textAlign: "center",
+    fontFamily: "Helvetica-Bold", color: BRAND, letterSpacing: 1,
+  },
 });
 
 function Chk({ on }: { on: boolean }) {
-  return (
-    <View style={s.chkBox}>
-      {on ? <Text style={s.chkMark}>x</Text> : null}
-    </View>
-  );
+  if (on) {
+    return (
+      <View style={s.chkBoxOn}>
+        <Text style={s.chkTick}>X</Text>
+      </View>
+    );
+  }
+  return <View style={s.chkBoxOff} />;
 }
 
 export interface ServiceReportPdfInput {
@@ -95,14 +128,16 @@ export interface ServiceReportPdfInput {
 
 export function ServiceReportPDF({ sr }: { sr: ServiceReportPdfInput }) {
   return (
-    <Document>
+    <Document title={sr.sr_no}>
       <Page size="A4" style={s.page}>
-        {/* Header */}
+        {/* Header — invoice logo on left, brand block in middle, SN on right */}
         <View style={s.headerRow}>
+          <View style={s.logoBox}>
+            <Image src="/invoice-logo.png" style={s.logoImg} />
+          </View>
           <View style={s.brandBlock}>
-            <Text style={s.brandLogo}>FM 360 SM</Text>
             <Text style={s.companyName}>360 INTEGRATED FM & SM PTE LTD</Text>
-            <Text style={s.tagline}>Facilities Management & Strata Management is our Key</Text>
+            <Text style={s.tagline}>Facilities Management &amp; Strata Management is our Key</Text>
             <Text style={s.uen}>UEN No: 202212959Z</Text>
           </View>
           <View style={s.snBlock}>
@@ -141,7 +176,7 @@ export function ServiceReportPDF({ sr }: { sr: ServiceReportPdfInput }) {
           </View>
           <View style={s.gridRowLast}>
             <View style={[s.checkRow, { flex: 1 }]}>
-              <View style={s.checkItem}><Chk on={sr.is_term_agreement} /><Text style={s.chkLabel}>Term Agreement/MCST</Text></View>
+              <View style={s.checkItem}><Chk on={sr.is_term_agreement} /><Text style={s.chkLabel}>Term Agreement / MCST</Text></View>
               <View style={s.checkItem}><Chk on={sr.is_on_call} /><Text style={s.chkLabel}>On Call / Site Visit</Text></View>
               <View style={s.checkItem}><Chk on={sr.is_contract} /><Text style={s.chkLabel}>Contract</Text></View>
               <View style={s.checkItem}><Chk on={sr.is_chargeable} /><Text style={s.chkLabel}>Chargeable</Text></View>
@@ -208,7 +243,6 @@ export function ServiceReportPDF({ sr }: { sr: ServiceReportPdfInput }) {
           </View>
         </View>
 
-        {/* Footer */}
         <Text style={s.disclaimer}>
           Please do not hesitate to call us and check the work before signing. Payments are made to 360 Integrated FM & SM Pte Ltd only.
         </Text>
