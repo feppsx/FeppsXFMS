@@ -1,13 +1,9 @@
 "use client";
 
-// Bulletproof update loop for the tech portal.
-//
-// Instead of connecting to Supabase from the browser (which fails if the
-// deployed bundle has a stale NEXT_PUBLIC_SUPABASE_URL), this polls our own
-// server route /api/my-tickets. The server has the current Supabase URL and
-// enforces RLS, so the client just gets a clean JSON list.
+// Bulletproof update loop + on-screen debug badge so we can VISUALLY confirm
+// this code is running on the tech's device.
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -17,12 +13,16 @@ interface Props {
 }
 
 const POLL_MS = 5000;
+const BUILD_TAG = "TR-v7-serverpoll";
 
 interface Snap { id: string; ticket_number: string; title: string; status: string; }
 
 export function TicketRealtime({ listMode }: Props) {
   const router = useRouter();
   const known = useRef<Map<string, string> | null>(null);
+  const [pollCount, setPollCount] = useState(0);
+  const [lastAt, setLastAt] = useState<string>("—");
+  const [visibleCount, setVisibleCount] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,12 +55,14 @@ export function TicketRealtime({ listMode }: Props) {
           }
         }
         known.current = currentState;
+        setVisibleCount(tickets.length);
+        setPollCount((c) => c + 1);
+        setLastAt(new Date().toLocaleTimeString());
       } catch (err) {
         console.warn("[TicketRealtime] poll failed", err);
       }
     }
 
-    // Kick off immediately, then interval.
     poll();
     const onFocus = () => { router.refresh(); poll(); };
     const onVis = () => { if (document.visibilityState === "visible") { router.refresh(); poll(); } };
@@ -78,5 +80,27 @@ export function TicketRealtime({ listMode }: Props) {
     };
   }, [listMode, router]);
 
-  return null;
+  if (!listMode) return null;
+
+  // Small debug badge so the tech / you can VISUALLY confirm this code is running.
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 12,
+        left: 12,
+        zIndex: 9999,
+        background: "#0f4c81",
+        color: "white",
+        padding: "6px 10px",
+        borderRadius: 8,
+        fontSize: 11,
+        fontFamily: "monospace",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+        pointerEvents: "none",
+      }}
+    >
+      {BUILD_TAG} · polls: {pollCount} · last: {lastAt} · tickets: {visibleCount ?? "?"}
+    </div>
+  );
 }
