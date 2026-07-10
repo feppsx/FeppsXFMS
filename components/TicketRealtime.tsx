@@ -1,9 +1,13 @@
 "use client";
 
-// Bulletproof update loop + on-screen debug badge so we can VISUALLY confirm
-// this code is running on the tech's device.
+// Server-polled update loop for tech / manager portals.
+//
+// Polls /api/my-tickets every 5s (server enforces auth + RLS), refreshes on
+// tab focus / visibility change, and shows a green toast the moment a new
+// ticket becomes visible to the current user (or an existing one flips
+// TO status=assigned).
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -13,16 +17,12 @@ interface Props {
 }
 
 const POLL_MS = 5000;
-const BUILD_TAG = "TR-v7-serverpoll";
 
 interface Snap { id: string; ticket_number: string; title: string; status: string; }
 
 export function TicketRealtime({ listMode }: Props) {
   const router = useRouter();
   const known = useRef<Map<string, string> | null>(null);
-  const [pollCount, setPollCount] = useState(0);
-  const [lastAt, setLastAt] = useState<string>("—");
-  const [visibleCount, setVisibleCount] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,9 +55,6 @@ export function TicketRealtime({ listMode }: Props) {
           }
         }
         known.current = currentState;
-        setVisibleCount(tickets.length);
-        setPollCount((c) => c + 1);
-        setLastAt(new Date().toLocaleTimeString());
       } catch (err) {
         console.warn("[TicketRealtime] poll failed", err);
       }
@@ -80,27 +77,5 @@ export function TicketRealtime({ listMode }: Props) {
     };
   }, [listMode, router]);
 
-  if (!listMode) return null;
-
-  // Small debug badge so the tech / you can VISUALLY confirm this code is running.
-  return (
-    <div
-      style={{
-        position: "fixed",
-        bottom: 12,
-        left: 12,
-        zIndex: 9999,
-        background: "#0f4c81",
-        color: "white",
-        padding: "6px 10px",
-        borderRadius: 8,
-        fontSize: 11,
-        fontFamily: "monospace",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-        pointerEvents: "none",
-      }}
-    >
-      {BUILD_TAG} · polls: {pollCount} · last: {lastAt} · tickets: {visibleCount ?? "?"}
-    </div>
-  );
+  return null;
 }
