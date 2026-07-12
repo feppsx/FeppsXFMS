@@ -106,8 +106,8 @@ export default async function AdminFeedbackList({ searchParams }: { searchParams
           No feedback matches these filters yet.
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-card">
-          <table className="w-full text-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-card overflow-x-auto">
+          <table className="w-full text-sm min-w-[900px]">
             <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
               <tr>
                 <th className="text-left p-3">Rating</th>
