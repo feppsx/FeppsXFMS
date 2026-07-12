@@ -49,7 +49,6 @@ function navFor(role: UserRole): NavItem[] {
         { href: "/admin/feedback",         label: "Customer feedback", icon: MessageSquare },
       ];
     case "technician":
-    case "manager":
       return [
         { href: "/technician/jobs",              label: "My jobs",         icon: Wrench },
         { href: "/technician/calendar",          label: "My calendar",     icon: CalendarDays },
@@ -62,6 +61,21 @@ function navFor(role: UserRole): NavItem[] {
         { href: "/technician/invoices/generate",         label: "Generate Invoice",         icon: PlusCircle },
         { href: "/technician/service-reports/generate",  label: "Generate Service Report",  icon: ClipboardList },
         { href: "/technician/ratings",           label: "My ratings",      icon: MessageSquare },
+        { href: "/technician/profile",           label: "My profile",      icon: UserCircle2 },
+      ];
+    case "manager":
+      return [
+        { href: "/technician/jobs",              label: "Jobs",            icon: Wrench },
+        { href: "/technician/calendar",          label: "Calendar",        icon: CalendarDays },
+        { href: "/technician/estates",           label: "Estates",         icon: Building2 },
+        { href: "/technician/invoices",          label: "Invoices",        icon: Receipt },
+        { href: "/technician/invoices/retail",   label: "Invoice Retail",  icon: Receipt, indent: true },
+        { href: "/technician/invoices/mcst",     label: "Invoice MCST",    icon: Receipt, indent: true },
+        { href: "/technician/invoices/sbs",      label: "Invoice SBS",     icon: Receipt, indent: true },
+        { href: "/technician/quotations/generate",       label: "Generate Quotation",       icon: FileText },
+        { href: "/technician/invoices/generate",         label: "Generate Invoice",         icon: PlusCircle },
+        { href: "/technician/service-reports/generate",  label: "Generate Service Report",  icon: ClipboardList },
+        { href: "/technician/feedback",          label: "Customer feedback", icon: MessageSquare },
         { href: "/technician/profile",           label: "My profile",      icon: UserCircle2 },
       ];
     case "requester":

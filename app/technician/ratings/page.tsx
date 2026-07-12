@@ -21,7 +21,7 @@ function fmt(iso: string) {
 }
 
 export default async function MyRatingsPage() {
-  const profile = await requireProfile(["technician", "manager"]);
+  const profile = await requireProfile(["technician"]);
   const { avg, count, last } = await getMyRatingsSummary();
 
   return (
