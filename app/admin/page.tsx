@@ -8,9 +8,10 @@ import { TicketRealtime } from "@/components/TicketRealtime";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { getEstateCards } from "@/lib/estate-data";
+import { getCsatThisMonth } from "@/lib/feedback-data";
 import type { Ticket, TicketStatusHistoryRow } from "@/lib/db-types";
 import {
-  ArrowRight, Zap, Ticket as TicketIcon, Sparkles, CheckCircle2, Clock, DollarSign, Building2,
+  ArrowRight, Zap, Ticket as TicketIcon, Sparkles, CheckCircle2, Clock, DollarSign, Building2, Star,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +39,7 @@ export default async function AdminDashboardPage() {
     openCount, newTodayCount, resolvedWeekCount, urgentOpenCount, overdueCount, revenueThisMonth,
     { data: urgentTickets }, { data: activity },
     estates,
+    csat,
   ] = await Promise.all([
     supabase.from("tickets").select("id", { count: "exact", head: true }).in("status", OPEN_STATUSES).then((r) => r.count ?? 0),
     supabase.from("tickets").select("id", { count: "exact", head: true }).gte("created_at", todayIso()).then((r) => r.count ?? 0),
@@ -48,6 +50,7 @@ export default async function AdminDashboardPage() {
     supabase.from("tickets").select("*, client:clients(name, location)").eq("priority", "urgent").in("status", OPEN_STATUSES).order("created_at", { ascending: false }).limit(5).returns<UrgentRow[]>(),
     supabase.from("ticket_status_history").select("*, ticket:tickets(ticket_number, title), changed_by_profile:profiles!ticket_status_history_changed_by_fkey(full_name)").order("created_at", { ascending: false }).limit(15).returns<ActivityRow[]>(),
     getEstateCards(),
+    getCsatThisMonth(),
   ]);
 
   return (
@@ -68,6 +71,7 @@ export default async function AdminDashboardPage() {
         <KpiCard label="Resolved this week" value={resolvedWeekCount} tone="emerald" icon={<CheckCircle2 className="w-6 h-6" />} />
         <KpiCard label="Urgent open" value={urgentOpenCount} tone={urgentOpenCount > 0 ? "red" : "default"} href="/admin/tickets?filter=open&priority=urgent" icon={<Zap className="w-6 h-6" />} />
         <KpiCard label="Overdue > 3 days" value={overdueCount} tone={overdueCount > 0 ? "amber" : "default"} hint="Submitted/Assigned only" icon={<Clock className="w-6 h-6" />} />
+        <KpiCard label="Avg CSAT this month" value={csat.avg === null ? "—" : `${csat.avg} / 5`} hint={csat.count > 0 ? `${csat.count} rating${csat.count === 1 ? "" : "s"}` : "No feedback yet"} tone={csat.avg === null ? "default" : csat.avg >= 4.2 ? "emerald" : csat.avg >= 3.5 ? "amber" : "red"} icon={<Star className="w-6 h-6" />} />
         <KpiCard label="Revenue this month" value={`S$ ${revenueThisMonth.toLocaleString("en-SG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} tone="purple" hint="From paid invoices" href="/admin/invoices" icon={<DollarSign className="w-6 h-6" />} />
       </div>
 

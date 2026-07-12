@@ -4,6 +4,9 @@ import { TicketDetailHeader } from "@/components/TicketDetailHeader";
 import { TicketTimeline } from "@/components/TicketTimeline";
 import { TicketPhotoSections } from "@/components/TicketPhotoSections";
 import { ClientTicketActions } from "@/components/ClientTicketActions";
+import { FeedbackForm } from "@/components/FeedbackForm";
+import { FeedbackView } from "@/components/FeedbackView";
+import { getFeedbackForTicket } from "@/lib/feedback-data";
 import { CommentsThread } from "@/components/CommentsThread";
 import { InvoiceDownloadButton } from "@/components/InvoiceDownloadButton";
 import { TicketRealtime } from "@/components/TicketRealtime";
@@ -23,6 +26,7 @@ export default async function RequesterTicketDetail({
   const profile = await requireProfile(["requester"]);
   const { id } = await params;
   const { ticket, history, attachments, comments, actors, urls } = await getTicketDetail(id);
+  const { feedback, submitterName } = await getFeedbackForTicket(id);
   const invoiceBundle = await getInvoiceForTicket(id);
   const techSigUrl = await signatureUrl(ticket.assignee?.signature_path);
 
@@ -60,6 +64,12 @@ export default async function RequesterTicketDetail({
           {canCloseOrReopen && (
             <Section title="Confirm resolution">
               <ClientTicketActions ticketId={ticket.id} />
+            </Section>
+          )}
+
+          {(ticket.status === "resolved" || ticket.status === "closed") && (
+            <Section title="Rate this service">
+              {feedback ? <FeedbackView feedback={feedback} submitterName={submitterName} /> : <FeedbackForm ticketId={ticket.id} />}
             </Section>
           )}
 

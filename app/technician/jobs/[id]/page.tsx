@@ -10,6 +10,8 @@ import { InvoiceSection } from "@/components/InvoiceSection";
 import { QuotationSection } from "@/components/QuotationSection";
 import { ServiceReportSection } from "@/components/ServiceReportSection";
 import { TicketRealtime } from "@/components/TicketRealtime";
+import { FeedbackView } from "@/components/FeedbackView";
+import { getFeedbackForTicket } from "@/lib/feedback-data";
 import { requireProfile } from "@/lib/guard";
 import { getTicketDetail } from "@/lib/ticket-data";
 import { getInvoiceForTicket } from "@/lib/invoice-data";
@@ -35,6 +37,7 @@ export default async function TechnicianJobDetail({
   const { id } = await params;
   const { ticket, history, attachments, comments, actors, urls } = await getTicketDetail(id);
   const invoiceBundle = await getInvoiceForTicket(id);
+  const { feedback: fb, submitterName: fbName } = await getFeedbackForTicket(id);
   const techSigUrl = await signatureUrl(ticket.assignee?.signature_path);
 
   const supabase = await createClient();
@@ -120,6 +123,9 @@ export default async function TechnicianJobDetail({
           </Section>
           <Section title="Generate Service Report">
             <ServiceReportSection estates={estates ?? []} prefill={srPrefill} />
+          </Section>
+          <Section title="Customer feedback">
+            <FeedbackView feedback={fb} submitterName={fbName} />
           </Section>
           <Section title="Comments">
             <CommentsThread ticketId={ticket.id} currentUserRole={profile.role} currentUserId={profile.id} comments={comments} actors={actors} />
