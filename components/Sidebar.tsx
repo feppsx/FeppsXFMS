@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import type { Profile, UserRole } from "@/lib/db-types";
 import {
@@ -77,8 +77,22 @@ export function Sidebar({ profile }: { profile: Profile }) {
   const [open, setOpen] = useState(false);
   const items = navFor(profile.role);
 
+  // Preserve sidebar scroll across router.refresh() calls (fires every 5s from
+  // TicketRealtime — was resetting scroll to top mid-scroll).
+  const navRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const key = "sidebar-scroll-y";
+    const saved = sessionStorage.getItem(key);
+    if (saved) el.scrollTop = parseInt(saved, 10) || 0;
+    const onScroll = () => sessionStorage.setItem(key, String(el.scrollTop));
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
   const NavLinks = () => (
-    <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+    <nav ref={navRef} className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
       {items.map((item) => {
         const active = item.indent
           ? pathname === item.href

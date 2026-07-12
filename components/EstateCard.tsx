@@ -10,14 +10,12 @@ const CATEGORY_COLOR: Record<string, string> = {
 
 function timeAgo(iso: string) {
   const d = new Date(iso);
-  const mins = Math.floor((Date.now() - d.getTime()) / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return d.toLocaleDateString("en-SG", { day: "2-digit", month: "short" });
+  const opts: Intl.DateTimeFormatOptions = {
+    day: "2-digit", month: "short",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+    timeZone: "Asia/Singapore",
+  };
+  return d.toLocaleString("en-SG", opts);
 }
 
 export function EstateCard({
