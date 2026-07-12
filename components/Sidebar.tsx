@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 import type { Profile, UserRole } from "@/lib/db-types";
 import {
@@ -72,99 +72,36 @@ function navFor(role: UserRole): NavItem[] {
   }
 }
 
+// Isomorphic layout effect — SSR-safe useLayoutEffect. Defined at module scope
+// so it's stable (would violate rules-of-hooks if computed inside the component).
+const useIsoLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
 export function Sidebar({ profile }: { profile: Profile }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const items = navFor(profile.role);
 
-  // Preserve sidebar scroll across router.refresh() calls (fires every 5s from
-  // TicketRealtime — was resetting scroll to top mid-scroll).
+  // Preserve sidebar scroll across router.refresh() calls.
   const navRef = useRef<HTMLElement>(null);
+  const scrollY = useRef(0);
+
   useEffect(() => {
     const el = navRef.current;
     if (!el) return;
-    const key = "sidebar-scroll-y";
-    const saved = sessionStorage.getItem(key);
-    if (saved) el.scrollTop = parseInt(saved, 10) || 0;
-    const onScroll = () => sessionStorage.setItem(key, String(el.scrollTop));
+    const onScroll = () => { scrollY.current = el.scrollTop; };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
-  const NavLinks = () => (
-    <nav ref={navRef} className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-      {items.map((item) => {
-        const active = item.indent
-          ? pathname === item.href
-          : item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname === item.href ||
-                (pathname.startsWith(item.href + "/") &&
-                 !items.some((i) => i.indent && pathname.startsWith(i.href)));
-        const Icon = item.icon;
-        const baseCls = item.indent
-          ? "pl-8 pr-3 py-1.5 text-xs"
-          : "px-3 py-2 text-sm";
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={() => setOpen(false)}
-            className={
-              (active
-                ? "flex items-center gap-3 rounded-lg font-medium bg-brand-50 text-brand "
-                : "flex items-center gap-3 rounded-lg text-slate-700 hover:bg-slate-100 ") +
-              baseCls
-            }
-          >
-            <Icon className={item.indent ? "w-3 h-3 shrink-0" : "w-4 h-4 shrink-0"} />
-            {item.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-
-  const Footer = () => (
-    <div className="border-t border-slate-100 p-4">
-      <div className="flex items-center gap-2.5 mb-3">
-        <Avatar name={profile.full_name} url={profile.avatar_url} size={36} />
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-slate-900 truncate">{profile.full_name}</div>
-          <div className="text-xs text-slate-500">{ROLE_LABEL[profile.role]}</div>
-        </div>
-      </div>
-      <div className="space-y-2">
-        <ThemeToggle />
-        <form action="/auth/signout" method="post">
-          <button
-            type="submit"
-            className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign out
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-
-  const LogoBlock = () => (
-    <div className="px-6 py-5 border-b border-slate-100">
-      <Image
-        src="/logo.png"
-        alt="360 Integrated"
-        width={160}
-        height={44}
-        className="h-11 w-auto object-contain logo-live"
-        unoptimized
-        priority
-      />
-    </div>
-  );
+  useIsoLayoutEffect(() => {
+    const el = navRef.current;
+    if (el && el.scrollTop !== scrollY.current) el.scrollTop = scrollY.current;
+  });
 
   return (
     <>
+      {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 inset-x-0 h-14 z-20 bg-white/95 backdrop-blur border-b border-slate-200 flex items-center px-4 gap-3">
         <button
           type="button"
@@ -202,8 +139,19 @@ export function Sidebar({ profile }: { profile: Profile }) {
           (open ? "translate-x-0 shadow-pop" : "-translate-x-full md:translate-x-0")
         }
       >
+        {/* Logo block */}
         <div className="flex items-center justify-between md:block">
-          <LogoBlock />
+          <div className="px-6 py-5 border-b border-slate-100">
+            <Image
+              src="/logo.png"
+              alt="360 Integrated"
+              width={160}
+              height={44}
+              className="h-11 w-auto object-contain logo-live"
+              unoptimized
+              priority
+            />
+          </div>
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -213,8 +161,62 @@ export function Sidebar({ profile }: { profile: Profile }) {
             <X className="w-5 h-5" />
           </button>
         </div>
-        <NavLinks />
-        <Footer />
+
+        {/* Nav (scroll-preserved) */}
+        <nav ref={navRef} className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {items.map((item) => {
+            const active = item.indent
+              ? pathname === item.href
+              : item.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname === item.href ||
+                    (pathname.startsWith(item.href + "/") &&
+                     !items.some((i) => i.indent && pathname.startsWith(i.href)));
+            const Icon = item.icon;
+            const baseCls = item.indent
+              ? "pl-8 pr-3 py-1.5 text-xs"
+              : "px-3 py-2 text-sm";
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={
+                  (active
+                    ? "flex items-center gap-3 rounded-lg font-medium bg-brand-50 text-brand "
+                    : "flex items-center gap-3 rounded-lg text-slate-700 hover:bg-slate-100 ") +
+                  baseCls
+                }
+              >
+                <Icon className={item.indent ? "w-3 h-3 shrink-0" : "w-4 h-4 shrink-0"} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t border-slate-100 p-4">
+          <div className="flex items-center gap-2.5 mb-3">
+            <Avatar name={profile.full_name} url={profile.avatar_url} size={36} />
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-slate-900 truncate">{profile.full_name}</div>
+              <div className="text-xs text-slate-500">{ROLE_LABEL[profile.role]}</div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <ThemeToggle />
+            <form action="/auth/signout" method="post">
+              <button
+                type="submit"
+                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign out
+              </button>
+            </form>
+          </div>
+        </div>
       </aside>
     </>
   );
