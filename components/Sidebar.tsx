@@ -8,7 +8,7 @@ import type { Profile, UserRole } from "@/lib/db-types";
 import {
   LayoutDashboard, Ticket, Receipt, Building2, Users, Tag,
   Wrench, UserCircle2, PlusCircle, LogOut, Menu, X, QrCode, ShieldCheck,
-  CalendarDays, FileText, ClipboardList,
+  CalendarDays, FileText, ClipboardList, MessageSquare,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Avatar } from "./Avatar";
@@ -46,6 +46,7 @@ function navFor(role: UserRole): NavItem[] {
         { href: "/admin/managers",         label: "Managers",       icon: ShieldCheck },
         { href: "/admin/categories",       label: "Categories",     icon: Tag },
         { href: "/admin/qr",               label: "Report QR",      icon: QrCode },
+        { href: "/admin/feedback",         label: "Customer feedback", icon: MessageSquare },
       ];
     case "technician":
     case "manager":
@@ -60,6 +61,7 @@ function navFor(role: UserRole): NavItem[] {
         { href: "/technician/quotations/generate",       label: "Generate Quotation",       icon: FileText },
         { href: "/technician/invoices/generate",         label: "Generate Invoice",         icon: PlusCircle },
         { href: "/technician/service-reports/generate",  label: "Generate Service Report",  icon: ClipboardList },
+        { href: "/technician/ratings",           label: "My ratings",      icon: MessageSquare },
         { href: "/technician/profile",           label: "My profile",      icon: UserCircle2 },
       ];
     case "requester":
