@@ -116,9 +116,10 @@ export async function updateQuotation(
     })
     .eq("id", id)
     .select("id, quotation_no")
-    .single<{ id: string; quotation_no: string }>();
+    .maybeSingle<{ id: string; quotation_no: string }>();
 
-  if (upErr || !updated) return { error: upErr?.message || "Failed to update quotation." };
+  if (upErr) return { error: upErr.message };
+  if (!updated) return { error: "Not allowed to update this quotation, or it no longer exists." };
 
   await supabase.from("quotation_items").delete().eq("quotation_id", id);
   const itemRows = items.map((it, idx) => ({

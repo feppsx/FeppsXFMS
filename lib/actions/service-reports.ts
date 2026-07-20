@@ -123,9 +123,10 @@ export async function updateServiceReport(
     })
     .eq("id", id)
     .select("id, sr_no")
-    .single<{ id: string; sr_no: string }>();
+    .maybeSingle<{ id: string; sr_no: string }>();
 
-  if (error || !updated) return { error: error?.message || "Failed to update service report." };
+  if (error) return { error: error.message };
+  if (!updated) return { error: "Not allowed to update this service report, or it no longer exists." };
 
   revalidatePath("/admin/service-reports");
   revalidatePath("/technician/service-reports");
