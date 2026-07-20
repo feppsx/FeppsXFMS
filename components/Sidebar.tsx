@@ -115,29 +115,7 @@ export function Sidebar({ profile }: { profile: Profile }) {
 
   return (
     <>
-      {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 inset-x-0 h-14 z-20 bg-white/95 backdrop-blur border-b border-slate-200 flex items-center px-4 gap-3">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="p-1.5 -ml-1.5 rounded-lg hover:bg-slate-100"
-          aria-label="Open menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-        <Image
-          src="/logo.png"
-          alt="360 Integrated"
-          width={110}
-          height={30}
-          className="h-8 w-auto object-contain logo-live"
-          unoptimized
-          priority
-        />
-        <div className="ml-auto">
-          <ThemeToggle compact />
-        </div>
-      </div>
+      {/* Mobile top bar removed — each page renders its own MobileHeader. */}
 
       {open && (
         <div

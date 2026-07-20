@@ -1,11 +1,21 @@
 "use client";
 
+// Login screen — new mobile-first design.
+//   * Red top curve (rounded-b ellipse) with big empty space
+//   * White circle with dashed blue border containing the 360 FM SM logo
+//   * "LOGIN" title + "Enter Your Credentials To Continue"
+//   * Pill-shaped username/password inputs (bg-input-bg, no borders, uppercase bold labels)
+//   * Deep blue pill Login button with right arrow
+//   * "Forgot Password?" link in blue, right-aligned above the button
+//
+// Same Supabase sign-in logic as before — only the JSX/styling changed.
+
 import { useState, Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { AuthHero } from "@/components/AuthHero";
-import { Loader2, LogIn } from "lucide-react";
+import { Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 function LoginForm() {
   const router = useRouter();
@@ -15,6 +25,7 @@ function LoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(
     errorFromUrl === "no-profile"
@@ -36,68 +47,105 @@ function LoginForm() {
   }
 
   return (
-    <>
-      <div className="mb-6">
-        <div className="text-2xl font-semibold text-slate-900">Welcome back</div>
-        <div className="text-sm text-slate-500 mt-1">Sign in to continue.</div>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Red top curve */}
+      <div className="relative bg-brand-red h-[220px] rounded-b-[50%/30%]" aria-hidden />
+
+      {/* Logo — dashed blue circle sits centered, overlapping the curve bottom */}
+      <div className="-mt-16 flex justify-center">
+        <div className="w-32 h-32 rounded-full bg-white border-2 border-dashed border-brand-blue flex items-center justify-center shadow-float">
+          <Image
+            src="/logo.png"
+            alt="360 Integrated"
+            width={100}
+            height={100}
+            className="object-contain"
+            unoptimized
+            priority
+          />
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
-            autoComplete="email"
-          />
-        </div>
+      {/* Form area */}
+      <div className="flex-1 px-6 mt-8 max-w-md w-full mx-auto">
+        <h1 className="text-4xl font-bold text-slate-900">LOGIN</h1>
+        <p className="text-slate-600 mt-3">Enter Your Credentials To Continue</p>
 
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="block text-sm font-medium">Password</label>
-            <Link href="/login/forgot" className="text-xs text-brand hover:underline">
-              Forgot password?
-            </Link>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <div>
+            <label className="block text-xs font-extrabold tracking-wider uppercase text-slate-800 mb-2">
+              Username
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter Your Username"
+              autoComplete="email"
+              className="w-full rounded-full bg-input-bg px-5 py-3 text-sm text-slate-800 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-brand-blue"
+            />
           </div>
-          <input
-            type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
-            autoComplete="current-password"
-          />
-        </div>
 
-        {error && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-            {error}
+          <div>
+            <label className="block text-xs font-extrabold tracking-wider uppercase text-slate-800 mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPw ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter Your Password"
+                autoComplete="current-password"
+                className="w-full rounded-full bg-input-bg px-5 py-3 pr-12 text-sm text-slate-800 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-brand-blue"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((v) => !v)}
+                aria-label={showPw ? "Hide password" : "Show password"}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800"
+              >
+                {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            <div className="text-right mt-2">
+              <Link href="/login/forgot" className="text-brand-blue/80 hover:text-brand-blue text-sm font-medium">
+                Forgot Password?
+              </Link>
+            </div>
           </div>
-        )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-brand hover:bg-brand-600 text-white font-medium rounded-lg py-2.5 flex items-center justify-center gap-2 disabled:opacity-60 shadow-card"
-        >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
-          Sign in
-        </button>
+          {error && (
+            <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
+              {error}
+            </div>
+          )}
 
-        <div className="text-xs text-slate-500 text-center pt-1">
-          New here?{" "}
-          <Link href="/signup" className="text-brand hover:underline font-medium">
-            Create an account
-          </Link>
-        </div>
-      </form>
-    </>
+          <div className="pt-6 flex justify-center">
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-3 bg-brand-blue hover:bg-brand-blue/90 text-white text-lg font-semibold rounded-full px-12 py-3.5 shadow-float disabled:opacity-60"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "LOGIN"}
+              {!loading && <ArrowRight className="w-5 h-5" />}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Small footer breathing room */}
+      <div className="h-10" />
+    </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <AuthHero>
-      <Suspense>
-        <LoginForm />
-      </Suspense>
-    </AuthHero>
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
