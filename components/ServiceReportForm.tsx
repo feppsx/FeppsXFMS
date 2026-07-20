@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { createServiceReport } from "@/lib/actions/service-reports";
+import { createServiceReport, updateServiceReport } from "@/lib/actions/service-reports";
 import type { Estate } from "@/lib/db-types";
-import { Loader2, ClipboardList } from "lucide-react";
+import { Loader2, ClipboardList, Eye, Pencil, Plus } from "lucide-react";
 import { ServiceReportDownloadButton } from "./ServiceReportDownloadButton";
 import type { ServiceReportPdfInput } from "./ServiceReportPDF";
 
@@ -67,6 +67,8 @@ export function ServiceReportForm({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState<ServiceReportPdfInput | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [previewing, setPreviewing] = useState(false);
 
   function pickEstate(id: string) {
     setEstateId(id);
@@ -81,7 +83,7 @@ export function ServiceReportForm({
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await createServiceReport({
+      const payload = {
         client_id: estateId || null,
         project_name: projectName, service_address: serviceAddress,
         contact_person: contactPerson, contact_no: contactNo,
@@ -91,9 +93,12 @@ export function ServiceReportForm({
         work_description: workDescription, recommendation: recommendation,
         customer_name: customerName, service_attended_by: serviceAttendedBy,
         date_attended: dateAttended, time_in: timeIn, time_out: timeOut,
-      });
+      };
+      const res = savedId
+        ? await updateServiceReport(savedId, payload)
+        : await createServiceReport(payload);
       if (res.error) { setError(res.error); toast.error(res.error); return; }
-      toast.success(`Service report ${res.sr_no} saved`);
+      toast.success(savedId ? `Service report ${res.sr_no} updated` : `Service report ${res.sr_no} saved`);
       setSaved({
         sr_no: res.sr_no!,
         project_name: projectName,
@@ -110,20 +115,87 @@ export function ServiceReportForm({
         date_attended: dateAttended || null,
         time_in: timeIn || null, time_out: timeOut || null,
       });
+      setSavedId(res.id!);
     });
   }
 
-  if (saved) {
+  // Saved actions state
+  if (saved && !previewing) {
     return (
       <div className="text-center py-8">
         <ClipboardList className="w-12 h-12 text-brand mx-auto mb-3" />
         <h2 className="text-lg font-semibold">Service report saved</h2>
         <p className="text-sm text-slate-600 mt-1"><span className="font-mono font-semibold">{saved.sr_no}</span></p>
-        <div className="mt-4 flex justify-center gap-2">
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           <ServiceReportDownloadButton sr={saved} />
-          <button type="button" onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
-            New report
+          <button type="button" onClick={() => setPreviewing(true)} className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
+            <Eye className="w-4 h-4" /> Preview
+          </button>
+          <button type="button" onClick={() => setSaved(null)} className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
+            <Pencil className="w-4 h-4" /> Edit
+          </button>
+          <button type="button" onClick={() => window.location.reload()} className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
+            <Plus className="w-4 h-4" /> New
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Preview state
+  if (saved && previewing) {
+    const checked = SERVICES.filter((s) => svcFlags[s.key]).map((s) => s.label);
+    if (saved.svc_others) checked.push(`Others: ${saved.svc_others}`);
+    const flags = [
+      saved.is_term_agreement && "Term Agreement / MCST",
+      saved.is_on_call && "On Call / Site Visit",
+      saved.is_contract && "Contract",
+      saved.is_chargeable && "Chargeable",
+    ].filter(Boolean);
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-900">Preview — <span className="font-mono">{saved.sr_no}</span></h2>
+          <button type="button" onClick={() => setPreviewing(false)} className="text-sm text-brand hover:underline">Close preview</button>
+        </div>
+        <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 space-y-2 text-sm">
+          <div><span className="text-slate-500">Project:</span> <span className="font-medium">{saved.project_name}</span></div>
+          {saved.service_address && <div><span className="text-slate-500">Address:</span> {saved.service_address}</div>}
+          {saved.contact_person && <div><span className="text-slate-500">Contact person:</span> {saved.contact_person}</div>}
+          {saved.contact_no && <div><span className="text-slate-500">Contact no:</span> {saved.contact_no}</div>}
+          {flags.length > 0 && <div><span className="text-slate-500">Flags:</span> {flags.join(", ")}</div>}
+        </div>
+
+        <div className="border border-slate-200 rounded-lg p-4 space-y-2 text-sm">
+          <div className="font-semibold text-slate-800">Services rendered</div>
+          <div className="text-slate-700">{checked.length ? checked.join(" · ") : <span className="text-slate-400">None ticked</span>}</div>
+        </div>
+
+        {saved.work_description && (
+          <div className="border border-slate-200 rounded-lg p-4 text-sm">
+            <div className="font-semibold text-slate-800 mb-1">Work description</div>
+            <div className="text-slate-700 whitespace-pre-wrap">{saved.work_description}</div>
+          </div>
+        )}
+        {saved.recommendation && (
+          <div className="border border-slate-200 rounded-lg p-4 text-sm">
+            <div className="font-semibold text-slate-800 mb-1">Recommendation</div>
+            <div className="text-slate-700 whitespace-pre-wrap">{saved.recommendation}</div>
+          </div>
+        )}
+
+        <div className="border border-slate-200 rounded-lg p-4 grid md:grid-cols-2 gap-2 text-sm">
+          <div><span className="text-slate-500">Customer:</span> {saved.customer_name ?? "—"}</div>
+          <div><span className="text-slate-500">Attended by:</span> {saved.service_attended_by ?? "—"}</div>
+          <div><span className="text-slate-500">Date:</span> {saved.date_attended ?? "—"}</div>
+          <div><span className="text-slate-500">Time:</span> {saved.time_in ?? "—"} → {saved.time_out ?? "—"}</div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200">
+          <ServiceReportDownloadButton sr={saved} />
+          <button type="button" onClick={() => { setPreviewing(false); setSaved(null); }} className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
+            <Pencil className="w-4 h-4" /> Edit
           </button>
         </div>
       </div>
@@ -132,6 +204,11 @@ export function ServiceReportForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {savedId && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 text-xs">
+          Editing existing service report. Saving will update the same PDF.
+        </div>
+      )}
       <div>
         <label className="block text-xs font-medium text-slate-600 mb-1">Estate (auto-fills below)</label>
         <select value={estateId} onChange={(e) => pickEstate(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white">
@@ -218,7 +295,7 @@ export function ServiceReportForm({
 
       <button type="submit" disabled={isPending} className="w-full inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-600 text-white rounded-lg px-4 py-2.5 text-sm font-semibold disabled:opacity-60">
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <ClipboardList className="w-4 h-4" />}
-        Save service report
+        {savedId ? "Update service report" : "Save service report"}
       </button>
     </form>
   );

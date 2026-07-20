@@ -2,9 +2,9 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { createQuotation } from "@/lib/actions/quotations";
+import { createQuotation, updateQuotation } from "@/lib/actions/quotations";
 import type { Estate, EstateCategory } from "@/lib/db-types";
-import { Loader2, Plus, Trash2, FileText } from "lucide-react";
+import { Loader2, Plus, Trash2, FileText, Eye, Pencil } from "lucide-react";
 import { QuotationDownloadButton } from "./QuotationDownloadButton";
 import type { QuotationPdfInput } from "./QuotationPDF";
 
@@ -39,14 +39,15 @@ export function QuotationForm({
   const [notes, setNotes] = useState("");
   const [estateId, setEstateId] = useState(prefill?.client_id ?? "");
   const [category, setCategory] = useState<EstateCategory>(prefill?.category ?? "MCST");
-  const [rows, setRows] = useState<Row[]>([
-    { key: crypto.randomUUID(), description: "", unit_price: 0 },
-  ]);
+  const [rows, setRows] = useState<Row[]>([{ key: crypto.randomUUID(), description: "", unit_price: 0 }]);
   const [discount, setDiscount] = useState(0);
   const [gst, setGst] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // saved holds the last-saved snapshot for Download/Preview; savedId is the DB row id (so Edit updates instead of inserts).
   const [saved, setSaved] = useState<QuotationPdfInput | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [previewing, setPreviewing] = useState(false);
 
   const subtotal = useMemo(
     () => rows.reduce((s, r) => s + (isFinite(r.unit_price) ? r.unit_price : 0), 0),
@@ -78,7 +79,7 @@ export function QuotationForm({
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await createQuotation({
+      const payload = {
         client_id: estateId || null,
         category,
         customer_name: customerName,
@@ -90,9 +91,12 @@ export function QuotationForm({
         gst_amount: gst,
         notes,
         items: rows.map((r) => ({ description: r.description, unit_price: r.unit_price })),
-      });
+      };
+      const res = savedId
+        ? await updateQuotation(savedId, payload)
+        : await createQuotation(payload);
       if (res.error) { setError(res.error); toast.error(res.error); return; }
-      toast.success(`Quotation ${res.quotation_no} saved`);
+      toast.success(savedId ? `Quotation ${res.quotation_no} updated` : `Quotation ${res.quotation_no} saved`);
       setSaved({
         quotation_no: res.quotation_no!,
         quotation_date: quotationDate,
@@ -104,21 +108,93 @@ export function QuotationForm({
         notes: notes || null,
         items: rows.filter((r) => r.description.trim()).map((r) => ({ description: r.description, unit_price: r.unit_price })),
       });
+      setSavedId(res.id!);
     });
   }
 
-  if (saved) {
+  // "Saved" state — show Download + Preview + Edit + New
+  if (saved && !previewing) {
     return (
       <div className="text-center py-8">
         <FileText className="w-12 h-12 text-brand mx-auto mb-3" />
         <h2 className="text-lg font-semibold text-slate-900">Quotation saved</h2>
-        <p className="text-sm text-slate-600 mt-1"><span className="font-mono font-semibold">{saved.quotation_no}</span></p>
-        <div className="mt-4 flex justify-center gap-2">
+        <p className="text-sm text-slate-600 mt-1">
+          <span className="font-mono font-semibold">{saved.quotation_no}</span>
+        </p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           <QuotationDownloadButton q={saved} />
-          <button type="button"
-            onClick={() => { setSaved(null); setRows([{ key: crypto.randomUUID(), description: "", unit_price: 0 }]); }}
-            className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
-            New quotation
+          <button
+            type="button"
+            onClick={() => setPreviewing(true)}
+            className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50"
+          >
+            <Eye className="w-4 h-4" /> Preview
+          </button>
+          <button
+            type="button"
+            onClick={() => setSaved(null)}
+            className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50"
+          >
+            <Pencil className="w-4 h-4" /> Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSaved(null); setSavedId(null);
+              setRows([{ key: crypto.randomUUID(), description: "", unit_price: 0 }]);
+              setCustomerName(""); setCustomerAddress(""); setContactNo("");
+              setNotes(""); setDiscount(0); setGst(0); setValidUntil("");
+            }}
+            className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50"
+          >
+            <Plus className="w-4 h-4" /> New
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Preview state — read-only summary view
+  if (saved && previewing) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-900">Preview — <span className="font-mono">{saved.quotation_no}</span></h2>
+          <button type="button" onClick={() => setPreviewing(false)} className="text-sm text-brand hover:underline">Close preview</button>
+        </div>
+        <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 space-y-2 text-sm">
+          <div><span className="text-slate-500">Customer:</span> <span className="font-medium">{saved.customer_name}</span></div>
+          {saved.customer_address && <div><span className="text-slate-500">Address:</span> {saved.customer_address}</div>}
+          {saved.contact_no && <div><span className="text-slate-500">Contact:</span> {saved.contact_no}</div>}
+          <div><span className="text-slate-500">Date:</span> {saved.quotation_date}{saved.valid_until && ` · Valid until ${saved.valid_until}`}</div>
+        </div>
+        <div className="border border-slate-200 rounded-lg overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+              <tr><th className="text-left p-2">#</th><th className="text-left p-2">Description</th><th className="text-right p-2">Amount (S$)</th></tr>
+            </thead>
+            <tbody>
+              {saved.items.map((it, i) => (
+                <tr key={i} className="border-t border-slate-100">
+                  <td className="p-2 text-slate-500">{i + 1}</td>
+                  <td className="p-2">{it.description}</td>
+                  <td className="p-2 text-right font-mono">{money(it.unit_price)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="text-right space-y-1 text-sm">
+          <div>Subtotal: <span className="font-mono">S$ {money(saved.subtotal)}</span></div>
+          {saved.discount > 0 && <div>Discount: <span className="font-mono">-S$ {money(saved.discount)}</span></div>}
+          {saved.gst_amount > 0 && <div>GST: <span className="font-mono">S$ {money(saved.gst_amount)}</span></div>}
+          <div className="text-base font-semibold">Grand Total: <span className="font-mono">S$ {money(saved.grand_total)}</span></div>
+        </div>
+        {saved.notes && <div className="text-sm"><span className="font-semibold">Notes:</span> {saved.notes}</div>}
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200">
+          <QuotationDownloadButton q={saved} />
+          <button type="button" onClick={() => { setPreviewing(false); setSaved(null); }} className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
+            <Pencil className="w-4 h-4" /> Edit
           </button>
         </div>
       </div>
@@ -127,6 +203,11 @@ export function QuotationForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {savedId && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 text-xs">
+          Editing existing quotation. Saving will update the same PDF.
+        </div>
+      )}
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">Estate (optional)</label>
@@ -214,7 +295,7 @@ export function QuotationForm({
 
       <button type="submit" disabled={isPending} className="w-full inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-600 text-white rounded-lg px-4 py-2.5 text-sm font-semibold disabled:opacity-60">
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-        Save quotation
+        {savedId ? "Update quotation" : "Save quotation"}
       </button>
     </form>
   );
