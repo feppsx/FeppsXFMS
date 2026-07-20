@@ -1,10 +1,19 @@
 import { AppShell } from "@/components/AppShell";
 import { TicketRow, type TicketRowData } from "@/components/TicketRow";
 import { TicketRealtime } from "@/components/TicketRealtime";
+import { TechJobsFilters } from "@/components/TechJobsFilters";
+import { MobileHeader } from "@/components/MobileHeader";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+
+function greet() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good Morning";
+  if (h < 17) return "Good Afternoon";
+  return "Good Evening";
+}
 
 export default async function TechnicianJobsPage() {
   const profile = await requireProfile(["technician", "manager"]);
@@ -22,22 +31,26 @@ export default async function TechnicianJobsPage() {
     .returns<TicketRowData[]>();
 
   const rows = tickets ?? [];
+  const firstName = profile.full_name?.split(" ")[0] ?? "there";
 
   return (
-    <AppShell profile={profile}>
-      <TicketRealtime listMode />
-      <h1 className="text-xl font-semibold mb-4">My jobs</h1>
-      {rows.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500 text-sm">
-          Nothing assigned to you right now.
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {rows.map((t) => (
-            <TicketRow key={t.id} ticket={t} hrefBase="/technician/jobs" />
-          ))}
-        </div>
-      )}
-    </AppShell>
+    <>
+      {/* Mobile red header with greeting + floating search */}
+      <MobileHeader
+        title=""
+        greeting={`${greet()}, ${firstName}`}
+        showSearch
+        searchPlaceholder="Search jobs…"
+      />
+
+      <AppShell profile={profile}>
+        <TicketRealtime listMode />
+        {/* Desktop-only heading */}
+        <h1 className="hidden md:block text-xl font-semibold mb-4">My jobs</h1>
+
+        {/* Filter chips + client-side filtered list */}
+        <TechJobsFilters rows={rows} />
+      </AppShell>
+    </>
   );
 }

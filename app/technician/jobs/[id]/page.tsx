@@ -10,6 +10,8 @@ import { InvoiceSection } from "@/components/InvoiceSection";
 import { QuotationSection } from "@/components/QuotationSection";
 import { ServiceReportSection } from "@/components/ServiceReportSection";
 import { TicketRealtime } from "@/components/TicketRealtime";
+import { MobileHeader } from "@/components/MobileHeader";
+import { TicketInfoTable } from "@/components/TicketInfoTable";
 import { FeedbackView } from "@/components/FeedbackView";
 import { getFeedbackForTicket } from "@/lib/feedback-data";
 import { requireProfile } from "@/lib/guard";
@@ -80,12 +82,26 @@ export default async function TechnicianJobDetail({
   };
 
   return (
-    <AppShell profile={profile}>
-      <TicketRealtime ticketId={ticket.id} />
-      <Link href="/technician/jobs" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 mb-3">
-        <ArrowLeft className="w-4 h-4" /> Back to jobs
-      </Link>
-      <TicketDetailHeader ticket={ticket} client={ticket.client} tenant={ticket.tenant} category={ticket.category} />
+    <>
+      <MobileHeader
+        title={ticket.client?.name ?? "Job"}
+        subtitle={ticket.title}
+        showBack
+        backHref="/technician/jobs"
+      />
+      <AppShell profile={profile}>
+        <TicketRealtime ticketId={ticket.id} />
+        {/* Desktop-only back link + header (mobile uses MobileHeader above) */}
+        <div className="hidden md:block">
+          <Link href="/technician/jobs" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 mb-3">
+            <ArrowLeft className="w-4 h-4" /> Back to jobs
+          </Link>
+          <TicketDetailHeader ticket={ticket} client={ticket.client} tenant={ticket.tenant} category={ticket.category} />
+        </div>
+        {/* Mobile-only compact info table (light blue card) */}
+        <div className="md:hidden mb-4">
+          <TicketInfoTable ticket={ticket} />
+        </div>
       <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2 space-y-4">
           <Section title="Description">
@@ -137,7 +153,8 @@ export default async function TechnicianJobDetail({
           </Section>
         </div>
       </div>
-    </AppShell>
+      </AppShell>
+    </>
   );
 }
 
