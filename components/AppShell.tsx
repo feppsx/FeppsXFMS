@@ -18,7 +18,7 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-slate-50">
       <Sidebar profile={profile} />
-      <main className="md:pl-64 pt-0 pb-24 md:pb-0">
+      <main className="md:pl-64 pt-12 md:pt-0 pb-24 md:pb-0">
         <div className="max-w-6xl mx-auto px-4 py-6 md:py-6">{children}</div>
       </main>
       <MobileBottomNav role={profile.role} />
