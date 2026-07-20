@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/AppShell";
+import { MobileHeader } from "@/components/MobileHeader";
 import { EstatesLive } from "@/components/EstatesLive";
 import { requireProfile } from "@/lib/guard";
 import { getEstateCards } from "@/lib/estate-data";
@@ -11,7 +12,9 @@ export default async function TechEstatesPage() {
   const estates = await getEstateCards();
 
   return (
-    <AppShell profile={profile}>
+    <>
+      <MobileHeader title="Estates" />
+      <AppShell profile={profile}>
       <div className="flex items-center gap-2 mb-4">
         <Building2 className="w-5 h-5 text-brand" />
         <h1 className="text-xl font-semibold">
@@ -23,6 +26,7 @@ export default async function TechEstatesPage() {
       </div>
 
       <EstatesLive initial={estates} hrefBase="/technician/estates" />
-    </AppShell>
+      </AppShell>
+    </>
   );
 }

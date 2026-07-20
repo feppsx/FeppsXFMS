@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { MobileHeader } from "@/components/MobileHeader";
 import { NewTicketForm } from "@/components/NewTicketForm";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
@@ -18,7 +19,9 @@ export default async function NewTicketPage() {
   ]);
 
   return (
-    <AppShell profile={profile}>
+    <>
+      <MobileHeader title="Raise a Ticket" showBack backHref="/client/tickets" />
+      <AppShell profile={profile}>
       <Link href="/client/tickets" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 mb-3">
         <ArrowLeft className="w-4 h-4" />
         Back
@@ -31,6 +34,7 @@ export default async function NewTicketPage() {
           categories={categories ?? []}
         />
       </div>
-    </AppShell>
+      </AppShell>
+    </>
   );
 }

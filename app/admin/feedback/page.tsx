@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { MobileHeader } from "@/components/MobileHeader";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { getFeedbackList, type FeedbackListRow } from "@/lib/feedback-list-data";
@@ -50,7 +51,9 @@ export default async function AdminFeedbackList({ searchParams }: { searchParams
   const avg = rows.length ? Math.round((rows.reduce((s, r) => s + r.rating, 0) / rows.length) * 10) / 10 : null;
 
   return (
-    <AppShell profile={profile}>
+    <>
+      <MobileHeader title="Customer Feedback" showBack backHref="/admin" />
+      <AppShell profile={profile}>
       <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 mb-3">
         <ArrowLeft className="w-4 h-4" /> Back
       </Link>
@@ -147,6 +150,7 @@ export default async function AdminFeedbackList({ searchParams }: { searchParams
           </table>
         </div>
       )}
-    </AppShell>
+      </AppShell>
+    </>
   );
 }

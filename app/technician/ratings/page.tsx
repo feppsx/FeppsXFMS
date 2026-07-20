@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { MobileHeader } from "@/components/MobileHeader";
 import { requireProfile } from "@/lib/guard";
 import { getMyRatingsSummary } from "@/lib/feedback-list-data";
 import { Star, MessageSquare } from "lucide-react";
@@ -25,7 +26,9 @@ export default async function MyRatingsPage() {
   const { avg, count, last } = await getMyRatingsSummary();
 
   return (
-    <AppShell profile={profile}>
+    <>
+      <MobileHeader title="My Ratings" showBack backHref="/technician/jobs" />
+      <AppShell profile={profile}>
       <div className="flex items-center gap-2 mb-4">
         <MessageSquare className="w-5 h-5 text-brand" />
         <h1 className="text-xl font-semibold">
@@ -92,6 +95,7 @@ export default async function MyRatingsPage() {
           ))}
         </div>
       )}
-    </AppShell>
+      </AppShell>
+    </>
   );
 }

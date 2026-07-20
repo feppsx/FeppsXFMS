@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/AppShell";
 import { TicketRow, type TicketRowData } from "@/components/TicketRow";
 import { TicketRealtime } from "@/components/TicketRealtime";
+import { MobileHeader } from "@/components/MobileHeader";
 import { TicketFilterBar } from "@/components/TicketFilterBar";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
@@ -78,7 +79,9 @@ export default async function AdminTicketQueue({
   if (sp.category_id) chipParams.set("category_id", sp.category_id);
 
   return (
-    <AppShell profile={profile}>
+    <>
+      <MobileHeader title="Tickets" />
+      <AppShell profile={profile}>
       <TicketRealtime listMode />
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold">Ticket queue</h1>
@@ -120,6 +123,7 @@ export default async function AdminTicketQueue({
           ))}
         </div>
       )}
-    </AppShell>
+      </AppShell>
+    </>
   );
 }

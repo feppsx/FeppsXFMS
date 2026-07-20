@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { MobileHeader } from "@/components/MobileHeader";
 import { TicketRow, type TicketRowData } from "@/components/TicketRow";
 import { TicketRealtime } from "@/components/TicketRealtime";
 import { requireProfile } from "@/lib/guard";
@@ -27,7 +28,9 @@ export default async function MyTicketsPage() {
   const rows = tickets ?? [];
 
   return (
-    <AppShell profile={profile}>
+    <>
+      <MobileHeader title="" greeting="My Tickets" />
+      <AppShell profile={profile}>
       <TicketRealtime listMode />
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold">My tickets</h1>
@@ -54,6 +57,7 @@ export default async function MyTicketsPage() {
           ))}
         </div>
       )}
-    </AppShell>
+      </AppShell>
+    </>
   );
 }

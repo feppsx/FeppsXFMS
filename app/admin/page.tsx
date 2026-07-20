@@ -5,6 +5,7 @@ import { EstateCard } from "@/components/EstateCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { PriorityBadge } from "@/components/PriorityBadge";
 import { TicketRealtime } from "@/components/TicketRealtime";
+import { MobileHeader } from "@/components/MobileHeader";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { getEstateCards } from "@/lib/estate-data";
@@ -31,6 +32,13 @@ interface ActivityRow extends TicketStatusHistoryRow {
   changed_by_profile: { full_name: string } | null;
 }
 
+function greet() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good Morning";
+  if (h < 17) return "Good Afternoon";
+  return "Good Evening";
+}
+
 export default async function AdminDashboardPage() {
   const profile = await requireProfile(["admin"]);
   const supabase = await createClient();
@@ -53,8 +61,12 @@ export default async function AdminDashboardPage() {
     getCsatThisMonth(),
   ]);
 
+  const firstName = profile.full_name?.split(" ")[0] ?? "Admin";
+
   return (
-    <AppShell profile={profile}>
+    <>
+      <MobileHeader title="" greeting={`${greet()}, ${firstName}`} />
+      <AppShell profile={profile}>
       <TicketRealtime listMode />
 
       <div className="flex items-center justify-between mb-4">
@@ -154,6 +166,7 @@ export default async function AdminDashboardPage() {
           )}
         </section>
       </div>
-    </AppShell>
+      </AppShell>
+    </>
   );
 }
