@@ -18,7 +18,7 @@ interface Filter {
 const FILTERS: Filter[] = [
   { key: "all",         label: "All",         match: () => true },
   { key: "new",         label: "New",         match: (t) => t.status === "submitted" },
-  { key: "assigned",    label: "Accepted",    match: (t) => t.status === "assigned" },
+  { key: "assigned",    label: "Assigned",    match: (t) => t.status === "assigned" },
   { key: "in_progress", label: "In Progress", match: (t) => t.status === "in_progress" },
   { key: "resolved",    label: "Resolved",    match: (t) => t.status === "resolved" || t.status === "closed" },
 ];

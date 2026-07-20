@@ -9,7 +9,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { attachPhotosToTicket } from "@/lib/actions/attachments";
 import type { AttachmentKind } from "@/lib/db-types";
-import { Camera, X, Loader2, Save } from "lucide-react";
+import { X, Loader2, Save, Aperture } from "lucide-react";
 
 interface UploadedPhoto {
   path: string;
@@ -97,9 +97,11 @@ export function TechnicianPhotoUpload({
   return (
     <div className="space-y-2">
       <div className="text-sm font-medium">{title}</div>
-      <div className="flex flex-wrap gap-2">
+      {/* 3 photo slots side-by-side. Slot 1..N-1 show uploaded thumbs, remaining
+          are dashed empty tiles with a brand-blue aperture + plus badge. */}
+      <div className="grid grid-cols-3 gap-3">
         {photos.map((p, i) => (
-          <div key={p.path} className="relative w-20 h-20 rounded-lg overflow-hidden border border-slate-200">
+          <div key={p.path} className="relative aspect-square rounded-xl overflow-hidden border-2 border-brand-blue">
             <Image src={p.previewUrl} alt={p.name} fill className="object-cover" unoptimized />
             <button
               type="button"
@@ -111,32 +113,39 @@ export function TechnicianPhotoUpload({
             </button>
           </div>
         ))}
-        <label className="w-20 h-20 rounded-lg border-2 border-dashed border-slate-300 hover:border-brand flex flex-col items-center justify-center text-slate-500 text-xs cursor-pointer">
-          {uploading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <>
-              <Camera className="w-4 h-4 mb-0.5" />
-              Add
-            </>
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            multiple
-            className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
-            disabled={uploading}
-          />
-        </label>
+        {Array.from({ length: Math.max(0, 3 - photos.length) }).map((_, i) => (
+          <label
+            key={`slot-${i}`}
+            className="relative aspect-square rounded-xl border-2 border-dashed border-brand-blue bg-white hover:bg-brand-blue/5 flex items-center justify-center cursor-pointer"
+          >
+            {uploading && i === 0 ? (
+              <Loader2 className="w-6 h-6 animate-spin text-brand-blue" />
+            ) : (
+              <span className="relative">
+                <Aperture className="w-10 h-10 text-brand-blue" strokeWidth={1.75} />
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-brand-blue text-white text-[10px] leading-none font-bold flex items-center justify-center">
+                  +
+                </span>
+              </span>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              multiple
+              className="hidden"
+              onChange={(e) => handleFiles(e.target.files)}
+              disabled={uploading}
+            />
+          </label>
+        ))}
       </div>
       {photos.length > 0 && (
         <button
           type="button"
           onClick={save}
           disabled={isPending}
-          className="inline-flex items-center gap-1.5 bg-brand hover:bg-brand-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-blue/90 text-white rounded-full px-5 py-2 text-sm font-semibold disabled:opacity-60"
         >
           {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Save {photos.length} photo{photos.length === 1 ? "" : "s"}
