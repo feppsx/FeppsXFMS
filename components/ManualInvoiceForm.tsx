@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import {
-  createManualInvoice, type InvoiceItemInput,
+  createManualInvoice, updateManualInvoice, type InvoiceItemInput,
 } from "@/lib/actions/invoices";
 import { ManualInvoiceConfirmation } from "./ManualInvoiceConfirmation";
 import type {
@@ -66,6 +66,7 @@ export function ManualInvoiceForm({
     invoice: Invoice; items: InvoiceItem[];
     beforePaths: string[]; afterPaths: string[];
   } | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   const subtotal   = useMemo(() => rows.reduce((s, r) => s + (isFinite(r.unit_price) ? r.unit_price : 0), 0), [rows]);
   const grandTotal = Math.max(0, subtotal - discount + gst - deposit);
@@ -138,7 +139,7 @@ export function ManualInvoiceForm({
     if (!customerName.trim())    return setError("Customer name is required.");
 
     startTransition(async () => {
-      const res = await createManualInvoice({
+      const payload = {
         customer_name:    customerName,
         customer_address: customerAddress || null,
         contact_no:       contactNo || null,
@@ -154,7 +155,10 @@ export function ManualInvoiceForm({
         items,
         before_photo_paths: beforePhotos.map((p) => p.path),
         after_photo_paths:  afterPhotos.map((p) => p.path),
-      });
+      };
+      const res = savedId
+        ? await updateManualInvoice(savedId, payload)
+        : await createManualInvoice(payload);
       if (res.error || !res.id) { setError(res.error ?? "Save failed."); return; }
 
       // Build the Invoice + items objects for the confirmation view.
@@ -190,6 +194,7 @@ export function ManualInvoiceForm({
         beforePaths: beforePhotos.map((p) => p.path),
         afterPaths:  afterPhotos.map((p) => p.path),
       });
+      setSavedId(res.id!);
     });
   }
 
@@ -200,12 +205,18 @@ export function ManualInvoiceForm({
         items={saved.items}
         beforePaths={saved.beforePaths}
         afterPaths={saved.afterPaths}
+        onEdit={() => setSaved(null)}
       />
     );
   }
 
   return (
     <form onSubmit={submit} className="space-y-6">
+      {savedId && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 text-xs">
+          Editing existing invoice. Saving will update the same PDF.
+        </div>
+      )}
       {/* Estate + category */}
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Estate</h2>
@@ -376,7 +387,7 @@ export function ManualInvoiceForm({
           className="inline-flex items-center gap-2 bg-brand hover:bg-brand-600 text-white font-medium rounded-lg px-5 py-3 text-base disabled:opacity-60 shadow-card"
         >
           {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Receipt className="w-5 h-5" />}
-          Save and Generate
+          {savedId ? "Update invoice" : "Save and Generate"}
         </button>
       </div>
     </form>
