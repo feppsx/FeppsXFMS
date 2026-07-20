@@ -76,6 +76,16 @@ export default async function TrackTicketPage({
           </div>
         </div>
 
+        {/* Light-blue anonymous info card */}
+        <div className="bg-info-blue rounded-3xl p-5">
+          <dl className="grid grid-cols-2 gap-y-3 text-sm text-slate-800">
+            {ticket.requester_name && <><dt className="font-medium">Name</dt><dd className="text-slate-700">{ticket.requester_name}</dd></>}
+            <dt className="font-medium">Date</dt>
+            <dd className="text-slate-700">{new Date(ticket.created_at).toLocaleDateString("en-SG", { day: "numeric", month: "numeric", year: "numeric" })}</dd>
+            {ticket.client && <><dt className="font-medium">Building</dt><dd className="text-slate-700">{ticket.client.name}</dd></>}
+          </dl>
+        </div>
+
         <section className="bg-white border border-slate-200 rounded-2xl p-4 md:p-5 shadow-card">
           <h2 className="text-sm font-medium text-slate-500 mb-2">Your description</h2>
           <p className="text-sm text-slate-800 whitespace-pre-wrap">{ticket.description}</p>
