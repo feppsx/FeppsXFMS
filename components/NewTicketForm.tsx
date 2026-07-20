@@ -93,7 +93,7 @@ export function NewTicketForm({
           name="title"
           required minLength={3} maxLength={200}
           placeholder="e.g. 4th floor west wing lights not working"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
         />
       </div>
 
@@ -106,7 +106,7 @@ export function NewTicketForm({
           required
           value={clientId}
           onChange={(e) => { setClientId(e.target.value); setTenantId(""); }}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white"
+          className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
         >
           <option value="" disabled>Select an estate…</option>
           {clients.map((c) => (
@@ -130,7 +130,7 @@ export function NewTicketForm({
             required
             value={tenantId}
             onChange={(e) => setTenantId(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white"
+            className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
           >
             <option value="" disabled>Select your company…</option>
             {tenantsForClient.map((t) => (
@@ -148,7 +148,7 @@ export function NewTicketForm({
         <input
           name="specific_area"
           placeholder="e.g. 4th floor B wing, near lift lobby"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
         />
       </div>
 
@@ -159,7 +159,7 @@ export function NewTicketForm({
         <input
           name="unit_number"
           placeholder="e.g. #06-11, Blk 71-A"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
         />
       </div>
 
@@ -167,7 +167,7 @@ export function NewTicketForm({
         <div>
           <label className="block text-sm font-medium mb-1">Category</label>
           <select name="category_id" defaultValue=""
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white">
+            className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue">
             <option value="">Unspecified</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -177,7 +177,7 @@ export function NewTicketForm({
         <div>
           <label className="block text-sm font-medium mb-1">Priority</label>
           <select name="priority" defaultValue="medium"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white">
+            className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue">
             <option value="low">Low</option>
             <option value="medium">Medium</option>
             <option value="high">High</option>
@@ -193,7 +193,7 @@ export function NewTicketForm({
         <textarea
           name="description" required rows={4}
           placeholder="What's wrong, when did you notice it, any impact on operations…"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+          className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
         />
       </div>
 

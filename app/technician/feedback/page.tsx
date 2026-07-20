@@ -110,7 +110,8 @@ export default async function ManagerFeedbackList({ searchParams }: { searchPara
           No feedback matches these filters yet.
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-card overflow-x-auto">
+        <>
+        <div className="hidden md:block bg-white border border-slate-200 rounded-2xl shadow-card overflow-x-auto">
           <table className="w-full text-sm min-w-[900px]">
             <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
               <tr>
@@ -150,6 +151,36 @@ export default async function ManagerFeedbackList({ searchParams }: { searchPara
             </tbody>
           </table>
         </div>
+
+        {/* Mobile: stacked card list */}
+        <ul className="md:hidden space-y-3">
+          {rows.map((r) => (
+            <li key={r.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-card">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <Stars n={r.rating} />
+                <span className="text-[11px] text-slate-500 whitespace-nowrap">{fmt(r.created_at)}</span>
+              </div>
+              {r.ticket && (
+                <Link href={`/admin/tickets/${r.ticket.id}`} className="block text-brand-blue font-mono text-xs mt-1">
+                  {r.ticket.ticket_number}
+                </Link>
+              )}
+              <div className="text-sm text-slate-800 mt-0.5">{r.ticket?.title ?? "—"}</div>
+              <div className="text-xs text-slate-500 mt-0.5">{r.ticket?.client_name ?? ""}{r.ticket?.assignee_name ? ` · ${r.ticket.assignee_name}` : ""}</div>
+              {r.comment && (
+                <blockquote className="text-sm text-slate-700 italic border-l-4 border-brand-blue pl-3 mt-2">
+                  &ldquo;{r.comment}&rdquo;
+                </blockquote>
+              )}
+              {r.would_recommend === false && (
+                <span className="mt-2 inline-flex items-center rounded-full bg-danger-red text-danger-red-text px-2 py-0.5 text-[10px] font-semibold uppercase">
+                  Would not recommend
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+        </>
       )}
       </AppShell>
     </>

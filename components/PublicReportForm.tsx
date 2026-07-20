@@ -144,7 +144,7 @@ export function PublicReportForm({
             <select
               required value={clientId}
               onChange={(e) => { setClientId(e.target.value); setTenantId(""); }}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white"
+              className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
             >
               <option value="" disabled>Select a location…</option>
               {clients.map((c) => (
@@ -161,7 +161,7 @@ export function PublicReportForm({
               <select
                 required value={tenantId}
                 onChange={(e) => setTenantId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white"
+                className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
               >
                 <option value="" disabled>Select your company…</option>
                 {tenantsForClient.map((t) => (
@@ -190,7 +190,7 @@ export function PublicReportForm({
               <label className="block text-sm font-medium mb-1">Category</label>
               <select
                 value={categoryId} onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white"
+                className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
               >
                 <option value="">Unspecified</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -200,7 +200,7 @@ export function PublicReportForm({
               <label className="block text-sm font-medium mb-1">Priority</label>
               <select
                 value={priority} onChange={(e) => setPriority(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 bg-white"
+                className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -218,7 +218,7 @@ export function PublicReportForm({
               required rows={4}
               value={description} onChange={(e) => setDescription(e.target.value)}
               placeholder="What's wrong, when did you notice it, any impact on operations…"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
             />
           </div>
 
@@ -318,7 +318,7 @@ function Field({
         placeholder={placeholder}
         autoComplete={autoComplete}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand"
+        className="w-full rounded-full bg-input-bg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue"
       />
     </div>
   );

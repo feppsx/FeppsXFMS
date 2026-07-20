@@ -218,3 +218,30 @@ button:not(:disabled):active,
   .logo-live:hover, .logo-live:focus-visible, .logo-live:active { transform: none; }
 }
 
+
+
+/* Phase 4 — global pill input treatment. Add class="pill-input" to any input
+   / select / textarea to opt into the new mobile-design style. Not applied
+   globally to every input to avoid breaking existing complex forms. */
+.pill-input {
+  background: #E5EAEF;
+  border-radius: 9999px;
+  border: 0;
+  padding: 0.75rem 1.25rem;
+  outline: none;
+  color: #0f172a;
+}
+.pill-input:focus {
+  box-shadow: 0 0 0 2px #003882;
+}
+.pill-textarea {
+  background: #E5EAEF;
+  border-radius: 1.5rem;
+  border: 0;
+  padding: 0.75rem 1.25rem;
+  outline: none;
+  color: #0f172a;
+}
+.pill-textarea:focus {
+  box-shadow: 0 0 0 2px #003882;
+}
