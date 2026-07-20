@@ -218,3 +218,69 @@ export async function toggleInvoicePaid(
   revalidatePath("/admin/invoices");
   return {};
 }
+
+
+// ---------------------------------------------------------------------------
+// Update an existing invoice (edit flow — same PDF, updated fields).
+// ---------------------------------------------------------------------------
+export async function updateInvoice(
+  invoiceId: string,
+  input: CreateInvoiceInput
+): Promise<{ error?: string; id?: string; receipt_no?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const items = input.items
+    .map((i) => ({ description: i.description.trim(), unit_price: num(i.unit_price) }))
+    .filter((i) => i.description.length > 0);
+  if (items.length === 0) return { error: "Add at least one line item." };
+  if (!input.customer_name.trim()) return { error: "Customer name is required." };
+
+  const discount = num(input.discount);
+  const gst      = num(input.gst_amount);
+  const deposit  = num(input.deposit_amount);
+  const subtotal    = items.reduce((s, i) => s + i.unit_price, 0);
+  const grand_total = Math.max(0, Math.round((subtotal - discount + gst - deposit) * 100) / 100);
+
+  const { data: updated, error: upErr } = await supabase
+    .from("invoices")
+    .update({
+      customer_name:    input.customer_name.trim(),
+      customer_address: input.customer_address?.trim() || null,
+      contact_no:       input.contact_no?.trim() || null,
+      invoice_date:     input.invoice_date || new Date().toISOString().slice(0, 10),
+      time_in:          input.time_in?.trim() || null,
+      time_out:         input.time_out?.trim() || null,
+      subtotal,
+      discount,
+      gst_amount:       gst,
+      deposit_amount:   deposit,
+      grand_total,
+      notes:            input.notes?.trim() || null,
+    })
+    .eq("id", invoiceId)
+    .select("id, receipt_no, ticket_id")
+    .maybeSingle<{ id: string; receipt_no: string; ticket_id: string | null }>();
+
+  if (upErr) return { error: upErr.message };
+  if (!updated) return { error: "Not allowed to update this invoice, or it no longer exists." };
+
+  await supabase.from("invoice_items").delete().eq("invoice_id", invoiceId);
+  const rows = items.map((it, idx) => ({
+    invoice_id: invoiceId,
+    description: it.description,
+    unit_price:  it.unit_price,
+    sort_order:  idx,
+  }));
+  const { error: itemsErr } = await supabase.from("invoice_items").insert(rows);
+  if (itemsErr) return { error: `Invoice saved but items failed: ${itemsErr.message}` };
+
+  if (updated.ticket_id) {
+    revalidatePath(`/technician/jobs/${updated.ticket_id}`);
+    revalidatePath(`/admin/tickets/${updated.ticket_id}`);
+    revalidatePath(`/client/tickets/${updated.ticket_id}`);
+  }
+  revalidatePath("/admin/invoices");
+  return { id: updated.id, receipt_no: updated.receipt_no };
+}

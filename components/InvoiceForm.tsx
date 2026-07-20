@@ -2,8 +2,9 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createInvoice, type InvoiceItemInput } from "@/lib/actions/invoices";
+import { createInvoice, updateInvoice, type InvoiceItemInput } from "@/lib/actions/invoices";
 import { Loader2, Plus, Trash2, Receipt, ChevronDown, ChevronUp } from "lucide-react";
+import type { Invoice, InvoiceItem } from "@/lib/db-types";
 
 interface Prefill {
   customer_name: string;
@@ -23,26 +24,36 @@ export function InvoiceForm({
   ticketId,
   prefill,
   onSaved,
+  editing,
 }: {
   ticketId: string;
   prefill: Prefill;
   onSaved: () => void;
+  editing?: { invoice: Invoice; items: InvoiceItem[] } | null;
 }) {
   const router = useRouter();
-  const [customerName,    setCustomerName]    = useState(prefill.customer_name);
-  const [customerAddress, setCustomerAddress] = useState(prefill.customer_address);
-  const [contactNo,       setContactNo]       = useState(prefill.contact_no);
-  const [timeIn,          setTimeIn]          = useState(prefill.time_in);
-  const [timeOut,         setTimeOut]         = useState(prefill.time_out);
 
-  const [rows, setRows] = useState<Row[]>([
-    { key: crypto.randomUUID(), description: "", unit_price: 0 },
-  ]);
+  const initName    = editing?.invoice.customer_name    ?? prefill.customer_name;
+  const initAddr    = editing?.invoice.customer_address ?? prefill.customer_address;
+  const initContact = editing?.invoice.contact_no       ?? prefill.contact_no;
+  const initTimeIn  = editing?.invoice.time_in          ?? prefill.time_in;
+  const initTimeOut = editing?.invoice.time_out         ?? prefill.time_out;
 
-  const [discount, setDiscount] = useState(0);
-  const [gst,      setGst]      = useState(0);
-  const [deposit,  setDeposit]  = useState(0);
-  const [showExtras, setShowExtras] = useState(false);
+  const [customerName,    setCustomerName]    = useState(initName ?? "");
+  const [customerAddress, setCustomerAddress] = useState(initAddr ?? "");
+  const [contactNo,       setContactNo]       = useState(initContact ?? "");
+  const [timeIn,          setTimeIn]          = useState(initTimeIn ?? "");
+  const [timeOut,         setTimeOut]         = useState(initTimeOut ?? "");
+
+  const initRows: Row[] = editing?.items?.length
+    ? editing.items.map((i) => ({ key: i.id, description: i.description, unit_price: Number(i.unit_price) }))
+    : [{ key: crypto.randomUUID(), description: "", unit_price: 0 }];
+  const [rows, setRows] = useState<Row[]>(initRows);
+
+  const [discount, setDiscount] = useState(Number(editing?.invoice.discount ?? 0));
+  const [gst,      setGst]      = useState(Number(editing?.invoice.gst_amount ?? 0));
+  const [deposit,  setDeposit]  = useState(Number(editing?.invoice.deposit_amount ?? 0));
+  const [showExtras, setShowExtras] = useState(!!editing);
 
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -73,7 +84,7 @@ export function InvoiceForm({
     if (!customerName.trim()) return setError("Customer name is required.");
 
     startTransition(async () => {
-      const res = await createInvoice({
+      const payload = {
         ticket_id: ticketId,
         customer_name: customerName,
         customer_address: customerAddress,
@@ -82,7 +93,10 @@ export function InvoiceForm({
         time_out: timeOut,
         discount, gst_amount: gst, deposit_amount: deposit,
         items,
-      });
+      };
+      const res = editing
+        ? await updateInvoice(editing.invoice.id, payload)
+        : await createInvoice(payload);
       if (res.error) { setError(res.error); return; }
       onSaved();
       router.refresh();
@@ -91,7 +105,11 @@ export function InvoiceForm({
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      {/* customer */}
+      {editing && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 text-xs">
+          Editing invoice <span className="font-mono font-semibold">{editing.invoice.receipt_no}</span>. Saving will update the same PDF.
+        </div>
+      )}
       <div className="grid sm:grid-cols-2 gap-3">
         <Field label="Customer M/s" value={customerName}    onChange={setCustomerName} required />
         <Field label="Contact No"   value={contactNo}       onChange={setContactNo} />
@@ -100,7 +118,6 @@ export function InvoiceForm({
         <Field label="Time Out"     value={timeOut}         onChange={setTimeOut} placeholder="e.g. 11:15" />
       </div>
 
-      {/* line items */}
       <div>
         <div className="text-sm font-medium mb-2">Line items</div>
         <div className="space-y-2">
@@ -120,10 +137,7 @@ export function InvoiceForm({
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-slate-400 text-sm">S$</span>
                   <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    inputMode="decimal"
+                    type="number" step="0.01" min="0" inputMode="decimal"
                     value={r.unit_price || ""}
                     onChange={(e) => updateRow(r.key, { unit_price: parseFloat(e.target.value) || 0 })}
                     placeholder="0.00"
@@ -132,9 +146,7 @@ export function InvoiceForm({
                 </div>
               </div>
               <button
-                type="button"
-                onClick={() => removeRow(r.key)}
-                disabled={rows.length <= 1}
+                type="button" onClick={() => removeRow(r.key)} disabled={rows.length <= 1}
                 className="mt-1 p-1.5 text-slate-400 hover:text-red-600 disabled:opacity-30"
                 title="Remove row"
               >
@@ -143,23 +155,15 @@ export function InvoiceForm({
             </div>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={addRow}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 px-3 py-1.5 text-sm font-medium"
-        >
-          <Plus className="w-4 h-4" />
-          Add row
+        <button type="button" onClick={addRow}
+          className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 px-3 py-1.5 text-sm font-medium">
+          <Plus className="w-4 h-4" /> Add row
         </button>
       </div>
 
-      {/* extras */}
       <div>
-        <button
-          type="button"
-          onClick={() => setShowExtras((v) => !v)}
-          className="text-xs text-slate-500 hover:text-slate-800 inline-flex items-center gap-1"
-        >
+        <button type="button" onClick={() => setShowExtras((v) => !v)}
+          className="text-xs text-slate-500 hover:text-slate-800 inline-flex items-center gap-1">
           {showExtras ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           {showExtras ? "Hide" : "Add"} Discount / GST / Deposit
         </button>
@@ -172,7 +176,6 @@ export function InvoiceForm({
         )}
       </div>
 
-      {/* totals */}
       <div className="border-t border-slate-200 pt-3 space-y-1 text-sm">
         <TotalLine label="Sub-total" value={subtotal} />
         {discount > 0 && <TotalLine label="Discount" value={-discount} muted />}
@@ -191,64 +194,42 @@ export function InvoiceForm({
       )}
 
       <div className="pt-1">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="inline-flex items-center gap-2 bg-brand hover:bg-brand-600 text-white font-medium rounded-lg px-5 py-2.5 disabled:opacity-60"
-        >
+        <button type="submit" disabled={isPending}
+          className="inline-flex items-center gap-2 bg-brand hover:bg-brand-600 text-white font-medium rounded-lg px-5 py-2.5 disabled:opacity-60">
           {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Receipt className="w-4 h-4" />}
-          Save invoice
+          {editing ? "Update invoice" : "Save invoice"}
         </button>
       </div>
     </form>
   );
 }
 
-function Field({
-  label, value, onChange, required, placeholder, className,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  required?: boolean;
-  placeholder?: string;
-  className?: string;
+function Field({ label, value, onChange, required, placeholder, className }: {
+  label: string; value: string; onChange: (v: string) => void; required?: boolean; placeholder?: string; className?: string;
 }) {
   return (
     <div className={className}>
       <label className="block text-xs font-medium text-slate-600 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
-      <input
-        type="text"
-        value={value}
-        required={required}
-        placeholder={placeholder}
+      <input type="text" value={value} required={required} placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-      />
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
     </div>
   );
 }
 
-function NumField({
-  label, value, onChange,
-}: { label: string; value: number; onChange: (v: number) => void }) {
+function NumField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div>
       <label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
       <div className="relative">
         <span className="absolute left-3 top-2 text-slate-400 text-sm">S$</span>
-        <input
-          type="number"
-          step="0.01"
-          min="0"
-          inputMode="decimal"
+        <input type="number" step="0.01" min="0" inputMode="decimal"
           value={value || ""}
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
           placeholder="0.00"
-          className="w-full rounded-lg border border-slate-300 pl-9 pr-2 py-2 text-sm text-right focus:outline-none focus:ring-2 focus:ring-brand"
-        />
+          className="w-full rounded-lg border border-slate-300 pl-9 pr-2 py-2 text-sm text-right focus:outline-none focus:ring-2 focus:ring-brand" />
       </div>
     </div>
   );
