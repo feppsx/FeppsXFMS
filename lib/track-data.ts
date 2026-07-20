@@ -63,3 +63,23 @@ export async function getTicketByToken(token: string): Promise<TrackBundle | nul
 
   return { ticket, history: history ?? [], attachments };
 }
+
+
+// -------- Feedback lookup (bypasses RLS via admin client) --------
+
+export interface AnonTrackFeedback {
+  rating: number;
+  would_recommend: boolean | null;
+  comment: string | null;
+  created_at: string;
+}
+
+export async function getFeedbackByTicketId(ticketId: string): Promise<AnonTrackFeedback | null> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("ticket_feedback")
+    .select("rating, would_recommend, comment, created_at")
+    .eq("ticket_id", ticketId)
+    .maybeSingle<AnonTrackFeedback>();
+  return data ?? null;
+}

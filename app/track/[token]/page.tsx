@@ -5,7 +5,9 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { PriorityBadge } from "@/components/PriorityBadge";
 import { CategoryPill } from "@/components/CategoryPill";
 import { TicketTimeline } from "@/components/TicketTimeline";
-import { getTicketByToken } from "@/lib/track-data";
+import { getTicketByToken, getFeedbackByTicketId } from "@/lib/track-data";
+import { AnonFeedbackForm } from "@/components/AnonFeedbackForm";
+import { Star } from "lucide-react";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +45,7 @@ export default async function TrackTicketPage({
   }
 
   const { ticket, history, attachments } = bundle;
+  const existingFeedback = ticket.raised_by === null ? await getFeedbackByTicketId(ticket.id) : null;
 
   // Build actors map from history changed_by values — for anonymous views we don't
   // expose profile names, so we just show "Team" for any staff action.
@@ -132,6 +135,38 @@ export default async function TrackTicketPage({
           <h2 className="text-sm font-medium text-slate-500 mb-3">Timeline</h2>
           <TicketTimeline history={history} actors={actors} />
         </section>
+
+        {(ticket.status === "resolved" || ticket.status === "closed") && ticket.raised_by === null && (
+          <section className="bg-white border border-slate-200 rounded-2xl p-4 md:p-5 shadow-card">
+            <h2 className="text-sm font-medium text-slate-500 mb-3">Rate this service</h2>
+            {existingFeedback ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1">
+                  {[1,2,3,4,5].map((v) => (
+                    <Star key={v} className={"w-5 h-5 " + (v <= existingFeedback.rating ? "fill-amber-400 text-amber-400" : "text-slate-300")} />
+                  ))}
+                  <span className="ml-2 text-sm font-semibold text-slate-800">{existingFeedback.rating} / 5</span>
+                  {existingFeedback.would_recommend === true && (
+                    <span className="ml-3 inline-flex items-center rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">Recommends</span>
+                  )}
+                  {existingFeedback.would_recommend === false && (
+                    <span className="ml-3 inline-flex items-center rounded-full bg-rose-50 border border-rose-200 text-rose-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">Would not recommend</span>
+                  )}
+                </div>
+                {existingFeedback.comment && (
+                  <blockquote className="border-l-4 border-brand-blue pl-3 text-sm text-slate-700 italic">
+                    &ldquo;{existingFeedback.comment}&rdquo;
+                  </blockquote>
+                )}
+                <div className="text-xs text-slate-500">
+                  Submitted {new Date(existingFeedback.created_at).toLocaleString("en-SG")}
+                </div>
+              </div>
+            ) : (
+              <AnonFeedbackForm token={ticket.tracking_token!} />
+            )}
+          </section>
+        )}
 
         <p className="text-xs text-slate-500 text-center mt-4">
           Reload this page any time to see the latest status. Save this URL to come back easily.
