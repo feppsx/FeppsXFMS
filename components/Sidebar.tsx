@@ -141,14 +141,14 @@ export function Sidebar({ profile }: { profile: Profile }) {
 
       {open && (
         <div
-          className="fixed inset-0 bg-black/40 z-30 md:hidden"
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
           onClick={() => setOpen(false)}
         />
       )}
 
       <aside
         className={
-          "fixed top-0 bottom-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col " +
+          "fixed top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col " +
           "transition-transform duration-200 md:translate-x-0 " +
           (open ? "translate-x-0 shadow-pop" : "-translate-x-full md:translate-x-0")
         }

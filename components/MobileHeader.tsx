@@ -43,7 +43,7 @@ export function MobileHeader({
     <div className="md:hidden">
       <div
         className={
-          "bg-brand-red text-white px-5 pt-6 rounded-b-[40px] " +
+          "bg-brand-red text-white px-5 pt-16 rounded-b-[40px] " +
           (showSearch ? "pb-16" : "pb-6")
         }
       >
