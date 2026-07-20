@@ -144,7 +144,7 @@ export function ServiceReportForm({
 
   // Preview state
   if (saved && previewing) {
-    const checked = SERVICES.filter((s) => svcFlags[s.key]).map((s) => s.label);
+    const checked: string[] = SERVICES.filter((s) => svcFlags[s.key]).map((s) => s.label);
     if (saved.svc_others) checked.push(`Others: ${saved.svc_others}`);
     const flags = [
       saved.is_term_agreement && "Term Agreement / MCST",
