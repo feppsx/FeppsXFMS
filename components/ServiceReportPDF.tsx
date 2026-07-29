@@ -1,5 +1,5 @@
 // Service Report PDF — red header, blue title bar, light-blue info + sign-off cards.
-import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, View, Text, Image, StyleSheet, Svg, Path } from "@react-pdf/renderer";
 
 const RED   = "#9A121A";
 const BLUE  = "#003882";
@@ -75,10 +75,13 @@ const s = StyleSheet.create({
 });
 
 function Chk({ on }: { on: boolean }) {
-  return on ? (
-    <View style={s.chkBoxOn}><Text style={s.chkTick}>X</Text></View>
-  ) : (
-    <View style={s.chkBoxOff} />
+  if (!on) return <View style={s.chkBoxOff} />;
+  return (
+    <View style={s.chkBoxOn}>
+      <Svg width={8} height={8} viewBox="0 0 24 24">
+        <Path d="M5 12.5 L10 17.5 L19 6" stroke="white" strokeWidth={4} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      </Svg>
+    </View>
   );
 }
 
