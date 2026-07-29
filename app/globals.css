@@ -220,6 +220,87 @@ button:not(:disabled):active,
 
 
 
+
+/* -----------------------------------------------------------------------------
+ * OLED dark palette — swaps the earlier slate-based dark surface for a
+ * near-black canvas with brighter accents. Applied AFTER the earlier .dark
+ * rules so these values win.
+ * -------------------------------------------------------------------------- */
+html.dark body                { background-color: #050708; color: #F1F5F9; }
+html.dark .bg-white           { background-color: #171717; }
+html.dark .bg-white\/95       { background-color: rgb(23 23 23 / 0.95); }
+html.dark .bg-white\/90       { background-color: rgb(23 23 23 / 0.90); }
+html.dark .bg-slate-50        { background-color: #050708; }
+html.dark .bg-slate-100       { background-color: #262626; }
+html.dark .bg-slate-50\/50    { background-color: rgb(5 7 8 / 0.5); }
+
+html.dark .border-slate-100   { border-color: #2A2A2A; }
+html.dark .border-slate-200   { border-color: #2A2A2A; }
+html.dark .border-slate-300   { border-color: #3F3F46; }
+
+html.dark .text-slate-900     { color: #F1F5F9; }
+html.dark .text-slate-800     { color: #E5E7EB; }
+html.dark .text-slate-700     { color: #D1D5DB; }
+html.dark .text-slate-600     { color: #A3A3A3; }
+html.dark .text-slate-500     { color: #A3A3A3; }
+html.dark .text-slate-400     { color: #737373; }
+
+/* Inputs — dark neutral */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #262626;
+  color: #F1F5F9;
+  border-color: #3F3F46;
+}
+html.dark .bg-input-bg        { background-color: #262626; }
+
+/* Hover backgrounds */
+html.dark .hover\:bg-slate-50:hover  { background-color: #262626; }
+html.dark .hover\:bg-slate-100:hover { background-color: #262626; }
+
+/* Brand accents — brighter blue that pops against black */
+html.dark .bg-brand           { background-color: #60A5FA; }
+html.dark .hover\:bg-brand-600:hover { background-color: #3B82F6; }
+html.dark .bg-brand-blue      { background-color: #60A5FA; }
+html.dark .hover\:bg-brand-blue\/90:hover { background-color: rgb(96 165 250 / 0.9); }
+html.dark .text-brand         { color: #93C5FD; }
+html.dark .text-brand-blue    { color: #93C5FD; }
+html.dark .border-brand       { border-color: #60A5FA; }
+html.dark .border-brand-blue  { border-color: #60A5FA; }
+html.dark .focus\:ring-brand:focus,
+html.dark .focus\:ring-brand-blue:focus { --tw-ring-color: #60A5FA; }
+html.dark .bg-brand-50        { background-color: rgba(96, 165, 250, 0.10); }
+html.dark .bg-brand-100       { background-color: rgba(96, 165, 250, 0.16); }
+
+/* Red header — nudge brighter so it doesn't feel dim against pure black */
+html.dark .bg-brand-red       { background-color: #B71B24; }
+html.dark .text-brand-red     { color: #F7C1C1; }
+html.dark .border-brand-red   { border-color: #B71B24; }
+
+/* Light-blue info card in PDFs / detail pages gets a subtle blue tint */
+html.dark .bg-info-blue       { background-color: rgba(59, 130, 246, 0.14); color: #DBEAFE; }
+html.dark .bg-chip-blue       { background-color: rgba(59, 130, 246, 0.22); color: #DBEAFE; }
+
+/* Coloured KPI gradients — even more dialed down for OLED depth */
+html.dark .from-emerald-50 { --tw-gradient-from: rgba(16, 185, 129, 0.10) var(--tw-gradient-from-position); }
+html.dark .to-emerald-100  { --tw-gradient-to:   rgba(16, 185, 129, 0.20) var(--tw-gradient-to-position); }
+html.dark .from-amber-50   { --tw-gradient-from: rgba(245, 158, 11, 0.10) var(--tw-gradient-from-position); }
+html.dark .to-amber-100    { --tw-gradient-to:   rgba(245, 158, 11, 0.20) var(--tw-gradient-to-position); }
+html.dark .from-rose-50    { --tw-gradient-from: rgba(244, 63, 94, 0.10) var(--tw-gradient-from-position); }
+html.dark .to-rose-100     { --tw-gradient-to:   rgba(244, 63, 94, 0.20) var(--tw-gradient-to-position); }
+html.dark .from-purple-50  { --tw-gradient-from: rgba(168, 85, 247, 0.10) var(--tw-gradient-from-position); }
+html.dark .to-purple-100   { --tw-gradient-to:   rgba(168, 85, 247, 0.20) var(--tw-gradient-to-position); }
+html.dark .from-accent-50  { --tw-gradient-from: rgba(249, 115, 22, 0.10) var(--tw-gradient-from-position); }
+html.dark .to-accent-100   { --tw-gradient-to:   rgba(249, 115, 22, 0.20) var(--tw-gradient-to-position); }
+html.dark .from-brand-50   { --tw-gradient-from: rgba(96, 165, 250, 0.12) var(--tw-gradient-from-position); }
+html.dark .to-brand-100    { --tw-gradient-to:   rgba(96, 165, 250, 0.22) var(--tw-gradient-to-position); }
+
+/* Card + pop shadows tuned for dark surfaces */
+html.dark .shadow-card { box-shadow: 0 1px 2px rgb(0 0 0 / 0.6); }
+html.dark .shadow-pop  { box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.6); }
+html.dark .shadow-float { box-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.7); }
+
 /* Phase 4 — global pill input treatment. Add class="pill-input" to any input
    / select / textarea to opt into the new mobile-design style. Not applied
    globally to every input to avoid breaking existing complex forms. */
