@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
 
   sigRow: { flexDirection: "row", marginTop: 14, gap: 10 },
   sigCell: { flex: 1, alignItems: "center" },
-  sigSlot: { width: "100%", height: 45 },
+  sigSlot: { width: "100%", height: 45, alignItems: "center", justifyContent: "flex-end" },
   sigLine: { borderTopWidth: 1, borderTopColor: BLACK, width: "100%", marginTop: 2 },
   sigTxt: { fontSize: 8, textAlign: "center", marginTop: 3 },
   sigImg: { maxWidth: 100, height: 40, objectFit: "contain" },
