@@ -7,6 +7,7 @@ import {
   createManualInvoice, updateManualInvoice, type InvoiceItemInput,
 } from "@/lib/actions/invoices";
 import { ManualInvoiceConfirmation } from "./ManualInvoiceConfirmation";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 import type {
   Estate, Invoice, InvoiceItem, EstateCategory,
 } from "@/lib/db-types";
@@ -26,8 +27,10 @@ function money(n: number) {
 
 export function ManualInvoiceForm({
   estates,
+  branding,
 }: {
   estates: Pick<Estate, "id" | "name" | "location" | "category" | "address" | "contact_phone">[];
+  branding?: CompanyBranding | null;
 }) {
   // Customer + meta
   const [customerName,    setCustomerName]    = useState("");
@@ -206,6 +209,7 @@ export function ManualInvoiceForm({
         beforePaths={saved.beforePaths}
         afterPaths={saved.afterPaths}
         onEdit={() => setSaved(null)}
+        branding={branding}
       />
     );
   }

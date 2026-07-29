@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { InvoiceDownloadButton } from "@/components/InvoiceDownloadButton";
 import type { Invoice, InvoiceItem } from "@/lib/db-types";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 import { CheckCircle2, ArrowRight, Loader2, Eye, Pencil } from "lucide-react";
 
 function money(n: number) {
@@ -16,13 +17,14 @@ function money(n: number) {
  * exposes Download, Preview, and Edit actions.
  */
 export function ManualInvoiceConfirmation({
-  invoice, items, beforePaths, afterPaths, onEdit,
+  invoice, items, beforePaths, afterPaths, onEdit, branding,
 }: {
   invoice: Invoice;
   items: InvoiceItem[];
   beforePaths: string[];
   afterPaths: string[];
   onEdit?: () => void;
+  branding?: CompanyBranding | null;
 }) {
   const [beforeUrls, setBeforeUrls] = useState<string[] | null>(null);
   const [afterUrls, setAfterUrls]   = useState<string[] | null>(null);
@@ -92,6 +94,7 @@ export function ManualInvoiceConfirmation({
         <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200">
           {ready && (
             <InvoiceDownloadButton
+              branding={branding}
               invoice={invoice}
               items={items}
               beforePhotos={beforeUrls!}
@@ -131,6 +134,7 @@ export function ManualInvoiceConfirmation({
       <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
         {ready ? (
           <InvoiceDownloadButton
+            branding={branding}
             invoice={invoice}
             items={items}
             beforePhotos={beforeUrls!}

@@ -7,6 +7,7 @@ import type { Estate, EstateCategory } from "@/lib/db-types";
 import { Loader2, Plus, Trash2, FileText, Eye, Pencil } from "lucide-react";
 import { QuotationDownloadButton } from "./QuotationDownloadButton";
 import type { QuotationPdfInput } from "./QuotationPDF";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 
 const CATEGORIES: EstateCategory[] = ["Retail", "MCST", "SBS"];
 
@@ -27,9 +28,11 @@ export interface QuotationPrefill {
 export function QuotationForm({
   estates,
   prefill,
+  branding,
 }: {
   estates: Pick<Estate, "id" | "name" | "location" | "category" | "address" | "contact_phone">[];
   prefill?: QuotationPrefill;
+  branding?: CompanyBranding | null;
 }) {
   const [customerName, setCustomerName] = useState(prefill?.customer_name ?? "");
   const [customerAddress, setCustomerAddress] = useState(prefill?.customer_address ?? "");
@@ -122,7 +125,7 @@ export function QuotationForm({
           <span className="font-mono font-semibold">{saved.quotation_no}</span>
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
-          <QuotationDownloadButton q={saved} />
+          <QuotationDownloadButton q={saved} branding={branding} />
           <button
             type="button"
             onClick={() => setPreviewing(true)}
@@ -192,7 +195,7 @@ export function QuotationForm({
         </div>
         {saved.notes && <div className="text-sm"><span className="font-semibold">Notes:</span> {saved.notes}</div>}
         <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200">
-          <QuotationDownloadButton q={saved} />
+          <QuotationDownloadButton q={saved} branding={branding} />
           <button type="button" onClick={() => { setPreviewing(false); setSaved(null); }} className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
             <Pencil className="w-4 h-4" /> Edit
           </button>

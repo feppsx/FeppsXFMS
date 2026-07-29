@@ -7,14 +7,17 @@
 import { useState } from "react";
 import { QuotationForm, type QuotationPrefill } from "./QuotationForm";
 import type { Estate } from "@/lib/db-types";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 import { FileText } from "lucide-react";
 
 export function QuotationSection({
   estates,
   prefill,
+  branding,
 }: {
   estates: Pick<Estate, "id" | "name" | "location" | "category" | "address" | "contact_phone">[];
   prefill?: QuotationPrefill;
+  branding?: CompanyBranding | null;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -30,5 +33,5 @@ export function QuotationSection({
     );
   }
 
-  return <QuotationForm estates={estates} prefill={prefill} />;
+  return <QuotationForm estates={estates} prefill={prefill} branding={branding} />;
 }

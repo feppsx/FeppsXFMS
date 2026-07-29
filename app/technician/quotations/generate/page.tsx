@@ -4,6 +4,7 @@ import { QuotationForm } from "@/components/QuotationForm";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import type { Estate } from "@/lib/db-types";
+import { getCompanyBranding } from "@/lib/company-settings-data";
 import { ArrowLeft, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,7 @@ export default async function TechGenerateQuotationPage() {
     .eq("is_active", true)
     .order("name")
     .returns<Pick<Estate, "id" | "name" | "location" | "category" | "address" | "contact_phone">[]>();
+  const branding = await getCompanyBranding();
 
   return (
     <AppShell profile={profile}>
@@ -31,7 +33,7 @@ export default async function TechGenerateQuotationPage() {
         Build a quotation from scratch — no ticket required.
       </p>
       <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-7 shadow-card">
-        <QuotationForm estates={estates ?? []} />
+        <QuotationForm estates={estates ?? []} branding={branding} />
       </div>
     </AppShell>
   );

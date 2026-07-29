@@ -14,6 +14,7 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { TicketInfoTable } from "@/components/TicketInfoTable";
 import { FeedbackView } from "@/components/FeedbackView";
 import { getFeedbackForTicket } from "@/lib/feedback-data";
+import { getCompanyBranding } from "@/lib/company-settings-data";
 import { requireProfile } from "@/lib/guard";
 import { getTicketDetail } from "@/lib/ticket-data";
 import { getInvoiceForTicket } from "@/lib/invoice-data";
@@ -40,6 +41,7 @@ export default async function TechnicianJobDetail({
   const { ticket, history, attachments, comments, actors, urls } = await getTicketDetail(id);
   const invoiceBundle = await getInvoiceForTicket(id);
   const { feedback: fb, submitterName: fbName } = await getFeedbackForTicket(id);
+  const branding = await getCompanyBranding();
   const techSigUrl = await signatureUrl(ticket.assignee?.signature_path);
 
   const supabase = await createClient();
@@ -123,10 +125,11 @@ export default async function TechnicianJobDetail({
             <p className="text-sm text-slate-700">{ticket.raiser?.full_name ?? "—"}</p>
           </Section>
           <Section title="Generate Quotation">
-            <QuotationSection estates={estates ?? []} prefill={quotationPrefill} />
+            <QuotationSection estates={estates ?? []} prefill={quotationPrefill} branding={branding} />
           </Section>
           <Section title="Invoice">
             <InvoiceSection
+              branding={branding}
               ticketId={ticket.id}
               existingInvoice={invoiceBundle?.invoice ?? null}
               existingItems={invoiceBundle?.items ?? []}
@@ -138,7 +141,7 @@ export default async function TechnicianJobDetail({
             />
           </Section>
           <Section title="Generate Service Report">
-            <ServiceReportSection estates={estates ?? []} prefill={srPrefill} />
+            <ServiceReportSection estates={estates ?? []} prefill={srPrefill} branding={branding} />
           </Section>
           <Section title="Customer feedback">
             <FeedbackView feedback={fb} submitterName={fbName} />

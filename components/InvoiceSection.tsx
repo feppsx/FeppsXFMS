@@ -10,6 +10,7 @@ import { useState } from "react";
 import { InvoiceForm } from "./InvoiceForm";
 import { InvoiceDownloadButton } from "./InvoiceDownloadButton";
 import type { Invoice, InvoiceItem } from "@/lib/db-types";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 import { Receipt, Eye, Pencil } from "lucide-react";
 
 interface Prefill {
@@ -33,6 +34,7 @@ export function InvoiceSection({
   technicianSignatureUrl,
   beforePhotos = [],
   afterPhotos = [],
+  branding,
 }: {
   ticketId: string;
   existingInvoice: Invoice | null;
@@ -42,6 +44,7 @@ export function InvoiceSection({
   technicianSignatureUrl?: string | null;
   beforePhotos?: string[];
   afterPhotos?: string[];
+  branding?: CompanyBranding | null;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -86,7 +89,7 @@ export function InvoiceSection({
             <div className="text-base font-semibold">Grand Total: <span className="font-mono">S$ {money(Number(existingInvoice.grand_total))}</span></div>
           </div>
           <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200">
-            <InvoiceDownloadButton invoice={existingInvoice} items={existingItems} technicianSignatureUrl={technicianSignatureUrl} beforePhotos={beforePhotos} afterPhotos={afterPhotos} />
+            <InvoiceDownloadButton branding={branding} invoice={existingInvoice} items={existingItems} technicianSignatureUrl={technicianSignatureUrl} beforePhotos={beforePhotos} afterPhotos={afterPhotos} />
             <button type="button" onClick={() => { setPreviewing(false); setEditing(true); }} className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium hover:bg-slate-50">
               <Pencil className="w-4 h-4" /> Edit
             </button>
@@ -104,7 +107,7 @@ export function InvoiceSection({
           </span>
         </div>
         <div className="flex flex-wrap gap-2">
-          <InvoiceDownloadButton invoice={existingInvoice} items={existingItems} technicianSignatureUrl={technicianSignatureUrl} beforePhotos={beforePhotos} afterPhotos={afterPhotos} />
+          <InvoiceDownloadButton branding={branding} invoice={existingInvoice} items={existingItems} technicianSignatureUrl={technicianSignatureUrl} beforePhotos={beforePhotos} afterPhotos={afterPhotos} />
           <button type="button" onClick={() => setPreviewing(true)} className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium hover:bg-slate-50">
             <Eye className="w-4 h-4" /> Preview
           </button>

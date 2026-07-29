@@ -4,6 +4,7 @@ import { ManualInvoiceForm } from "@/components/ManualInvoiceForm";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import type { Estate } from "@/lib/db-types";
+import { getCompanyBranding } from "@/lib/company-settings-data";
 import { ArrowLeft, PlusCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export default async function AdminGenerateInvoicePage() {
     .order("name")
     .order("location")
     .returns<Pick<Estate, "id" | "name" | "location" | "category" | "address" | "contact_phone">[]>();
+  const branding = await getCompanyBranding();
 
   return (
     <AppShell profile={profile}>
@@ -40,7 +42,7 @@ export default async function AdminGenerateInvoicePage() {
       </p>
 
       <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-7 shadow-card">
-        <ManualInvoiceForm estates={estates ?? []} />
+        <ManualInvoiceForm estates={estates ?? []} branding={branding} />
       </div>
     </AppShell>
   );

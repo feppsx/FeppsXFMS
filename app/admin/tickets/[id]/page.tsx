@@ -12,6 +12,7 @@ import { ServiceReportSection } from "@/components/ServiceReportSection";
 import { TicketRealtime } from "@/components/TicketRealtime";
 import { FeedbackView } from "@/components/FeedbackView";
 import { getFeedbackForTicket } from "@/lib/feedback-data";
+import { getCompanyBranding } from "@/lib/company-settings-data";
 import { requireProfile } from "@/lib/guard";
 import { getTicketDetail } from "@/lib/ticket-data";
 import { getInvoiceForTicket } from "@/lib/invoice-data";
@@ -38,6 +39,7 @@ export default async function AdminTicketDetail({
   const { ticket, history, attachments, comments, actors, urls } = await getTicketDetail(id);
   const invoiceBundle = await getInvoiceForTicket(id);
   const { feedback: fb, submitterName: fbName } = await getFeedbackForTicket(id);
+  const branding = await getCompanyBranding();
   const techSigUrl = await signatureUrl(ticket.assignee?.signature_path);
 
   const supabase = await createClient();
@@ -112,7 +114,7 @@ export default async function AdminTicketDetail({
             </Section>
           )}
           <Section title="Generate Quotation">
-            <QuotationSection estates={estates ?? []} prefill={quotationPrefill} />
+            <QuotationSection estates={estates ?? []} prefill={quotationPrefill} branding={branding} />
           </Section>
           {invoiceBundle ? (
             <Section title="Invoice">
@@ -123,7 +125,7 @@ export default async function AdminTicketDetail({
                     S$ {invoiceBundle.invoice.grand_total.toLocaleString("en-SG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
-                <InvoiceDownloadButton invoice={invoiceBundle.invoice} items={invoiceBundle.items} technicianSignatureUrl={techSigUrl} beforePhotos={invoiceBundle.beforePhotos} afterPhotos={invoiceBundle.afterPhotos} />
+                <InvoiceDownloadButton branding={branding} invoice={invoiceBundle.invoice} items={invoiceBundle.items} technicianSignatureUrl={techSigUrl} beforePhotos={invoiceBundle.beforePhotos} afterPhotos={invoiceBundle.afterPhotos} />
               </div>
             </Section>
           ) : (
@@ -132,7 +134,7 @@ export default async function AdminTicketDetail({
             </Section>
           )}
           <Section title="Generate Service Report">
-            <ServiceReportSection estates={estates ?? []} prefill={srPrefill} />
+            <ServiceReportSection estates={estates ?? []} prefill={srPrefill} branding={branding} />
           </Section>
           <Section title="Customer feedback">
             <FeedbackView feedback={fb} submitterName={fbName} />

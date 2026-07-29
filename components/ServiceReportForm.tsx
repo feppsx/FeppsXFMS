@@ -7,6 +7,7 @@ import type { Estate } from "@/lib/db-types";
 import { Loader2, ClipboardList, Eye, Pencil, Plus } from "lucide-react";
 import { ServiceReportDownloadButton } from "./ServiceReportDownloadButton";
 import type { ServiceReportPdfInput } from "./ServiceReportPDF";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 
 const SERVICES = [
   { key: "svc_electrical", label: "Electrical" },
@@ -34,9 +35,11 @@ export interface ServiceReportPrefill {
 export function ServiceReportForm({
   estates,
   prefill,
+  branding,
 }: {
   estates: Pick<Estate, "id" | "name" | "location" | "address" | "contact_phone">[];
   prefill?: ServiceReportPrefill;
+  branding?: CompanyBranding | null;
 }) {
   const [estateId, setEstateId] = useState(prefill?.client_id ?? "");
   const [projectName, setProjectName] = useState(prefill?.project_name ?? "");
@@ -127,7 +130,7 @@ export function ServiceReportForm({
         <h2 className="text-lg font-semibold">Service report saved</h2>
         <p className="text-sm text-slate-600 mt-1"><span className="font-mono font-semibold">{saved.sr_no}</span></p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
-          <ServiceReportDownloadButton sr={saved} />
+          <ServiceReportDownloadButton sr={saved} branding={branding} />
           <button type="button" onClick={() => setPreviewing(true)} className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
             <Eye className="w-4 h-4" /> Preview
           </button>
@@ -193,7 +196,7 @@ export function ServiceReportForm({
         </div>
 
         <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200">
-          <ServiceReportDownloadButton sr={saved} />
+          <ServiceReportDownloadButton sr={saved} branding={branding} />
           <button type="button" onClick={() => { setPreviewing(false); setSaved(null); }} className="inline-flex items-center gap-1.5 border border-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50">
             <Pencil className="w-4 h-4" /> Edit
           </button>

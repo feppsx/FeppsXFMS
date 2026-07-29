@@ -3,14 +3,17 @@
 import { useState } from "react";
 import { ServiceReportForm, type ServiceReportPrefill } from "./ServiceReportForm";
 import type { Estate } from "@/lib/db-types";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 import { ClipboardList } from "lucide-react";
 
 export function ServiceReportSection({
   estates,
   prefill,
+  branding,
 }: {
   estates: Pick<Estate, "id" | "name" | "location" | "address" | "contact_phone">[];
   prefill?: ServiceReportPrefill;
+  branding?: CompanyBranding | null;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -26,5 +29,5 @@ export function ServiceReportSection({
     );
   }
 
-  return <ServiceReportForm estates={estates} prefill={prefill} />;
+  return <ServiceReportForm estates={estates} prefill={prefill} branding={branding} />;
 }

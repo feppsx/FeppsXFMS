@@ -4,6 +4,7 @@ import { ServiceReportForm } from "@/components/ServiceReportForm";
 import { requireProfile } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import type { Estate } from "@/lib/db-types";
+import { getCompanyBranding } from "@/lib/company-settings-data";
 import { ArrowLeft, ClipboardList } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,7 @@ export default async function AdminGenerateServiceReportPage() {
     .eq("is_active", true)
     .order("name")
     .returns<Pick<Estate, "id" | "name" | "location" | "address" | "contact_phone">[]>();
+  const branding = await getCompanyBranding();
 
   return (
     <AppShell profile={profile}>
@@ -31,7 +33,7 @@ export default async function AdminGenerateServiceReportPage() {
         FM Division Service Report — fill in the form and download a professional A4 PDF.
       </p>
       <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-7 shadow-card">
-        <ServiceReportForm estates={estates ?? []} />
+        <ServiceReportForm estates={estates ?? []} branding={branding} />
       </div>
     </AppShell>
   );
