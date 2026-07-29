@@ -1,100 +1,85 @@
-// FM Division Service Report — A4 with corporate logo, fixed checkbox rendering.
+// Service Report PDF — red header, blue title bar, light-blue info + sign-off cards.
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 
+const RED   = "#9A121A";
+const BLUE  = "#003882";
+const INFO  = "#E3ECF6";
 const BLACK = "#000";
-const GREY = "#666";
-const BRAND = "#0f4c81";
-const LIGHT = "#f5f5f5";
-const RED = "#c8102e";
+const GREY  = "#666";
 
 const s = StyleSheet.create({
-  page: { padding: 20, fontFamily: "Helvetica", fontSize: 9, color: BLACK },
+  page: { padding: 0, fontFamily: "Helvetica", fontSize: 9, color: BLACK },
 
-  // Header
-  headerRow: {
-    flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start",
-    borderBottomWidth: 1.5, borderBottomColor: BLACK, paddingBottom: 8,
+  header: { backgroundColor: RED, padding: 22, paddingBottom: 22, color: "white" },
+  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  brandBlock: { flexDirection: "column" },
+  logoBox: { width: 96, height: 44, backgroundColor: "white", borderRadius: 4, alignItems: "center", justifyContent: "center" },
+  logoImg: { width: 90, height: 40, objectFit: "contain" },
+  companyName: { fontFamily: "Helvetica-Bold", fontSize: 11, marginTop: 6 },
+  tagline: { fontSize: 8, opacity: 0.9 },
+  uen: { fontSize: 8, opacity: 0.9 },
+  snBlock: { alignItems: "flex-end" },
+  snLabel: { fontSize: 8, opacity: 0.85 },
+  snPill: {
+    backgroundColor: "white", borderRadius: 6, padding: 5, paddingHorizontal: 10, marginTop: 4,
+    color: RED, fontFamily: "Helvetica-Bold", fontSize: 11,
   },
-  logoBox: { width: 130, height: 60, justifyContent: "center", alignItems: "flex-start" },
-  logoImg: { width: 130, height: 60, objectFit: "contain" },
-  brandBlock: { flex: 1, paddingHorizontal: 10 },
-  companyName: { fontFamily: "Helvetica-Bold", fontSize: 12, textAlign: "center" },
-  tagline: { fontSize: 8, color: GREY, fontStyle: "italic", marginTop: 2, textAlign: "center" },
-  uen: { fontSize: 8, color: GREY, marginTop: 2, textAlign: "center" },
-  snBlock: { alignItems: "flex-end", minWidth: 100 },
-  snLabel: { fontSize: 8, color: GREY },
-  snVal: { fontFamily: "Helvetica-Bold", fontSize: 11, color: RED, marginTop: 1 },
 
-  titleBar: { backgroundColor: BRAND, padding: 6, marginVertical: 8, textAlign: "center" },
-  titleText: { color: "white", fontFamily: "Helvetica-Bold", fontSize: 12, letterSpacing: 1 },
+  titleBar: { backgroundColor: BLUE, padding: 8, textAlign: "center" },
+  titleTxt: { color: "white", fontFamily: "Helvetica-Bold", fontSize: 12, letterSpacing: 1.5 },
 
-  // Section
-  sectionTitle: {
-    fontFamily: "Helvetica-Bold", fontSize: 9,
-    backgroundColor: LIGHT, padding: 4,
-    borderWidth: 0.5, borderColor: BLACK, marginTop: 4,
-  },
-  gridBox: { borderWidth: 0.5, borderColor: BLACK, borderTopWidth: 0 },
-  gridRow: { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: BLACK },
-  gridRowLast: { flexDirection: "row" },
-  gridCell: { flex: 1, padding: 4, borderRightWidth: 0.5, borderRightColor: BLACK },
-  gridCellLast: { flex: 1, padding: 4 },
-  fieldLabel: { fontFamily: "Helvetica-Bold", fontSize: 8 },
-  fieldValue: { fontSize: 9, marginTop: 2, minHeight: 10 },
+  body: { padding: 20 },
 
-  // Checkbox row  — the key fix: on-state fills the box with brand color so it
-  // is unambiguously "ticked" regardless of font glyphs.
-  checkRow: { flexDirection: "row", flexWrap: "wrap", padding: 5 },
-  checkItem: { flexDirection: "row", alignItems: "center", marginRight: 12, marginVertical: 3 },
-  chkBoxOff: {
-    width: 10, height: 10,
-    borderWidth: 0.8, borderColor: BLACK,
-    marginRight: 4,
-    backgroundColor: "#fff",
-  },
+  sectionLbl: { fontFamily: "Helvetica-Bold", fontSize: 9, color: BLUE, marginTop: 8, marginBottom: 4, letterSpacing: 0.5 },
+
+  infoCard: { backgroundColor: INFO, borderRadius: 10, padding: 10 },
+  infoGrid: { flexDirection: "row", flexWrap: "wrap" },
+  infoCell: { width: "50%", flexDirection: "row", marginBottom: 4, paddingRight: 8 },
+  infoLabel: { color: "#64748b", fontSize: 9 },
+  infoVal:   { color: BLACK, fontSize: 9, marginLeft: 4, flex: 1 },
+
+  // Checkbox row (used inside info card and services)
+  chkRow: { flexDirection: "row", flexWrap: "wrap", paddingTop: 8, marginTop: 6, borderTopWidth: 0.5, borderTopColor: "#cbd5e1" },
+  chkItem: { flexDirection: "row", alignItems: "center", marginRight: 12, marginVertical: 2 },
   chkBoxOn: {
-    width: 10, height: 10,
-    borderWidth: 0.8, borderColor: BLACK,
-    marginRight: 4,
-    backgroundColor: BRAND,
-    justifyContent: "center", alignItems: "center",
+    width: 10, height: 10, backgroundColor: BLUE, borderRadius: 2, marginRight: 4,
+    alignItems: "center", justifyContent: "center",
   },
-  chkTick: {
-    color: "#fff",
-    fontSize: 9,
-    fontFamily: "Helvetica-Bold",
-    lineHeight: 1,
+  chkBoxOff: {
+    width: 10, height: 10, backgroundColor: "white", borderWidth: 0.7, borderColor: BLACK,
+    borderRadius: 2, marginRight: 4,
   },
+  chkTick: { color: "white", fontSize: 8, fontFamily: "Helvetica-Bold", lineHeight: 1 },
   chkLabel: { fontSize: 8 },
 
-  // Large boxes
-  bigBox: { borderWidth: 0.5, borderColor: BLACK, borderTopWidth: 0, padding: 6, minHeight: 90 },
+  // Services box
+  svcBox: { backgroundColor: INFO, borderRadius: 10, padding: 10, flexDirection: "row", flexWrap: "wrap" },
 
-  // Sign-off
-  signRow: { flexDirection: "row", marginTop: 8, gap: 6 },
-  signCol: { flex: 1, borderWidth: 0.5, borderColor: BLACK, padding: 6 },
-  signField: { flexDirection: "row", marginBottom: 8 },
-  signLabel: { fontFamily: "Helvetica-Bold", fontSize: 8, width: 90 },
-  signValue: { flex: 1, borderBottomWidth: 0.5, borderBottomColor: BLACK, fontSize: 8, paddingBottom: 1 },
-
-  // Footer
-  disclaimer: { marginTop: 10, fontSize: 7, textAlign: "center", fontStyle: "italic", color: BLACK },
-  contact: { marginTop: 6, fontSize: 6.5, textAlign: "center", color: GREY },
-  logoBadges: {
-    marginTop: 4, fontSize: 7, textAlign: "center",
-    fontFamily: "Helvetica-Bold", color: BRAND, letterSpacing: 1,
+  // Bordered white cards for descriptions
+  bigBox: {
+    borderWidth: 1, borderColor: "#cbd5e1", backgroundColor: "white",
+    borderRadius: 10, padding: 10, minHeight: 72,
   },
+
+  // Sign-off cards
+  signRow: { flexDirection: "row", marginTop: 10, gap: 8 },
+  signCol: { flex: 1, backgroundColor: INFO, borderRadius: 10, padding: 10 },
+  signField: { flexDirection: "row", marginBottom: 6 },
+  signLabel: { fontFamily: "Helvetica-Bold", fontSize: 8, color: "#64748b", width: 90 },
+  signValue: { flex: 1, fontSize: 9 },
+  sigLine: { flex: 1, borderBottomWidth: 0.5, borderBottomColor: BLACK, fontSize: 8, paddingBottom: 1 },
+
+  disclaimer: { marginTop: 12, fontSize: 7, textAlign: "center", fontStyle: "italic", color: GREY },
+  contact:    { marginTop: 4, fontSize: 6.5, textAlign: "center", color: GREY },
+  badges:     { marginTop: 4, fontSize: 7, textAlign: "center", fontFamily: "Helvetica-Bold", color: BLUE, letterSpacing: 1 },
 });
 
 function Chk({ on }: { on: boolean }) {
-  if (on) {
-    return (
-      <View style={s.chkBoxOn}>
-        <Text style={s.chkTick}>X</Text>
-      </View>
-    );
-  }
-  return <View style={s.chkBoxOff} />;
+  return on ? (
+    <View style={s.chkBoxOn}><Text style={s.chkTick}>X</Text></View>
+  ) : (
+    <View style={s.chkBoxOff} />
+  );
 }
 
 export interface ServiceReportPdfInput {
@@ -130,126 +115,122 @@ export function ServiceReportPDF({ sr }: { sr: ServiceReportPdfInput }) {
   return (
     <Document title={sr.sr_no}>
       <Page size="A4" style={s.page}>
-        {/* Header — invoice logo on left, brand block in middle, SN on right */}
-        <View style={s.headerRow}>
-          <View style={s.logoBox}>
-            <Image src="/invoice-logo.png" style={s.logoImg} />
-          </View>
-          <View style={s.brandBlock}>
-            <Text style={s.companyName}>360 INTEGRATED FM & SM PTE LTD</Text>
-            <Text style={s.tagline}>Facilities Management &amp; Strata Management is our Key</Text>
-            <Text style={s.uen}>UEN No: 202212959Z</Text>
-          </View>
-          <View style={s.snBlock}>
-            <Text style={s.snLabel}>SN NO:</Text>
-            <Text style={s.snVal}>{sr.sr_no}</Text>
+        {/* Red header */}
+        <View style={s.header}>
+          <View style={s.headerRow}>
+            <View style={s.brandBlock}>
+              <View style={s.logoBox}>
+                <Image src="/invoice-logo.png" style={s.logoImg} />
+              </View>
+              <Text style={s.companyName}>360 INTEGRATED FM & SM PTE LTD</Text>
+              <Text style={s.tagline}>Facilities Management &amp; Strata Management is our Key</Text>
+              <Text style={s.uen}>UEN No: 202212959Z</Text>
+            </View>
+            <View style={s.snBlock}>
+              <Text style={s.snLabel}>SN NO</Text>
+              <Text style={s.snPill}>{sr.sr_no}</Text>
+            </View>
           </View>
         </View>
 
-        {/* Title bar */}
+        {/* Blue title bar */}
         <View style={s.titleBar}>
-          <Text style={s.titleText}>FM DIVISION SERVICE REPORT</Text>
+          <Text style={s.titleTxt}>FM DIVISION SERVICE REPORT</Text>
         </View>
 
-        {/* Project & Contact */}
-        <Text style={s.sectionTitle}>PROJECT & CONTACT INFORMATION</Text>
-        <View style={s.gridBox}>
-          <View style={s.gridRow}>
-            <View style={s.gridCell}>
-              <Text style={s.fieldLabel}>Name / Project :</Text>
-              <Text style={s.fieldValue}>{sr.project_name}</Text>
+        <View style={s.body}>
+          {/* Project & Contact info */}
+          <Text style={s.sectionLbl}>PROJECT & CONTACT INFORMATION</Text>
+          <View style={s.infoCard}>
+            <View style={s.infoGrid}>
+              <View style={s.infoCell}>
+                <Text style={s.infoLabel}>Name / Project:</Text>
+                <Text style={s.infoVal}>{sr.project_name}</Text>
+              </View>
+              <View style={s.infoCell}>
+                <Text style={s.infoLabel}>Contact Person:</Text>
+                <Text style={s.infoVal}>{sr.contact_person ?? ""}</Text>
+              </View>
+              <View style={s.infoCell}>
+                <Text style={s.infoLabel}>Service Address:</Text>
+                <Text style={s.infoVal}>{sr.service_address ?? ""}</Text>
+              </View>
+              <View style={s.infoCell}>
+                <Text style={s.infoLabel}>Contact No:</Text>
+                <Text style={s.infoVal}>{sr.contact_no ?? ""}</Text>
+              </View>
             </View>
-            <View style={s.gridCellLast}>
-              <Text style={s.fieldLabel}>Contact Person :</Text>
-              <Text style={s.fieldValue}>{sr.contact_person ?? ""}</Text>
+            <View style={s.chkRow}>
+              <View style={s.chkItem}><Chk on={sr.is_term_agreement} /><Text style={s.chkLabel}>Term Agreement / MCST</Text></View>
+              <View style={s.chkItem}><Chk on={sr.is_on_call} /><Text style={s.chkLabel}>On Call / Site Visit</Text></View>
+              <View style={s.chkItem}><Chk on={sr.is_contract} /><Text style={s.chkLabel}>Contract</Text></View>
+              <View style={s.chkItem}><Chk on={sr.is_chargeable} /><Text style={s.chkLabel}>Chargeable</Text></View>
             </View>
           </View>
-          <View style={s.gridRow}>
-            <View style={s.gridCell}>
-              <Text style={s.fieldLabel}>Service Address :</Text>
-              <Text style={s.fieldValue}>{sr.service_address ?? ""}</Text>
+
+          {/* Services rendered */}
+          <Text style={s.sectionLbl}>SERVICE RENDERED (Routine / Complaints / Feedback)</Text>
+          <View style={s.svcBox}>
+            <View style={s.chkItem}><Chk on={sr.svc_electrical} /><Text style={s.chkLabel}>Electrical</Text></View>
+            <View style={s.chkItem}><Chk on={sr.svc_plumbing} /><Text style={s.chkLabel}>Plumbing</Text></View>
+            <View style={s.chkItem}><Chk on={sr.svc_generator} /><Text style={s.chkLabel}>Generator</Text></View>
+            <View style={s.chkItem}><Chk on={sr.svc_pump} /><Text style={s.chkLabel}>Pump</Text></View>
+            <View style={s.chkItem}><Chk on={sr.svc_fire_panel} /><Text style={s.chkLabel}>Fire Panel</Text></View>
+            <View style={s.chkItem}><Chk on={sr.svc_intercom} /><Text style={s.chkLabel}>Intercom</Text></View>
+            <View style={s.chkItem}><Chk on={sr.svc_cctv} /><Text style={s.chkLabel}>CCTV</Text></View>
+            <View style={s.chkItem}><Chk on={sr.svc_lighting} /><Text style={s.chkLabel}>Lighting</Text></View>
+            <View style={s.chkItem}><Chk on={sr.svc_auto_door} /><Text style={s.chkLabel}>Auto-Door</Text></View>
+            <View style={s.chkItem}><Chk on={!!sr.svc_others} /><Text style={s.chkLabel}>Others: {sr.svc_others ?? ""}</Text></View>
+          </View>
+
+          {/* Work Description */}
+          <Text style={s.sectionLbl}>WORK DESCRIPTION</Text>
+          <View style={s.bigBox}>
+            <Text>{sr.work_description ?? ""}</Text>
+          </View>
+
+          {/* Recommendation */}
+          <Text style={s.sectionLbl}>RECOMMENDATION</Text>
+          <View style={s.bigBox}>
+            <Text>{sr.recommendation ?? ""}</Text>
+          </View>
+
+          {/* Sign-off */}
+          <View style={s.signRow}>
+            <View style={s.signCol}>
+              <View style={s.signField}>
+                <Text style={s.signLabel}>Customer Name:</Text>
+                <Text style={s.signValue}>{sr.customer_name ?? ""}</Text>
+              </View>
+              <View style={s.signField}>
+                <Text style={s.signLabel}>Signature:</Text>
+                <Text style={s.sigLine}></Text>
+              </View>
             </View>
-            <View style={s.gridCellLast}>
-              <Text style={s.fieldLabel}>Contact No :</Text>
-              <Text style={s.fieldValue}>{sr.contact_no ?? ""}</Text>
+            <View style={s.signCol}>
+              <View style={s.signField}>
+                <Text style={s.signLabel}>Attended By:</Text>
+                <Text style={s.signValue}>{sr.service_attended_by ?? ""}</Text>
+              </View>
+              <View style={s.signField}>
+                <Text style={s.signLabel}>Date:</Text>
+                <Text style={s.signValue}>{sr.date_attended ?? ""}</Text>
+              </View>
+              <View style={s.signField}>
+                <Text style={s.signLabel}>Time In / Out:</Text>
+                <Text style={s.signValue}>{sr.time_in ?? ""} / {sr.time_out ?? ""}</Text>
+              </View>
             </View>
           </View>
-          <View style={s.gridRowLast}>
-            <View style={[s.checkRow, { flex: 1 }]}>
-              <View style={s.checkItem}><Chk on={sr.is_term_agreement} /><Text style={s.chkLabel}>Term Agreement / MCST</Text></View>
-              <View style={s.checkItem}><Chk on={sr.is_on_call} /><Text style={s.chkLabel}>On Call / Site Visit</Text></View>
-              <View style={s.checkItem}><Chk on={sr.is_contract} /><Text style={s.chkLabel}>Contract</Text></View>
-              <View style={s.checkItem}><Chk on={sr.is_chargeable} /><Text style={s.chkLabel}>Chargeable</Text></View>
-            </View>
-          </View>
-        </View>
 
-        {/* Service Rendered */}
-        <Text style={s.sectionTitle}>SERVICE RENDERED (Routine / Complaints / Feedback)</Text>
-        <View style={[s.gridBox, s.checkRow]}>
-          <View style={s.checkItem}><Chk on={sr.svc_electrical} /><Text style={s.chkLabel}>Electrical</Text></View>
-          <View style={s.checkItem}><Chk on={sr.svc_plumbing} /><Text style={s.chkLabel}>Plumbing</Text></View>
-          <View style={s.checkItem}><Chk on={sr.svc_generator} /><Text style={s.chkLabel}>Generator</Text></View>
-          <View style={s.checkItem}><Chk on={sr.svc_pump} /><Text style={s.chkLabel}>Pump</Text></View>
-          <View style={s.checkItem}><Chk on={sr.svc_fire_panel} /><Text style={s.chkLabel}>Fire Panel</Text></View>
-          <View style={s.checkItem}><Chk on={sr.svc_intercom} /><Text style={s.chkLabel}>Intercom</Text></View>
-          <View style={s.checkItem}><Chk on={sr.svc_cctv} /><Text style={s.chkLabel}>CCTV</Text></View>
-          <View style={s.checkItem}><Chk on={sr.svc_lighting} /><Text style={s.chkLabel}>Lighting</Text></View>
-          <View style={s.checkItem}><Chk on={sr.svc_auto_door} /><Text style={s.chkLabel}>Auto-Door</Text></View>
-          <View style={s.checkItem}><Chk on={!!sr.svc_others} /><Text style={s.chkLabel}>Others: {sr.svc_others ?? ""}</Text></View>
+          <Text style={s.disclaimer}>
+            Please do not hesitate to call us and check the work before signing. Payments are made to 360 Integrated FM &amp; SM Pte Ltd only.
+          </Text>
+          <Text style={s.contact}>
+            No. 71 Bukit Batok Crescent, #06-11 Prestige Centre, Singapore 658071 · Tel: 6677 0360 · Hotline: 8757 3360 / 8758 3360 · support@360maintenance.sg
+          </Text>
+          <Text style={s.badges}>bizSAFE · STR · LAS · TOP Prestige 100</Text>
         </View>
-
-        {/* Work Description */}
-        <Text style={s.sectionTitle}>WORK DESCRIPTION</Text>
-        <View style={s.bigBox}>
-          <Text>{sr.work_description ?? ""}</Text>
-        </View>
-
-        {/* Recommendation */}
-        <Text style={s.sectionTitle}>RECOMMENDATION</Text>
-        <View style={s.bigBox}>
-          <Text>{sr.recommendation ?? ""}</Text>
-        </View>
-
-        {/* Sign-off */}
-        <View style={s.signRow}>
-          <View style={s.signCol}>
-            <View style={s.signField}>
-              <Text style={s.signLabel}>Customer Name:</Text>
-              <Text style={s.signValue}>{sr.customer_name ?? ""}</Text>
-            </View>
-            <View style={s.signField}>
-              <Text style={s.signLabel}>Signature:</Text>
-              <Text style={s.signValue}></Text>
-            </View>
-          </View>
-          <View style={s.signCol}>
-            <View style={s.signField}>
-              <Text style={s.signLabel}>Service Attended By:</Text>
-              <Text style={s.signValue}>{sr.service_attended_by ?? ""}</Text>
-            </View>
-            <View style={s.signField}>
-              <Text style={s.signLabel}>Date Attended:</Text>
-              <Text style={s.signValue}>{sr.date_attended ?? ""}</Text>
-            </View>
-            <View style={s.signField}>
-              <Text style={s.signLabel}>Time In:</Text>
-              <Text style={s.signValue}>{sr.time_in ?? ""}</Text>
-            </View>
-            <View style={s.signField}>
-              <Text style={s.signLabel}>Time Out:</Text>
-              <Text style={s.signValue}>{sr.time_out ?? ""}</Text>
-            </View>
-          </View>
-        </View>
-
-        <Text style={s.disclaimer}>
-          Please do not hesitate to call us and check the work before signing. Payments are made to 360 Integrated FM & SM Pte Ltd only.
-        </Text>
-        <Text style={s.contact}>
-          No. 71 Bukit Batok Crescent, #06-11 Prestige Centre, Singapore 658071  |  Tel: 6677 0360 (O)  |  Hotline: 8757 3360 / 8758 3360  |  support@360maintenance.sg  |  www.360maintenance.sg
-        </Text>
-        <Text style={s.logoBadges}>bizSAFE  ·  STR  ·  LAS  ·  TOP Prestige 100</Text>
       </Page>
     </Document>
   );
