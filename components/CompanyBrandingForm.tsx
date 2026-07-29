@@ -25,23 +25,20 @@ export function CompanyBrandingForm({ initial }: { initial: CompanyBranding }) {
   const [paynow, setPaynow] = useState(initial.paynow_text ?? "");
 
   const [logoPath, setLogoPath] = useState<string | null>(initial.logo_path);
-  const [logoDarkPath, setLogoDarkPath] = useState<string | null>(initial.logo_dark_path);
   const [stampPath, setStampPath] = useState<string | null>(initial.stamp_path);
   const [logoUrl, setLogoUrl] = useState<string | null>(initial.logo_url);
-  const [logoDarkUrl, setLogoDarkUrl] = useState<string | null>(initial.logo_dark_url);
   const [stampUrl, setStampUrl] = useState<string | null>(initial.stamp_url);
 
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingLogoDark, setUploadingLogoDark] = useState(false);
   const [uploadingStamp, setUploadingStamp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  async function upload(file: File, kind: "logo" | "logo_dark" | "stamp") {
+  async function upload(file: File, kind: "logo" | "stamp") {
     setError(null);
     if (!file.type.startsWith("image/")) { setError("Please upload an image file."); return; }
     if (file.size > 5 * 1024 * 1024) { setError("Image must be under 5 MB."); return; }
-    if (kind === "logo") setUploadingLogo(true); else if (kind === "logo_dark") setUploadingLogoDark(true); else setUploadingStamp(true);
+    if (kind === "logo") setUploadingLogo(true); else setUploadingStamp(true);
 
     const supabase = createClient();
     const ext = file.name.split(".").pop() || "png";
@@ -49,11 +46,14 @@ export function CompanyBrandingForm({ initial }: { initial: CompanyBranding }) {
     const { error: upErr } = await supabase.storage
       .from("company-assets")
       .upload(path, file, { cacheControl: "3600", upsert: false });
-    if (upErr) { setError(upErr.message); if (kind === "logo") setUploadingLogo(false); else if (kind === "logo_dark") setUploadingLogoDark(false); else setUploadingStamp(false); return; }
+    if (upErr) {
+      setError(upErr.message);
+      if (kind === "logo") setUploadingLogo(false); else setUploadingStamp(false);
+      return;
+    }
 
     const { data: signed } = await supabase.storage.from("company-assets").createSignedUrl(path, 60 * 60);
     if (kind === "logo") { setLogoPath(path); setLogoUrl(signed?.signedUrl ?? null); setUploadingLogo(false); }
-    else if (kind === "logo_dark") { setLogoDarkPath(path); setLogoDarkUrl(signed?.signedUrl ?? null); setUploadingLogoDark(false); }
     else { setStampPath(path); setStampUrl(signed?.signedUrl ?? null); setUploadingStamp(false); }
   }
 
@@ -62,7 +62,7 @@ export function CompanyBrandingForm({ initial }: { initial: CompanyBranding }) {
     setError(null);
     startTransition(async () => {
       const res = await updateCompanySettings({
-        logo_path: logoPath, logo_dark_path: logoDarkPath, stamp_path: stampPath,
+        logo_path: logoPath, stamp_path: stampPath,
         company_name: companyName, tagline, uen, gst_reg: gst,
         address_line: address,
         phone_office: phoneOffice, phone_hotline: phoneHotline, phone_whatsapp: phoneWhatsapp,
@@ -80,20 +80,13 @@ export function CompanyBrandingForm({ initial }: { initial: CompanyBranding }) {
       {/* Images */}
       <section className="bg-white border border-slate-200 rounded-2xl p-5 shadow-card">
         <h2 className="text-sm font-semibold text-slate-800 mb-3">Images</h2>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 gap-4">
           <ImageSlot
-            label="Company logo (light mode)"
-            hint="Used on white backgrounds. PNG with transparent bg, max 5 MB"
+            label="Company logo"
+            hint="PNG with transparent background, roughly 3:1 ratio, max 5 MB"
             url={logoUrl} uploading={uploadingLogo}
             onFile={(f) => upload(f, "logo")}
             onClear={() => { setLogoPath(null); setLogoUrl(null); }}
-          />
-          <ImageSlot
-            label="Company logo (dark mode)"
-            hint="Used on the dark canvas. White or light version of the logo"
-            url={logoDarkUrl} uploading={uploadingLogoDark}
-            onFile={(f) => upload(f, "logo_dark")}
-            onClear={() => { setLogoDarkPath(null); setLogoDarkUrl(null); }}
           />
           <ImageSlot
             label="Company stamp"
