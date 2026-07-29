@@ -20,7 +20,16 @@ export default function SplashPage() {
             alt="360 Integrated FM & SM"
             width={220}
             height={140}
-            className="object-contain logo-live"
+            className="object-contain logo-live dark:hidden"
+            unoptimized
+            priority
+          />
+          <Image
+            src="/logo-dark.png"
+            alt="360 Integrated FM & SM"
+            width={220}
+            height={140}
+            className="object-contain logo-live hidden dark:block"
             unoptimized
             priority
           />

@@ -131,7 +131,16 @@ export function Sidebar({ profile }: { profile: Profile }) {
           alt="360 Integrated"
           width={100}
           height={28}
-          className="h-7 w-auto object-contain logo-live"
+          className="h-7 w-auto object-contain logo-live dark:hidden"
+          unoptimized
+          priority
+        />
+        <Image
+          src="/logo-dark.png"
+          alt="360 Integrated"
+          width={100}
+          height={28}
+          className="h-7 w-auto object-contain logo-live hidden dark:block"
           unoptimized
           priority
         />
@@ -162,7 +171,16 @@ export function Sidebar({ profile }: { profile: Profile }) {
               alt="360 Integrated"
               width={160}
               height={44}
-              className="h-11 w-auto object-contain logo-live"
+              className="h-11 w-auto object-contain logo-live dark:hidden"
+              unoptimized
+              priority
+            />
+            <Image
+              src="/logo-dark.png"
+              alt="360 Integrated"
+              width={160}
+              height={44}
+              className="h-11 w-auto object-contain logo-live hidden dark:block"
               unoptimized
               priority
             />

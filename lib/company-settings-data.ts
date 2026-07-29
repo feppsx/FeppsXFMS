@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 export interface CompanySettings {
   id: string;
   logo_path: string | null;
+  logo_dark_path: string | null;
   stamp_path: string | null;
   company_name: string;
   tagline: string | null;
@@ -22,6 +23,7 @@ export interface CompanySettings {
 
 export interface CompanyBranding extends CompanySettings {
   logo_url: string | null;
+  logo_dark_url: string | null;
   stamp_url: string | null;
 }
 
@@ -36,6 +38,7 @@ export async function getCompanyBranding(): Promise<CompanyBranding> {
   const fallback: CompanySettings = {
     id: "",
     logo_path: null,
+    logo_dark_path: null,
     stamp_path: null,
     company_name: "360 INTEGRATED FM & SM PTE. LTD.",
     tagline: "Facilities Management & Strata Management is our Key",
@@ -65,7 +68,7 @@ export async function getCompanyBranding(): Promise<CompanyBranding> {
     return signed?.signedUrl ?? null;
   }
 
-  const [logo_url, stamp_url] = await Promise.all([sign(s.logo_path), sign(s.stamp_path)]);
+  const [logo_url, logo_dark_url, stamp_url] = await Promise.all([sign(s.logo_path), sign(s.logo_dark_path), sign(s.stamp_path)]);
 
-  return { ...s, logo_url, stamp_url };
+  return { ...s, logo_url, logo_dark_url, stamp_url };
 }

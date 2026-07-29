@@ -6,6 +6,7 @@ import { requireProfile } from "@/lib/guard";
 
 export interface UpdateCompanySettingsInput {
   logo_path?: string | null;
+  logo_dark_path?: string | null;
   stamp_path?: string | null;
   company_name: string;
   tagline?: string | null;

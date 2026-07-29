@@ -29,7 +29,16 @@ export function PublicShell({
             alt="360 Integrated"
             width={64}
             height={64}
-            className="h-14 w-auto object-contain logo-live"
+            className="h-14 w-auto object-contain logo-live dark:hidden"
+            unoptimized
+            priority
+          />
+          <Image
+            src="/logo-dark.png"
+            alt="360 Integrated"
+            width={64}
+            height={64}
+            className="h-14 w-auto object-contain logo-live hidden dark:block"
             unoptimized
             priority
           />
