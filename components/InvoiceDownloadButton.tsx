@@ -10,6 +10,7 @@ import QRCode from "qrcode";
 import { Download, Loader2, Camera } from "lucide-react";
 import type { Invoice, InvoiceItem } from "@/lib/db-types";
 import { InvoicePDF } from "./InvoicePDF";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 
 const PDFDownloadLink = dynamic(
   () => import("@react-pdf/renderer").then((m) => m.PDFDownloadLink),
@@ -22,7 +23,7 @@ const QR_TEXT    = `PAYNOW UEN ${PAYNOW_UEN}`;
 export function InvoiceDownloadButton({
   invoice, items, technicianSignatureUrl,
   beforePhotos = [], afterPhotos = [],
-  className, label = "Download PDF",
+  className, label = "Download PDF", branding,
 }: {
   invoice: Invoice;
   items: InvoiceItem[];
@@ -31,6 +32,7 @@ export function InvoiceDownloadButton({
   afterPhotos?: string[];
   className?: string;
   label?: string;
+  branding?: CompanyBranding | null;
 }) {
   const [qr, setQr] = useState<string | null>(null);
   const [includePhotos, setIncludePhotos] = useState(false);
@@ -80,6 +82,7 @@ export function InvoiceDownloadButton({
           <InvoicePDF
             invoice={invoice}
             items={items}
+            branding={branding}
             qrDataUrl={qr}
             technicianSignatureUrl={technicianSignatureUrl ?? null}
             beforePhotos={before}

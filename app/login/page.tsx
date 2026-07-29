@@ -72,14 +72,14 @@ function LoginForm() {
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
               <label className="block text-xs font-extrabold tracking-wider uppercase text-slate-800 mb-2">
-                Username
+                Email ID
               </label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter Your Username"
+                placeholder="Enter Your Email ID"
                 autoComplete="email"
                 className="w-full rounded-full bg-input-bg px-5 py-3 text-sm text-slate-800 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-brand-blue"
               />

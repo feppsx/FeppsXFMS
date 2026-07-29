@@ -1,5 +1,6 @@
 // Service Report PDF — red header, blue title bar, light-blue info + sign-off cards.
 import { Document, Page, View, Text, Image, StyleSheet, Svg, Path } from "@react-pdf/renderer";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 
 const RED   = "#9A121A";
 const BLUE  = "#003882";
@@ -114,7 +115,17 @@ export interface ServiceReportPdfInput {
   time_out: string | null;
 }
 
-export function ServiceReportPDF({ sr }: { sr: ServiceReportPdfInput }) {
+export function ServiceReportPDF({ sr, branding }: { sr: ServiceReportPdfInput; branding?: CompanyBranding | null }) {
+  const b = branding ?? null;
+  const logoSrc = b?.logo_url || "/invoice-logo.png";
+  const companyName = b?.company_name || "360 INTEGRATED FM & SM PTE LTD";
+  const tagline = b?.tagline || "Facilities Management & Strata Management is our Key";
+  const uen = b?.uen || "202212959Z";
+  const address = b?.address_line || "No. 71 Bukit Batok Crescent, #06-11 Prestige Centre, Singapore 658071";
+  const officePhone = b?.phone_office || "6677 0360";
+  const hotline = b?.phone_hotline || "8757 3360 / 8758 3360";
+  const email = b?.email || "support@360maintenance.sg";
+  const badges = b?.badges_line || "bizSAFE · STR · LAS · TOP Prestige 100";
   return (
     <Document title={sr.sr_no}>
       <Page size="A4" style={s.page}>
@@ -123,11 +134,11 @@ export function ServiceReportPDF({ sr }: { sr: ServiceReportPdfInput }) {
           <View style={s.headerRow}>
             <View style={s.brandBlock}>
               <View style={s.logoBox}>
-                <Image src="/invoice-logo.png" style={s.logoImg} />
+                <Image src={logoSrc} style={s.logoImg} />
               </View>
-              <Text style={s.companyName}>360 INTEGRATED FM & SM PTE LTD</Text>
-              <Text style={s.tagline}>Facilities Management &amp; Strata Management is our Key</Text>
-              <Text style={s.uen}>UEN No: 202212959Z</Text>
+              <Text style={s.companyName}>{companyName}</Text>
+              <Text style={s.tagline}>{tagline}</Text>
+              <Text style={s.uen}>UEN No: {uen}</Text>
             </View>
             <View style={s.snBlock}>
               <Text style={s.snLabel}>SN NO</Text>
@@ -230,9 +241,9 @@ export function ServiceReportPDF({ sr }: { sr: ServiceReportPdfInput }) {
             Please do not hesitate to call us and check the work before signing. Payments are made to 360 Integrated FM &amp; SM Pte Ltd only.
           </Text>
           <Text style={s.contact}>
-            No. 71 Bukit Batok Crescent, #06-11 Prestige Centre, Singapore 658071 · Tel: 6677 0360 · Hotline: 8757 3360 / 8758 3360 · support@360maintenance.sg
+            {address} · Tel: {officePhone} · Hotline: {hotline} · {email}
           </Text>
-          <Text style={s.badges}>bizSAFE · STR · LAS · TOP Prestige 100</Text>
+          <Text style={s.badges}>{badges}</Text>
         </View>
       </Page>
     </Document>

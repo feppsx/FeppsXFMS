@@ -8,7 +8,7 @@ import type { Profile, UserRole } from "@/lib/db-types";
 import {
   LayoutDashboard, Ticket, Receipt, Building2, Users, Tag,
   Wrench, UserCircle2, PlusCircle, LogOut, Menu, X, QrCode, ShieldCheck,
-  CalendarDays, FileText, ClipboardList, MessageSquare,
+  CalendarDays, FileText, ClipboardList, MessageSquare, Palette,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Avatar } from "./Avatar";
@@ -45,6 +45,7 @@ function navFor(role: UserRole): NavItem[] {
         { href: "/admin/service-reports/generate",  label: "Generate Service Report",  icon: ClipboardList },
         { href: "/admin/managers",         label: "Managers",       icon: ShieldCheck },
         { href: "/admin/categories",       label: "Categories",     icon: Tag },
+        { href: "/admin/branding",         label: "Branding",       icon: Palette },
         { href: "/admin/qr",               label: "Report QR",      icon: QrCode },
         { href: "/admin/feedback",         label: "Customer feedback", icon: MessageSquare },
       ];

@@ -6,16 +6,17 @@
 import dynamic from "next/dynamic";
 import { Download, Loader2 } from "lucide-react";
 import { QuotationPDF, type QuotationPdfInput } from "./QuotationPDF";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 
 const PDFDownloadLink = dynamic(
   () => import("@react-pdf/renderer").then((m) => m.PDFDownloadLink),
   { ssr: false, loading: () => <ButtonShell label="Preparing…" spinning /> }
 );
 
-export function QuotationDownloadButton({ q, label = "Download PDF" }: { q: QuotationPdfInput; label?: string }) {
+export function QuotationDownloadButton({ q, label = "Download PDF", branding }: { q: QuotationPdfInput; label?: string; branding?: CompanyBranding | null }) {
   return (
     <PDFDownloadLink
-      document={<QuotationPDF q={q} />}
+      document={<QuotationPDF q={q} branding={branding} />}
       fileName={`${q.quotation_no}.pdf`}
       className="inline-flex items-center gap-1.5 bg-brand hover:bg-brand-600 text-white rounded-lg px-4 py-2 text-sm font-medium"
     >

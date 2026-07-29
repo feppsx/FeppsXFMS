@@ -2,6 +2,7 @@
 import {
   Document, Page, View, Text, Image, StyleSheet,
 } from "@react-pdf/renderer";
+import type { CompanyBranding } from "@/lib/company-settings-data";
 
 const RED   = "#9A121A";
 const BLUE  = "#003882";
@@ -103,23 +104,31 @@ export interface QuotationPdfInput {
   items: { description: string; unit_price: number }[];
 }
 
-export function QuotationPDF({ q }: { q: QuotationPdfInput }) {
+export function QuotationPDF({ q, branding }: { q: QuotationPdfInput; branding?: CompanyBranding | null }) {
+  const b = branding ?? null;
+  const logoSrc = b?.logo_url || "/invoice-logo.png";
+  const companyName = b?.company_name || "360 INTEGRATED FM & SM PTE. LTD.";
+  const addressLine = b?.address_line || "71 Bukit Batok Cres #06-11 Prestige Centre, Singapore";
+  const gstReg = b?.gst_reg || "202212959Z";
+  const waLine = b?.phone_whatsapp ? `WHATSAPP US @ ${b.phone_whatsapp}` : "WHATSAPP US @ 8757 3360 / 9340 1360";
+  const tcLines = (b?.quotation_terms || "This quotation is valid for 30 days from the date of issue.\n30% deposit payable upon confirmation of works order.\nBalance amount payable upon completion of works order.\nPrices subject to change without prior notice after validity period.").split(/\n+/).filter(Boolean);
+  const paynowFooter = b?.paynow_text || "Paynow UEN 202212959Z";
   return (
     <Document title={q.quotation_no}>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View style={styles.headerRow}>
             <View style={styles.logoBox}>
-              <Image src="/invoice-logo.png" style={styles.logoImg} />
+              <Image src={logoSrc} style={styles.logoImg} />
             </View>
             <View style={styles.centerCol}>
-              <Text style={styles.whatsapp}>WHATSAPP US @ 8757 3360 / 9340 1360</Text>
+              <Text style={styles.whatsapp}>{waLine}</Text>
               <Text style={styles.titleTxt}>QUOTATION</Text>
-              <Text style={styles.gstTxt}>GST Registration No. 202212959Z</Text>
+              <Text style={styles.gstTxt}>GST Registration No. {gstReg}</Text>
             </View>
             <View style={styles.rightCol}>
-              <Text style={styles.companyName}>360 INTEGRATED FM & SM PTE. LTD.</Text>
-              <Text style={styles.address}>71 Bukit Batok Cres #06-11{"\n"}Prestige Centre, Singapore</Text>
+              <Text style={styles.companyName}>{companyName}</Text>
+              <Text style={styles.address}>{addressLine}</Text>
             </View>
           </View>
         </View>
@@ -210,12 +219,7 @@ export function QuotationPDF({ q }: { q: QuotationPdfInput }) {
           <View style={styles.footerRow}>
             <View style={styles.tcCol}>
               <Text style={styles.tcTitle}>Terms &amp; Conditions</Text>
-              {[
-                "This quotation is valid for 30 days from the date of issue.",
-                "30% deposit payable upon confirmation of works order.",
-                "Balance amount payable upon completion of works order.",
-                "Prices subject to change without prior notice after validity period.",
-              ].map((b, i) => (
+              {tcLines.map((b, i) => (
                 <View style={styles.tcBullet} key={i}>
                   <Text style={styles.tcDot}>•</Text>
                   <Text style={styles.tcTxt}>{b}</Text>
@@ -224,7 +228,7 @@ export function QuotationPDF({ q }: { q: QuotationPdfInput }) {
             </View>
             <View style={styles.qrCol}>
               <View style={styles.qrPlaceholder} />
-              <Text style={styles.qrTxt}>Paynow UEN 202212959Z</Text>
+              <Text style={styles.qrTxt}>{paynowFooter}</Text>
             </View>
           </View>
 
