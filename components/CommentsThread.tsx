@@ -25,7 +25,7 @@ export function CommentsThread({ ticketId, currentUserRole, currentUserId, comme
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const canPostInternal = currentUserRole === "admin" || currentUserRole === "technician";
+  const canPostInternal = currentUserRole === "org_admin" || currentUserRole === "technician";
 
   function submit(e: React.FormEvent) {
     e.preventDefault();

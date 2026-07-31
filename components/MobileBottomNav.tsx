@@ -18,7 +18,7 @@ interface Dest {
 
 function destsFor(role: UserRole): Dest[] {
   switch (role) {
-    case "admin":
+    case "org_admin":
       return [
         { href: "/admin",              label: "Home",     icon: Home },
         { href: "/admin/calendar",     label: "Calendar", icon: CalendarDays },

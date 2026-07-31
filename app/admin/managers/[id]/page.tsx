@@ -14,7 +14,7 @@ export default async function EditManagerPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const { id } = await params;
   const supabase = await createClient();
 

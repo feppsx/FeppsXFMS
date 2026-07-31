@@ -7,7 +7,7 @@ import type { TicketCategory } from "@/lib/db-types";
 export const dynamic = "force-dynamic";
 
 export default async function AdminCategoriesPage() {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const supabase = await createClient();
 
   const { data } = await supabase

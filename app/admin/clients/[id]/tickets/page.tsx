@@ -30,7 +30,7 @@ export default async function EstateTicketsPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ filter?: string }>;
 }) {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const { id } = await params;
   const { filter: filterKey = "raised" } = await searchParams;
   const filter = FILTERS.find((f) => f.key === filterKey) ?? FILTERS[0];

@@ -18,7 +18,7 @@ interface TechRow {
 }
 
 export default async function AdminTechniciansPage() {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const supabase = await createClient();
 
   const { data: techs } = await supabase

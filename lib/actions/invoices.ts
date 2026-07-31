@@ -127,7 +127,7 @@ export interface CreateManualInvoiceInput {
 
 export async function createManualInvoice(
   input: CreateManualInvoiceInput
-): Promise<{ error?: string; id?: string; receipt_no?: string }> {
+): Promise<{ error?: string; id?: string; receipt_no?: string; organization_id?: string }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -173,8 +173,8 @@ export async function createManualInvoice(
       before_photo_paths: input.before_photo_paths ?? [],
       after_photo_paths:  input.after_photo_paths ?? [],
     })
-    .select("id, receipt_no")
-    .single<{ id: string; receipt_no: string }>();
+    .select("id, receipt_no, organization_id")
+    .single<{ id: string; receipt_no: string; organization_id: string }>();
 
   if (invErr || !inserted) return { error: invErr?.message ?? "Insert failed." };
 
@@ -188,7 +188,7 @@ export async function createManualInvoice(
   if (itemsErr) return { error: `Invoice saved but line items failed: ${itemsErr.message}` };
 
   revalidatePath("/admin/invoices");
-  return { id: inserted.id, receipt_no: inserted.receipt_no };
+  return { id: inserted.id, receipt_no: inserted.receipt_no, organization_id: inserted.organization_id };
 }
 
 // ---------------------------------------------------------------------------
@@ -293,7 +293,7 @@ export async function updateInvoice(
 export async function updateManualInvoice(
   invoiceId: string,
   input: CreateManualInvoiceInput
-): Promise<{ error?: string; id?: string; receipt_no?: string }> {
+): Promise<{ error?: string; id?: string; receipt_no?: string; organization_id?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
@@ -331,8 +331,8 @@ export async function updateManualInvoice(
       after_photo_paths:  input.after_photo_paths ?? [],
     })
     .eq("id", invoiceId)
-    .select("id, receipt_no")
-    .maybeSingle<{ id: string; receipt_no: string }>();
+    .select("id, receipt_no, organization_id")
+    .maybeSingle<{ id: string; receipt_no: string; organization_id: string }>();
 
   if (upErr) return { error: upErr.message };
   if (!updated) return { error: "Not allowed to update this invoice, or it no longer exists." };
@@ -349,5 +349,5 @@ export async function updateManualInvoice(
 
   revalidatePath("/admin/invoices");
   revalidatePath("/technician/invoices");
-  return { id: updated.id, receipt_no: updated.receipt_no };
+  return { id: updated.id, receipt_no: updated.receipt_no, organization_id: updated.organization_id };
 }

@@ -9,7 +9,7 @@ export default async function InvoicesSbsPage({
 }: {
   searchParams: Promise<{ paid?: string }>;
 }) {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const { paid = "all" } = await searchParams;
 
   return (

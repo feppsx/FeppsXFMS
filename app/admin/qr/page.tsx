@@ -7,7 +7,7 @@ import { QrCode } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AdminQrPage() {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
 
   // Build the fully-qualified /report URL from the incoming request.
   const h = await headers();

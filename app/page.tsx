@@ -17,6 +17,14 @@ export default async function Home() {
 
   if (!user) redirect("/login");
 
+  // Platform admin -> their own panel.
+  const { data: platformAdmin } = await supabase
+    .from("platform_admins")
+    .select("id, is_active")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (platformAdmin?.is_active) redirect("/platform");
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")

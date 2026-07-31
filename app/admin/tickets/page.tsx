@@ -32,7 +32,7 @@ export default async function AdminTicketQueue({
 }: {
   searchParams: Promise<SP>;
 }) {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const sp = await searchParams;
   const filter = FILTERS.find((f) => f.key === (sp.filter ?? "open")) ?? FILTERS[0];
 

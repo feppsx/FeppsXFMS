@@ -40,7 +40,7 @@ function greet() {
 }
 
 export default async function AdminDashboardPage() {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const supabase = await createClient();
 
   const [

@@ -1,8 +1,45 @@
 // Mirrors the schema in supabase/. See patches for evolution.
 // UI/type naming uses "Estate" everywhere; the underlying DB table is still
 // called `clients` (patch 11 chose the safer path — see patch header).
+//
+// v3 note: role 'admin' was renamed to 'org_admin' in v3.sql. Platform admins
+// live in a separate `platform_admins` table, not in this enum.
 
-export type UserRole = "admin" | "technician" | "requester" | "manager";
+export type UserRole = "org_admin" | "technician" | "requester" | "manager";
+
+/** A customer tenant. One row per company using FeppsXFMS. */
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  plan: string;              // 'free' | 'pro' | 'enterprise'
+  is_active: boolean;
+  is_suspended: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** FeppsXFMS staff. Not in profiles — sees all orgs. */
+export interface PlatformAdmin {
+  id: string;
+  email: string;
+  full_name: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+/** Pending invite to an org. */
+export interface Invitation {
+  id: string;
+  token: string;
+  email: string;
+  organization_id: string;
+  role: UserRole;
+  invited_by: string | null;
+  expires_at: string;
+  used_at: string | null;
+  created_at: string;
+}
 
 export type TicketStatus =
   | "submitted"
@@ -31,6 +68,7 @@ export type EstateCategory = "Retail" | "MCST" | "SBS";
  */
 export interface Estate {
   id: string;
+  organization_id: string;
   name: string;
   location: string;
   category: EstateCategory;
@@ -50,6 +88,7 @@ export type Client = Estate;
 /** A tenant/company inside a multi-tenant estate. DB table: `client_tenants`. */
 export interface EstateTenant {
   id: string;
+  organization_id: string;
   client_id: string;   // DB column stays client_id
   name: string;
   contact_email: string | null;
@@ -63,6 +102,7 @@ export type ClientTenant = EstateTenant;
 
 export interface Profile {
   id: string;
+  organization_id: string;
   full_name: string;
   role: UserRole;
   phone: string | null;
@@ -75,6 +115,7 @@ export interface Profile {
 
 export interface TicketCategory {
   id: string;
+  organization_id: string;
   name: string;
   description: string | null;
   color: string;
@@ -84,6 +125,7 @@ export interface TicketCategory {
 
 export interface Ticket {
   id: string;
+  organization_id: string;
   ticket_number: string;
   title: string;
   description: string;
@@ -112,6 +154,7 @@ export interface Ticket {
 
 export interface TicketStatusHistoryRow {
   id: string;
+  organization_id: string;
   ticket_id: string;
   from_status: TicketStatus | null;
   to_status: TicketStatus;
@@ -122,6 +165,7 @@ export interface TicketStatusHistoryRow {
 
 export interface TicketAttachment {
   id: string;
+  organization_id: string;
   ticket_id: string;
   uploaded_by: string | null;
   storage_path: string;
@@ -134,6 +178,7 @@ export interface TicketAttachment {
 
 export interface TicketComment {
   id: string;
+  organization_id: string;
   ticket_id: string;
   author_id: string;
   body: string;
@@ -143,6 +188,7 @@ export interface TicketComment {
 
 export interface Invoice {
   id: string;
+  organization_id: string;
   receipt_no: string;
   ticket_id: string | null;    // null when the invoice was raised manually
   client_id: string | null;    // set on manual invoices (the estate being billed)
@@ -171,6 +217,7 @@ export interface Invoice {
 
 export interface InvoiceItem {
   id: string;
+  organization_id: string;
   invoice_id: string;
   description: string;
   unit_price: number;

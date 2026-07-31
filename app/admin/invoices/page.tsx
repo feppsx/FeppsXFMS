@@ -14,7 +14,7 @@ export default async function AdminInvoicesPage({
 }: {
   searchParams: Promise<SP>;
 }) {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const sp = await searchParams;
   const paid = sp.paid ?? "all";
   const category = sp.category ?? "all";

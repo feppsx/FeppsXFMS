@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function NewClientPage() {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
 
   return (
     <AppShell profile={profile}>

@@ -34,7 +34,7 @@ export default async function AdminTicketDetail({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const { id } = await params;
   const { ticket, history, attachments, comments, actors, urls } = await getTicketDetail(id);
   const invoiceBundle = await getInvoiceForTicket(id);

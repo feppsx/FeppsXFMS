@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function NewTechnicianPage() {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const supabase = await createClient();
 
   const { data: categories } = await supabase

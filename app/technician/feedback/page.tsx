@@ -32,7 +32,7 @@ function Stars({ n }: { n: number }) {
 
 export default async function ManagerFeedbackList({ searchParams }: { searchParams: Promise<SP> }) {
   // Managers only; techs stay on /technician/ratings.
-  const profile = await requireProfile(["manager", "admin"]);
+  const profile = await requireProfile(["manager", "org_admin"]);
   const sp = await searchParams;
   const supabase = await createClient();
 

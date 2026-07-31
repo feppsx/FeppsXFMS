@@ -6,10 +6,10 @@ import { LogOut, UserCircle2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-const ROLE_LABEL = { admin: "360 Admin", technician: "Technician", manager: "Manager", requester: "Requester" } as const;
+const ROLE_LABEL = { org_admin: "Admin", technician: "Technician", manager: "Manager", requester: "Requester" } as const;
 
 export default async function AdminAccountPage() {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   return (
     <>
       <MobileHeader title="Account" showBack backHref="/admin" />

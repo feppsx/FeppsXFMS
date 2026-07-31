@@ -9,7 +9,7 @@ import { ArrowLeft, Palette } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AdminBrandingPage() {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const branding = await getCompanyBranding();
 
   return (

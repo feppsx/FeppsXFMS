@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 /** Home path for a given role. Used after login + on `/`. */
 export function homeForRole(role: string | null | undefined): string {
   switch (role) {
-    case "admin":
+    case "org_admin":
       return "/admin";
     case "technician":
     case "manager":

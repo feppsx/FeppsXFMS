@@ -1,79 +1,69 @@
-# Current step: Fix the auto-profile trigger + create platform admin
+# Current step: Deploy Phase 2 (session + query scoping)
 
-## Why
-
-After `v3.sql`, creating any new user (via Supabase dashboard) fails with:
-```
-null value in column "organization_id" of relation "profiles"
-violates not-null constraint
-```
-
-An old trigger from patch #2 auto-inserts a profile row on every new auth user, but doesn't know which org to attach them to. `v3_patch_1.sql` fixes this.
+Phase 2 wires the app to use `organization_id` end-to-end. The code changes are done; you just need to (1) run one SQL patch in Supabase, (2) push to GitHub so Vercel picks it up.
 
 ---
 
-## Step 1 — Run `v3_patch_1.sql`
+## Step 1 — Run `v3_patch_2.sql` in Supabase
 
-1. Supabase -> **SQL Editor** -> **+ New query**.
-2. On your computer: `C:\Users\Shanjithraj\Desktop\FeppsXFMS\supabase\v3_patch_1.sql` -> right-click -> **Open with Notepad**.
+Adds a BEFORE-INSERT trigger to every tenant table that auto-fills `organization_id` from the caller's profile. This saves us hand-editing every insert in every server action.
+
+1. Supabase -> **SQL Editor -> + New query**.
+2. On your computer: `C:\Users\Shanjithraj\Desktop\FeppsXFMS\supabase\v3_patch_2.sql` -> right-click -> **Open with Notepad**.
 3. **Ctrl + A**, **Ctrl + C** -> paste into Supabase -> **Run**.
 4. Expect **Success. No rows returned.**
 
 ---
 
-## Step 2 — Create the platform admin auth user
+## Step 2 — Test locally (optional but recommended)
 
-1. Supabase -> **Authentication -> Users**.
-2. Click **Add user -> Create new user** (NOT "Send invitation").
-3. Fill in:
-   - **Email:** `feppsx@gmail.com`
-   - **Password:** `FeppsX2026!` (or your own strong password)
-   - **Auto Confirm User:** **ON**
-4. Click **Create user**. It should succeed now.
-5. Click the new user row in the list -> copy the **User UID**.
+If you recreated `.env.local`:
 
----
-
-## Step 3 — Add them to `platform_admins`
-
-Supabase -> **SQL Editor** -> **+ New query**:
-
-```sql
-insert into platform_admins (id, email, full_name)
-values ('PASTE_UID_HERE', 'feppsx@gmail.com', 'FeppsXFMS Platform Admin');
+```bash
+npm run dev
 ```
 
-Replace `PASTE_UID_HERE` with the UID from Step 2. Run. Expect **Success. No rows returned.**
+Open http://localhost:3000 and log in as `shanjith160702@gmail.com`. You should land on `/admin` exactly like before. Nothing visible has changed — the multi-tenant boundary is now enforced under the hood.
+
+Also try logging in as `feppsx@gmail.com` (platform admin). You should get redirected to `/platform` — which will 404 for now, because we haven't built the platform panel yet (that's Phase 3).
 
 ---
 
-## Step 4 — Verify
+## Step 3 — Push to GitHub
 
-Still in SQL Editor:
+Open a terminal in the project folder:
 
-```sql
-select id, email, full_name, is_active from platform_admins;
--- expect 1 row for feppsx@gmail.com
-
-select count(*) from profiles where organization_id is null;
--- expect 0
-
-select role, count(*) from profiles group by role;
--- expect org_admin, and whatever technician/manager/requester counts you had
+```bash
+git status                                              # see what will be committed
+git add .
+git commit -m "Phase 2: session + query scoping (org_id + platform_admin routing)"
+git push
 ```
 
----
-
-## Step 5 — Verify your existing login still works
-
-1. In terminal: `npm run dev` (if not already running).
-2. Open http://localhost:3000 -> log in as `shanjith160702@gmail.com`.
-3. You should land on `/admin` exactly like before.
-
-The `feppsx@gmail.com` account can log in too, but nothing changes for it yet — the platform admin panel (`/platform/*`) is Phase 3.
+Vercel will auto-detect the push and start a new deploy.
 
 ---
 
-## When everything above is green
+## Step 4 — Wait for Vercel + smoke test
 
-Tell me. I'll start Phase 2 (wiring the app to use `organization_id` in middleware + server actions).
+1. Watch the deploy in your Vercel dashboard. Should succeed in 2-4 min.
+2. Once deployed, open your Vercel URL and log in as `shanjith160702@gmail.com`. Same experience as `/admin` locally.
+3. Try creating a new ticket. It should save successfully (the trigger auto-fills `organization_id`).
+
+---
+
+## What changed in Phase 2 (for reference)
+
+- `lib/db-types.ts` — added `Organization`, `PlatformAdmin`, `Invitation` types. Added `organization_id` to every row interface. Renamed `admin` role -> `org_admin`.
+- `lib/guard.ts` — new `requirePlatformAdmin()` and `currentOrgId()` helpers. `requireProfile()` now auto-detects platform admins and redirects them to `/platform`.
+- `lib/utils.ts` — `homeForRole()` handles new role name.
+- `app/page.tsx` — platform admins auto-redirect to `/platform`.
+- ~30 files under `app/` and `components/` — role literal `admin` -> `org_admin` (mechanical rename).
+- `lib/actions/invoices.ts` + `components/ManualInvoiceForm.tsx` — return + display `organization_id` for the invoice confirmation view.
+- **`supabase/v3_patch_2.sql`** — DB-side auto-fill of `organization_id` on every tenant insert.
+
+---
+
+## When Step 4 is green
+
+Tell me. Phase 3 next — the platform admin panel at `/platform/*` (org list, create org, suspend/impersonate).

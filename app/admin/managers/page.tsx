@@ -17,7 +17,7 @@ interface ManagerRow {
 }
 
 export default async function AdminManagersPage() {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const supabase = await createClient();
 
   const { data: managers } = await supabase

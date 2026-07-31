@@ -1,7 +1,7 @@
 "use server";
 
 // Server Actions for the admin's "Manage Clients" page.
-// RLS restricts these to users with role='admin'.
+// RLS restricts these to users with role='org_admin' scoped to their org.
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";

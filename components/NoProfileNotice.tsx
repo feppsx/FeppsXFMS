@@ -22,11 +22,11 @@ export function NoProfileNotice({ email, userId }: { email: string; userId: stri
             </p>
 
             <div className="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-3">
-              <div className="text-xs text-slate-500 mb-1">Ask your 360 admin to run this in Supabase SQL Editor:</div>
+              <div className="text-xs text-slate-500 mb-1">Ask your org admin to run this in Supabase SQL Editor:</div>
               <pre className="text-xs font-mono text-slate-800 whitespace-pre-wrap break-all">
-{`insert into profiles (id, full_name, role)
-values ('${userId}', 'Your Name', 'admin');
--- role can be: 'admin', 'technician', or 'requester'`}
+{`insert into profiles (id, full_name, role, organization_id)
+values ('${userId}', 'Your Name', 'org_admin', '<org uuid>');
+-- role can be: 'org_admin', 'manager', 'technician', or 'requester'`}
               </pre>
             </div>
 

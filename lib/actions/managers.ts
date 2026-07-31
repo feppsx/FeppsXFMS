@@ -11,7 +11,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireProfile } from "@/lib/guard";
 
 async function assertAdmin() {
-  await requireProfile(["admin"]);
+  await requireProfile(["org_admin"]);
 }
 
 // ---------------------------------------------------------------------------

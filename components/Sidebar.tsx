@@ -21,7 +21,7 @@ interface NavItem {
 }
 
 const ROLE_LABEL: Record<UserRole, string> = {
-  admin: "360 Admin",
+  org_admin: "Admin",
   technician: "Technician",
   manager: "Manager",
   requester: "Requester",
@@ -29,7 +29,7 @@ const ROLE_LABEL: Record<UserRole, string> = {
 
 function navFor(role: UserRole): NavItem[] {
   switch (role) {
-    case "admin":
+    case "org_admin":
       return [
         { href: "/admin",              label: "Dashboard",       icon: LayoutDashboard },
         { href: "/admin/tickets",      label: "Tickets",         icon: Ticket },

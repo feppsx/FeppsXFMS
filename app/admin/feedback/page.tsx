@@ -31,7 +31,7 @@ function Stars({ n }: { n: number }) {
 }
 
 export default async function AdminFeedbackList({ searchParams }: { searchParams: Promise<SP> }) {
-  const profile = await requireProfile(["admin", "manager"]);
+  const profile = await requireProfile(["org_admin", "manager"]);
   const sp = await searchParams;
   const supabase = await createClient();
 

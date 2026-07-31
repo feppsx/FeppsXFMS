@@ -9,7 +9,7 @@ import type { Client } from "@/lib/db-types";
 export const dynamic = "force-dynamic";
 
 export default async function AdminClientsPage() {
-  const profile = await requireProfile(["admin"]);
+  const profile = await requireProfile(["org_admin"]);
   const supabase = await createClient();
 
   const { data: clients } = await supabase

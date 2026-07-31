@@ -27,7 +27,7 @@ export interface UpdateCompanySettingsInput {
 export async function updateCompanySettings(
   input: UpdateCompanySettingsInput
 ): Promise<{ error?: string; ok?: boolean }> {
-  await requireProfile(["admin"]);
+  await requireProfile(["org_admin"]);
   const supabase = await createClient();
 
   if (!input.company_name?.trim()) return { error: "Company name is required." };

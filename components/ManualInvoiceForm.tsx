@@ -167,7 +167,9 @@ export function ManualInvoiceForm({
       // Build the Invoice + items objects for the confirmation view.
       const now = new Date().toISOString();
       const invoice: Invoice = {
-        id: res.id, receipt_no: res.receipt_no!,
+        id: res.id,
+        organization_id: res.organization_id ?? "",
+        receipt_no: res.receipt_no!,
         ticket_id: null, client_id: estateId || null, category,
         created_by: null,
         customer_name: customerName.trim(),
@@ -186,6 +188,7 @@ export function ManualInvoiceForm({
       };
       const itemRows: InvoiceItem[] = items.map((it, i) => ({
         id: crypto.randomUUID(),
+        organization_id: res.organization_id ?? "",
         invoice_id: res.id!,
         description: it.description, unit_price: it.unit_price, sort_order: i,
         created_at: now,
