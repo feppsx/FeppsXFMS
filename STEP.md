@@ -1,69 +1,56 @@
-# Current step: Deploy Phase 2 (session + query scoping)
+# Current step: Deploy Phase 3 (platform admin panel)
 
-Phase 2 wires the app to use `organization_id` end-to-end. The code changes are done; you just need to (1) run one SQL patch in Supabase, (2) push to GitHub so Vercel picks it up.
+The `/platform/*` routes are built. Platform admins can now log in and manage customer organizations from a web UI.
 
----
-
-## Step 1 — Run `v3_patch_2.sql` in Supabase
-
-Adds a BEFORE-INSERT trigger to every tenant table that auto-fills `organization_id` from the caller's profile. This saves us hand-editing every insert in every server action.
-
-1. Supabase -> **SQL Editor -> + New query**.
-2. On your computer: `C:\Users\Shanjithraj\Desktop\FeppsXFMS\supabase\v3_patch_2.sql` -> right-click -> **Open with Notepad**.
-3. **Ctrl + A**, **Ctrl + C** -> paste into Supabase -> **Run**.
-4. Expect **Success. No rows returned.**
+No SQL changes this time — only code.
 
 ---
 
-## Step 2 — Test locally (optional but recommended)
-
-If you recreated `.env.local`:
-
-```bash
-npm run dev
-```
-
-Open http://localhost:3000 and log in as `shanjith160702@gmail.com`. You should land on `/admin` exactly like before. Nothing visible has changed — the multi-tenant boundary is now enforced under the hood.
-
-Also try logging in as `feppsx@gmail.com` (platform admin). You should get redirected to `/platform` — which will 404 for now, because we haven't built the platform panel yet (that's Phase 3).
-
----
-
-## Step 3 — Push to GitHub
+## Step 1 — Push to GitHub
 
 Open a terminal in the project folder:
 
 ```bash
-git status                                              # see what will be committed
+git status                  # see the new files
 git add .
-git commit -m "Phase 2: session + query scoping (org_id + platform_admin routing)"
+git commit -m "Phase 3: platform admin panel (/platform routes)"
 git push
 ```
 
-Vercel will auto-detect the push and start a new deploy.
+Vercel auto-deploys. Wait 2-4 min.
 
 ---
 
-## Step 4 — Wait for Vercel + smoke test
+## Step 2 — Try it live
 
-1. Watch the deploy in your Vercel dashboard. Should succeed in 2-4 min.
-2. Once deployed, open your Vercel URL and log in as `shanjith160702@gmail.com`. Same experience as `/admin` locally.
-3. Try creating a new ticket. It should save successfully (the trigger auto-fills `organization_id`).
-
----
-
-## What changed in Phase 2 (for reference)
-
-- `lib/db-types.ts` — added `Organization`, `PlatformAdmin`, `Invitation` types. Added `organization_id` to every row interface. Renamed `admin` role -> `org_admin`.
-- `lib/guard.ts` — new `requirePlatformAdmin()` and `currentOrgId()` helpers. `requireProfile()` now auto-detects platform admins and redirects them to `/platform`.
-- `lib/utils.ts` — `homeForRole()` handles new role name.
-- `app/page.tsx` — platform admins auto-redirect to `/platform`.
-- ~30 files under `app/` and `components/` — role literal `admin` -> `org_admin` (mechanical rename).
-- `lib/actions/invoices.ts` + `components/ManualInvoiceForm.tsx` — return + display `organization_id` for the invoice confirmation view.
-- **`supabase/v3_patch_2.sql`** — DB-side auto-fill of `organization_id` on every tenant insert.
+1. Open your Vercel URL and log in as **`feppsx@gmail.com`** (the platform admin).
+2. You should land on **`/platform`** — the dashboard with counters (total orgs, active, suspended, users, tickets).
+3. Click **Organizations** in the sidebar. You'll see `360 Integrated` listed (the seed org from v3.sql).
+4. Click **New organization**. Fill in:
+   - Organization name: `Acme Facilities` (test)
+   - Slug: leave blank (auto-generates `acme-facilities`)
+   - Plan: Pro
+   - First admin full name: `Test Admin`
+   - First admin email: `testadmin@acme.com`
+   - Click **Create organization**.
+5. The page shows a green box with the temp password. **Copy it now** — it's shown only once.
+6. Open an incognito/private browser window and log in as `testadmin@acme.com` with the temp password. You should land on `/admin` — a completely fresh, empty tenant workspace, walled off from 360 Integrated.
+7. Go back to the platform admin window. Open the Acme org detail page. Try the **Suspend** button. Then reactivate. Then delete (only test orgs — do NOT delete 360 Integrated; the button is disabled for it anyway).
 
 ---
 
-## When Step 4 is green
+## What Phase 3 built
 
-Tell me. Phase 3 next — the platform admin panel at `/platform/*` (org list, create org, suspend/impersonate).
+- `/platform` — dashboard with cross-org counters.
+- `/platform/organizations` — list of every org with status pills.
+- `/platform/organizations/new` — create-org form that also creates the first `org_admin` user in one shot and reveals the temp password once.
+- `/platform/organizations/[id]` — org detail with team roster, ticket/invoice/estate counts, and Suspend / Reactivate / Delete buttons.
+- Layout guard: `requirePlatformAdmin()` on the `/platform` layout rejects anyone who isn't in `platform_admins`.
+
+Under the hood, `lib/actions/organizations.ts` uses the service_role admin client to create auth users and bypass RLS. The auto-fill trigger from v3_patch_2 sets `organization_id` on the new admin's profile.
+
+---
+
+## When Step 2 is green
+
+Tell me. Phase 4 next — proper invite emails so you don't have to copy-paste passwords (`invitations` table + `/invite/[token]` page + Resend/Supabase email delivery).
