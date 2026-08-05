@@ -107,10 +107,10 @@ export interface QuotationPdfInput {
 export function QuotationPDF({ q, branding }: { q: QuotationPdfInput; branding?: CompanyBranding | null }) {
   const b = branding ?? null;
   const logoSrc = b?.logo_url || "/invoice-logo.png";
-  const companyName = b?.company_name || "360 INTEGRATED FM & SM PTE. LTD.";
+  const companyName = b?.company_name || "Your Company Name";
   const addressLine = b?.address_line || "71 Bukit Batok Cres #06-11 Prestige Centre, Singapore";
   const gstReg = b?.gst_reg || "202212959Z";
-  const waLine = b?.phone_whatsapp ? `WHATSAPP US @ ${b.phone_whatsapp}` : "WHATSAPP US @ 8757 3360 / 9340 1360";
+  const waLine = b?.phone_whatsapp ? `WHATSAPP US @ ${b.phone_whatsapp}` : "";
   const tcLines = (b?.quotation_terms || "This quotation is valid for 30 days from the date of issue.\n30% deposit payable upon confirmation of works order.\nBalance amount payable upon completion of works order.\nPrices subject to change without prior notice after validity period.").split(/\n+/).filter(Boolean);
   const paynowFooter = b?.paynow_text || "Paynow UEN 202212959Z";
   return (

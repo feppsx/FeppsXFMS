@@ -26,7 +26,7 @@ export function PublicShell({
         <Link href="/report" className="inline-flex items-center gap-3">
           <Image
             src="/logo.png"
-            alt="360 Integrated"
+            alt="FeppsXFMS"
             width={64}
             height={64}
             className="h-14 w-auto object-contain logo-live dark:hidden"
@@ -35,7 +35,7 @@ export function PublicShell({
           />
           <Image
             src="/logo-dark.png"
-            alt="360 Integrated"
+            alt="FeppsXFMS"
             width={64}
             height={64}
             className="h-14 w-auto object-contain logo-live hidden dark:block"
@@ -43,9 +43,7 @@ export function PublicShell({
             priority
           />
           <span className="font-extrabold text-2xl tracking-tight">
-            <span className="text-brand-blue">FM</span>{" "}
-            <span className="text-slate-900">360</span>{" "}
-            <span className="text-brand-red">SM</span>
+            <span className="text-brand-blue">Fepps</span><span className="text-brand-red">X</span><span className="text-slate-900">FMS</span>
           </span>
         </Link>
         {showTrackLink && (

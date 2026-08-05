@@ -115,7 +115,7 @@ export function NewTicketForm({
         </select>
         {clients.length === 0 && (
           <p className="text-xs text-slate-500 mt-1">
-            No clients yet. Ask the 360 admin to add one.
+            No estates yet. Ask your admin to add one.
           </p>
         )}
       </div>
@@ -138,7 +138,7 @@ export function NewTicketForm({
             ))}
           </select>
           <p className="text-xs text-slate-500 mt-1">
-            This site has multiple companies inside it. Pick yours so 360 knows who to bill / brief.
+            This site has multiple companies inside it. Pick yours so the team knows who to bill / brief.
           </p>
         </div>
       )}

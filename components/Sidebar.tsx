@@ -129,7 +129,7 @@ export function Sidebar({ profile }: { profile: Profile }) {
         </button>
         <Image
           src="/logo.png"
-          alt="360 Integrated"
+          alt="FeppsXFMS"
           width={100}
           height={28}
           className="h-7 w-auto object-contain logo-live dark:hidden"
@@ -138,7 +138,7 @@ export function Sidebar({ profile }: { profile: Profile }) {
         />
         <Image
           src="/logo-dark.png"
-          alt="360 Integrated"
+          alt="FeppsXFMS"
           width={100}
           height={28}
           className="h-7 w-auto object-contain logo-live hidden dark:block"
@@ -169,7 +169,7 @@ export function Sidebar({ profile }: { profile: Profile }) {
           <div className="px-6 py-5 border-b border-slate-100">
             <Image
               src="/logo.png"
-              alt="360 Integrated"
+              alt="FeppsXFMS"
               width={160}
               height={44}
               className="h-11 w-auto object-contain logo-live dark:hidden"
@@ -178,7 +178,7 @@ export function Sidebar({ profile }: { profile: Profile }) {
             />
             <Image
               src="/logo-dark.png"
-              alt="360 Integrated"
+              alt="FeppsXFMS"
               width={160}
               height={44}
               className="h-11 w-auto object-contain logo-live hidden dark:block"

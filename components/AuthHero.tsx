@@ -18,7 +18,7 @@ export function AuthHero({ children }: { children: React.ReactNode }) {
           <div className="inline-block bg-white/95 rounded-xl p-3 shadow-lg">
             <Image
               src="/logo.png"
-              alt="360 Integrated"
+              alt="FeppsXFMS"
               width={180}
               height={48}
               className="h-12 w-auto object-contain block logo-live"
@@ -53,7 +53,7 @@ export function AuthHero({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="relative text-xs text-brand-200">
-          © 360 Integrated FM &amp; SM Pte. Ltd.
+          © FeppsXFMS
         </div>
       </div>
 

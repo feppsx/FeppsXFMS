@@ -118,14 +118,14 @@ export interface ServiceReportPdfInput {
 export function ServiceReportPDF({ sr, branding }: { sr: ServiceReportPdfInput; branding?: CompanyBranding | null }) {
   const b = branding ?? null;
   const logoSrc = b?.logo_url || "/invoice-logo.png";
-  const companyName = b?.company_name || "360 INTEGRATED FM & SM PTE LTD";
-  const tagline = b?.tagline || "Facilities Management & Strata Management is our Key";
-  const uen = b?.uen || "202212959Z";
-  const address = b?.address_line || "No. 71 Bukit Batok Crescent, #06-11 Prestige Centre, Singapore 658071";
-  const officePhone = b?.phone_office || "6677 0360";
-  const hotline = b?.phone_hotline || "8757 3360 / 8758 3360";
-  const email = b?.email || "support@360maintenance.sg";
-  const badges = b?.badges_line || "bizSAFE · STR · LAS · TOP Prestige 100";
+  const companyName = b?.company_name || "Your Company Name";
+  const tagline = b?.tagline || "";
+  const uen = b?.uen || "";
+  const address = b?.address_line || "";
+  const officePhone = b?.phone_office || "";
+  const hotline = b?.phone_hotline || "";
+  const email = b?.email || "";
+  const badges = b?.badges_line || "";
   return (
     <Document title={sr.sr_no}>
       <Page size="A4" style={s.page}>
@@ -238,7 +238,7 @@ export function ServiceReportPDF({ sr, branding }: { sr: ServiceReportPdfInput; 
           </View>
 
           <Text style={s.disclaimer}>
-            Please do not hesitate to call us and check the work before signing. Payments are made to 360 Integrated FM &amp; SM Pte Ltd only.
+            Please do not hesitate to call us and check the work before signing. Payments are made to the company named above only.
           </Text>
           <Text style={s.contact}>
             {address} · Tel: {officePhone} · Hotline: {hotline} · {email}

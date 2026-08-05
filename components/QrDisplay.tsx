@@ -27,7 +27,7 @@ export function QrDisplay({ url }: { url: string }) {
     if (!dataUrl) return;
     const a = document.createElement("a");
     a.href = dataUrl;
-    a.download = "360-integrated-report-qr.png";
+    a.download = "report-qr.png";
     a.click();
   }
 

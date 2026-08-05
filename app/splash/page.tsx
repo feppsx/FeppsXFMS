@@ -17,7 +17,7 @@ export default function SplashPage() {
         <Link href="/login" aria-label="Enter">
           <Image
             src="/logo.png"
-            alt="360 Integrated FM & SM"
+            alt="FeppsXFMS"
             width={220}
             height={140}
             className="object-contain logo-live dark:hidden"
@@ -26,7 +26,7 @@ export default function SplashPage() {
           />
           <Image
             src="/logo-dark.png"
-            alt="360 Integrated FM & SM"
+            alt="FeppsXFMS"
             width={220}
             height={140}
             className="object-contain logo-live hidden dark:block"

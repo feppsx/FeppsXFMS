@@ -21,8 +21,11 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const inviteOnly = searchParams.get("invite_only") === "1";
   const [error, setError] = useState<string | null>(
-    errorFromUrl === "no-profile"
+    inviteOnly
+      ? "FeppsXFMS is invite-only. Ask your admin for an invitation."
+      : errorFromUrl === "no-profile"
       ? "Your account isn't linked to a profile yet. Contact your admin."
       : errorFromUrl === "reset-link-invalid"
       ? "That reset link is expired or already used. Request a new one."
@@ -54,7 +57,7 @@ function LoginForm() {
           <div className="w-32 h-32 rounded-full bg-white border-2 border-dashed border-brand-blue flex items-center justify-center shadow-float">
             <Image
               src="/logo.png"
-              alt="360 Integrated"
+              alt="FeppsXFMS"
               width={100}
               height={100}
               className="object-contain"

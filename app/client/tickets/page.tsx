@@ -47,7 +47,7 @@ export default async function MyTicketsPage() {
         <EmptyState
           variant="tickets"
           title="No tickets yet"
-          message="When something needs fixing at your site, raise a ticket and 360 Integrated will take it from there."
+          message="When something needs fixing at your site, raise a ticket and your admin will take it from there."
           action={{ href: "/client/tickets/new", label: "Raise your first ticket" }}
         />
       ) : (

@@ -73,7 +73,7 @@ export function AnonFeedbackForm({ token }: { token: string }) {
 
       {/* Would-recommend toggle */}
       <div>
-        <label className="block text-sm font-medium text-slate-800 mb-2">Would you recommend 360 Integrated?</label>
+        <label className="block text-sm font-medium text-slate-800 mb-2">Would you recommend us?</label>
         <div className="flex gap-2">
           <button type="button" onClick={() => setRecommend(true)}
             className={"rounded-full px-6 py-2 text-sm font-semibold border " + (recommend === true ? "bg-emerald-50 border-emerald-300 text-emerald-800" : "border-slate-300 text-slate-700 hover:bg-slate-50")}>

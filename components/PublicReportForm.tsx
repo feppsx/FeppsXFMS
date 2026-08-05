@@ -109,7 +109,7 @@ export function PublicReportForm({
     <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-7 shadow-card">
       <h1 className="text-2xl font-semibold text-slate-900 mb-1">Report an issue</h1>
       <p className="text-sm text-slate-600 mb-6">
-        Fill this in and 360 Integrated will look into it. No account needed.
+        Fill this in and the facility team will look into it. No account needed.
       </p>
 
       <form onSubmit={submit} className="space-y-5">
@@ -271,7 +271,7 @@ export function PublicReportForm({
             className="mt-0.5 w-4 h-4 rounded border-slate-300 text-brand focus:ring-brand"
           />
           <span>
-            I consent to 360 Integrated using my contact details solely to reach me if
+            I consent to the facility team using my contact details solely to reach me if
             clarification about the issue location is required.
           </span>
         </label>

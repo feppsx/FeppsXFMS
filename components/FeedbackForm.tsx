@@ -39,7 +39,7 @@ export function FeedbackForm({ ticketId }: { ticketId: string }) {
       <div className="text-center py-6">
         <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
         <h3 className="font-semibold text-slate-900">Thanks for the feedback!</h3>
-        <p className="text-sm text-slate-600 mt-1">Your rating has been sent to the 360 team.</p>
+        <p className="text-sm text-slate-600 mt-1">Your rating has been sent to the team.</p>
       </div>
     );
   }
@@ -70,7 +70,7 @@ export function FeedbackForm({ ticketId }: { ticketId: string }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-2">Would you recommend 360 Integrated?</label>
+        <label className="block text-sm font-medium text-slate-700 mb-2">Would you recommend us?</label>
         <div className="flex gap-2">
           <button
             type="button"

@@ -51,7 +51,7 @@ export default async function TrackTicketPage({
   // expose profile names, so we just show "Team" for any staff action.
   const actors: Record<string, string> = {};
   for (const h of history) {
-    if (h.changed_by) actors[h.changed_by] = "360 Team";
+    if (h.changed_by) actors[h.changed_by] = "Team";
   }
 
   return (

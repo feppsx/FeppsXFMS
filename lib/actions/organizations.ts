@@ -80,6 +80,13 @@ export async function createOrganization(formData: FormData): Promise<
   // The handle_new_auth_user trigger (see v3_patch_1) reads user_metadata
   // and inserts a matching profiles row automatically.
 
+  // Seed a default company_settings row using the org's own name so PDFs
+  // don't render "Your Company Name" until they visit /admin/branding.
+  await admin.from("company_settings").insert({
+    organization_id: org.id,
+    company_name: name,
+  });
+
   revalidatePath("/platform/organizations");
   return { orgId: org.id, adminEmail: email, tempPassword: password };
 }

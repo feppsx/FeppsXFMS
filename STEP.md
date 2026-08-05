@@ -1,17 +1,26 @@
-# Current step: Deploy Phase 4 (team invitations)
+# Current step: Deploy Phase 5 (rebrand + per-org settings)
 
-Org admins can now invite team members (any role: Admin, Manager, Technician, Requester) from a single **Team** page. Uses the same temp-password pattern as the Phase 3 org creation — no SMTP required. Every invite is logged in the `invitations` table.
-
-No SQL changes this time — only code.
+Rebranded the platform chrome from "360 Integrated" to **FeppsXFMS**, gated the public `/signup` route (invite-only), and cleaned up PDF/UI strings that leaked 360-specific text to other customers. New customer orgs now start with their own name pre-filled in company settings.
 
 ---
 
-## Step 1 — Push to GitHub
+## Step 1 — Run `v3_patch_3.sql` in Supabase
+
+Removes the hardcoded "360 INTEGRATED FM & SM PTE. LTD." default from `company_settings.company_name` and resets the 360 Integrated org's row to just "360 Integrated".
+
+1. Supabase -> **SQL Editor -> + New query**.
+2. On your computer: `C:\Users\Shanjithraj\Desktop\FeppsXFMS\supabase\v3_patch_3.sql` -> right-click -> **Open with Notepad**.
+3. **Ctrl + A**, **Ctrl + C** -> paste -> **Run**.
+4. Expect **Success. No rows returned.**
+
+---
+
+## Step 2 — Push to GitHub
 
 ```bash
 git status
 git add .
-git commit -m "Phase 4: team invitations (unified /admin/team page)"
+git commit -m "Phase 5: rebrand to FeppsXFMS, per-org branding, invite-only"
 git push
 ```
 
@@ -19,38 +28,28 @@ Vercel auto-deploys in 2-4 min.
 
 ---
 
-## Step 2 — Try it live
+## Step 3 — Verify
 
-1. Open Vercel URL, log in as **`shanjith160702@gmail.com`** (360 Integrated org_admin).
-2. In the sidebar you'll see a new **Team** item (right below Estates). Click it.
-3. You'll see all current team members with their role + status. Your own row is at the top; you can't deactivate yourself.
-4. Click **Invite member** (top right). Modal opens.
-5. Fill in a test invite:
-   - Full name: `Test Tech`
-   - Email: `testtech@example.com`
-   - Role: Technician
-   - Click **Create invite**.
-6. Success screen shows the temp password. **Copy it**, close the modal.
-7. Open incognito window -> log in with `testtech@example.com` + temp password -> lands on `/technician/jobs`.
-8. Back in the admin window, refresh Team page — Test Tech should appear with Active status. Try Deactivate/Reactivate.
+1. Open your Vercel URL (log out first if needed). Login page now says **FeppsXFMS**, the browser tab title is "FeppsXFMS — Facility Management", and the tenant-facing copy no longer mentions 360.
+2. Navigate to `<vercel-url>/signup` — you should get bounced to `/login` with the message "FeppsXFMS is invite-only. Ask your admin for an invitation."
+3. Log in as `feppsx@gmail.com` (platform admin) -> **New organization** -> create a test org named "Acme". Log in as the new Acme admin in incognito, go to **Invoices -> Generate**, generate any invoice, download the PDF — company name at the top should be **"Acme"** (not 360).
+4. Log in as `shanjith160702@gmail.com` -> Branding page -> verify company name says "360 Integrated" (the seed org keeps its own brand).
 
 ---
 
-## What Phase 4 built
+## What Phase 5 changed
 
-- **`lib/actions/invitations.ts`** — `inviteTeamMember(email, name, role)` creates auth user + profile in the caller's org, logs the invitation. `setTeamMemberActive(userId, boolean)` toggles their active flag.
-- **`components/InviteTeamMemberForm.tsx`** — modal form with copy-to-clipboard temp password reveal.
-- **`components/TeamPageClient.tsx`** — team roster table with status pills + activate/deactivate.
-- **`components/TeamMemberActiveToggle.tsx`** — per-row toggle button.
-- **`app/admin/team/page.tsx`** — server component that fetches org's profiles (RLS-scoped) and passes to the client.
-- **Sidebar update** — new **Team** entry for org_admin, with Technicians/Managers indented under it.
-
-The org_admin is protected against deactivating themselves (both server-side check and UI disable). RLS on `profiles` ensures they can only see + modify members of their own org.
-
-Note: the older `/admin/technicians` and `/admin/managers` pages still work for role-specific management (e.g. assigning trades to technicians). Team is the unified entry point for adding people.
+- **`app/layout.tsx`** — page title + app name = FeppsXFMS.
+- **`app/signup/page.tsx`** — now a hard redirect to `/login?invite_only=1`.
+- **`app/login/page.tsx`** — shows the "invite-only" message when arriving from `/signup`; logo alt = FeppsXFMS.
+- **`components/AuthHero.tsx`, `Sidebar.tsx`, `PublicShell.tsx`, `app/splash/page.tsx`** — alt tags + wordmark = FeppsXFMS.
+- **`components/InvoicePDF.tsx`, `QuotationPDF.tsx`, `ServiceReportPDF.tsx`** — hardcoded 360 fallback strings replaced with generic / empty (so a customer who hasn't set Branding sees "Your Company Name" instead of another tenant's brand).
+- **Tenant-facing copy** — `NewTicketForm`, `FeedbackForm`, `AnonFeedbackForm`, `PublicReportForm`, `QrDisplay`, `/client/tickets`, `/track/[token]` — 360-branded phrases replaced with generic wording ("your admin", "the team", etc.).
+- **`lib/actions/organizations.ts`** — when creating a new org, seed a `company_settings` row using the org's own name.
+- **`supabase/v3_patch_3.sql`** — drop old DB default on `company_name`; reset the seed 360 Integrated row.
 
 ---
 
-## When Step 2 is green
+## When Step 3 is green
 
-Tell me. Phase 5 next — rebrand chrome from "360 Integrated" to "FeppsXFMS", per-org branding on invoices/quotations, close the public `/signup` page (invite-only mode).
+Tell me. Phase 6 next — suspended-org login gate + usage stats per org + optional audit log.

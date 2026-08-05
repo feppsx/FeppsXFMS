@@ -5,8 +5,8 @@ import { themeInitScript } from "@/components/ThemeToggle";
 import { ToastProvider } from "@/components/ToastProvider";
 
 export const metadata: Metadata = {
-  title: "360 Integrated — Facility Ticketing",
-  description: "Raise, track, and resolve facility tickets.",
+  title: "FeppsXFMS — Facility Management",
+  description: "Multi-tenant facility management for teams that fix things.",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
-  appleWebApp: { capable: true, title: "360 Tickets", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "FeppsXFMS", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
