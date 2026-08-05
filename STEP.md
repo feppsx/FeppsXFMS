@@ -1,16 +1,27 @@
-# Current step: Deploy the per-org sidebar logo fix
+# Current step: Fix logo upload + wrong org name in sidebar
 
-The sidebar in `/admin`, `/technician`, `/client` was showing 360 Integrated's static `/logo.png` for every org. Fixed — each org now shows its own uploaded logo (or its org name as text if no logo has been uploaded yet).
-
-**No SQL changes.** Code only.
+Two bugs found:
+1. **Can't upload logo on Branding page** — `v3.sql` did `drop function is_360_admin cascade`, which also dropped the storage policies on `company-assets` that referenced it. So no one has write access to the bucket right now.
+2. **Wrong org name in sidebar** — `getCompanyBranding` was fetching company_settings with `.limit(1)` and trusting RLS to filter, which was fragile. Now filters explicitly by the caller's org_id.
 
 ---
 
-## Step 1 — Push to GitHub
+## Step 1 — Run `v3_patch_4.sql` in Supabase
+
+Restores the storage policies on `company-assets` using the new org-aware helpers.
+
+1. Supabase -> **SQL Editor -> + New query**.
+2. On your computer: `C:\Users\Shanjithraj\Desktop\FeppsXFMS\supabase\v3_patch_4.sql` -> right-click -> **Open with Notepad**.
+3. **Ctrl + A**, **Ctrl + C** -> paste -> **Run**.
+4. Expect **Success. No rows returned.**
+
+---
+
+## Step 2 — Push code changes
 
 ```bash
 git add .
-git commit -m "Per-org sidebar logo (fallback to org name)"
+git commit -m "Fix: logo upload storage policies + explicit org filter in getCompanyBranding"
 git push
 ```
 
@@ -18,23 +29,25 @@ Vercel auto-deploys in 2-4 min.
 
 ---
 
-## Step 2 — Verify
+## Step 3 — Verify
 
-1. Log in as the **Acme** test org admin.
-   - Sidebar top-left should now say **"Acme"** (text), not the 360 logo.
-2. Go to `/admin/branding` -> upload a logo file -> save.
-3. Refresh — the sidebar should now show your uploaded Acme logo.
-4. Log in as `shanjith160702@gmail.com` (360 Integrated).
-   - Sidebar shows their existing uploaded logo (unchanged).
-
----
-
-## What changed
-
-- **`lib/company-settings-data.ts`** — fallback branding stopped hard-coding 360's data. Fallback now pulls the caller's org name from `organizations` and leaves phone/email/UEN blank.
-- **`components/AppShell.tsx`** — now an `async` server component that fetches branding and passes `logoUrl` + `logoDarkUrl` + `companyName` to `Sidebar`.
-- **`components/Sidebar.tsx`** — accepts `logoUrl`, `logoDarkUrl`, `companyName` props. Renders the org's own logo if uploaded, otherwise renders the org name as plain text. No more `/logo.png` static reference.
+1. Log in as `shanjith160702@gmail.com` (360 Integrated).
+   - Go to **Branding** -> upload a logo -> Save. Should succeed now.
+   - Refresh -> sidebar shows the uploaded 360 logo image.
+2. Log in as your **Wipro** org_admin (in incognito).
+   - Sidebar top-left should now say **"Wipro"** (the org name), not "360 Integrated".
+   - Go to Branding -> upload a Wipro logo -> Save. Refresh -> sidebar shows Wipro logo.
+3. Log in as your **Acme** org_admin (incognito).
+   - Sidebar shows "Acme" text (until you upload their logo).
 
 ---
 
-When Step 2 looks right, tell me and we continue to Phase 6 (suspended-org login gate + polish).
+## What was broken (root cause)
+
+When v3.sql renamed helpers from `is_360_admin` to `is_org_admin`, the `drop function ... cascade` swept along any object that referenced the old function — including the storage bucket policies added by patch #24. Those policies weren't visible in the schema files, so the migration silently removed them. v3_patch_4 restores them with the new helpers and adds platform_admin bypass.
+
+The sidebar issue was a separate case where the `.limit(1).maybeSingle()` pattern could return the wrong org's row if RLS was ever bypassed or misconfigured. Explicit `.eq("organization_id", orgId)` closes that off.
+
+---
+
+When step 3 is fully green, tell me. We can then move to Phase 6 (suspended-org login gate + polish).

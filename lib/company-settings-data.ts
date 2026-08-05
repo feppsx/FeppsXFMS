@@ -29,31 +29,36 @@ export interface CompanyBranding extends CompanySettings {
 
 export async function getCompanyBranding(): Promise<CompanyBranding> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("company_settings")
-    .select("*")
-    .limit(1)
-    .maybeSingle<CompanySettings>();
 
-  // Fallback if the org hasn't set up Branding yet. Fetch their own org name
-  // so PDFs don't render "Your Company Name" for a fresh customer.
+  // Look up the caller's org first, then filter company_settings explicitly.
+  // We used to rely on RLS + .limit(1), which was fragile.
+  let orgId: string | null = null;
   let orgName = "Your Company Name";
-  const { data: profile } = await supabase.auth.getUser();
-  if (profile.user) {
+  const { data: authData } = await supabase.auth.getUser();
+  if (authData.user) {
     const { data: prof } = await supabase
       .from("profiles")
       .select("organization_id")
-      .eq("id", profile.user.id)
+      .eq("id", authData.user.id)
       .maybeSingle<{ organization_id: string }>();
     if (prof?.organization_id) {
+      orgId = prof.organization_id;
       const { data: org } = await supabase
         .from("organizations")
         .select("name")
-        .eq("id", prof.organization_id)
+        .eq("id", orgId)
         .maybeSingle<{ name: string }>();
       if (org?.name) orgName = org.name;
     }
   }
+
+  const { data } = orgId
+    ? await supabase
+        .from("company_settings")
+        .select("*")
+        .eq("organization_id", orgId)
+        .maybeSingle<CompanySettings>()
+    : { data: null };
 
   const fallback: CompanySettings = {
     id: "",
