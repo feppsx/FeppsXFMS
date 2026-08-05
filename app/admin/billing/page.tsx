@@ -99,7 +99,7 @@ export default async function BillingPage() {
               ) : (
                 <div className="mt-4">
                   <div className="text-center text-xs text-slate-500 py-2">
-                    Contact <a href="mailto:sales@feppsxfms.com" className="text-red-600 hover:underline">sales@feppsxfms.com</a> to change plans.
+                    Contact <a href="mailto:sales@feppsx.sg" className="text-red-600 hover:underline">sales@feppsx.sg</a> to change plans.
                   </div>
                 </div>
               )}
