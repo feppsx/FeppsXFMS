@@ -1,6 +1,10 @@
-# Current step: Deploy Phase 6 (suspended-org gate)
+# Current step: Deploy Phase 7 (platform admin power tools)
 
-When you suspend an org from `/platform/organizations/[id]`, its users are now automatically signed out on their next page load and shown a clear message on the login screen. Same treatment for individually deactivated users.
+Four features shipped:
+1. **Impersonate** — one-click "sign in as this user" for support.
+2. **Reset password** — generate a new password for any tenant user.
+3. **Add member** — add someone to any org from the platform panel (not just at creation).
+4. **Global search** — search bar at the top of `/platform` finds orgs, users, tickets, invoices across every customer.
 
 **No SQL changes.** Code only.
 
@@ -10,7 +14,7 @@ When you suspend an org from `/platform/organizations/[id]`, its users are now a
 
 ```bash
 git add .
-git commit -m "Phase 6: suspended-org login gate + deactivated-user gate"
+git commit -m "Phase 7: platform admin power tools (impersonate, reset password, add member, global search)"
 git push
 ```
 
@@ -20,43 +24,52 @@ Vercel auto-deploys in 2-4 min.
 
 ## Step 2 — Verify
 
-1. Log in as `feppsx@gmail.com` (platform admin) -> open your **Wipro** test org detail page.
-2. Click **Suspend**. Confirm the badge flips to Suspended.
-3. Open an incognito window -> log in as the Wipro org_admin. As soon as you land on `/admin` (or any admin page), you'll be bounced back to `/login` with:
-   > "Your organization is currently suspended. Please contact FeppsXFMS support."
-4. Try logging in again — you'll be bounced immediately.
-5. Back in the platform window, click **Reactivate** on the Wipro org. The Wipro admin can now log in normally.
-6. On the **Team** page in a live org, click **Deactivate** on any member. In incognito, that member can no longer log in — they see:
-   > "Your account has been deactivated. Contact your organization admin."
+Log in as `feppsx@gmail.com` (platform admin) and open any org's detail page.
+
+**Add member** — click **Add member** (top right of the Team box) -> fill in email + name + role -> Create. Modal shows the temp password. Copy it, close, then log in as them in incognito.
+
+**Impersonate** — click **Impersonate** on any team member row. Confirm the dialog. You'll be signed out and redirected to a one-time login link that signs you in as that user. You now see their view exactly. **To exit: sign out; log back in as feppsx@gmail.com.**
+
+**Reset password** — click **Reset password** on any team member row. Confirm. A modal shows the new password (copy-to-clipboard). The user's old password stops working immediately.
+
+**Global search** — type in the search bar at the top of any `/platform` page. Try:
+- an org name (e.g. `wipro`) — matches organizations
+- a person's name (e.g. `test`) — matches users
+- a ticket number (e.g. `TKT-`) — matches tickets
+- an invoice receipt (e.g. `INV-`) — matches invoices
+
+Click any hit to jump to that org's detail page.
 
 ---
 
-## What Phase 6 built
+## What Phase 7 built
 
-- **`lib/guard.ts`** — `requireProfile` now checks two extra things after the role check:
-  1. Is the caller's org suspended or inactive? -> sign out + `/login?org_suspended=1`.
-  2. Is the individual profile `is_active = false`? -> sign out + `/login?deactivated=1`.
-- **`app/page.tsx`** — same two checks at the root redirect, catching users who land on `/` before hitting any protected page.
-- **`app/login/page.tsx`** — new messages for `org_suspended=1` and `deactivated=1` query params.
+- **`lib/actions/platform-admin.ts`** — `impersonateUser`, `resetUserPassword`, `platformInviteMember`. All guarded by `requirePlatformAdmin`.
+- **`lib/platform-search.ts`** — cross-org search fetcher using the service-role client.
+- **`app/api/platform/search/route.ts`** — JSON endpoint the search bar calls.
+- **`components/PlatformSearchBar.tsx`** — debounced live-search dropdown with grouped results.
+- **`components/PlatformTeamActions.tsx`** — per-row Impersonate + Reset password buttons.
+- **`components/PlatformInviteMemberButton.tsx`** — Add-member modal.
+- **`components/PlatformShell.tsx`** — search bar wired into the platform header.
+- **`app/platform/organizations/[id]/page.tsx`** — team table gained an Actions column and Add-member button.
 
-Platform admins bypass all of this (they're in `platform_admins`, not `profiles`).
+### Impersonation notes
+- Uses a Supabase magic-link generated with the service-role key, then redirects to it.
+- No banner is shown while impersonating (v1 keeps it simple). You know because you'll see the tenant's UI and their name in the sidebar.
+- To end impersonation, sign out — you'll land back at `/login`, sign in as yourself.
 
 ---
 
-## Roadmap after Phase 6
+## Roadmap after Phase 7
 
-The core multi-tenant platform is done:
-- Phase 1 ✅ Multi-tenant schema
-- Phase 2 ✅ Session + query scoping
-- Phase 3 ✅ Platform admin panel
-- Phase 4 ✅ Team invitations
-- Phase 5 ✅ Rebrand + per-org branding
-- Phase 6 ✅ Suspended-org gate
+Core multi-tenant + full support tooling shipped. What's left on the "nice to have" list:
+- Audit log of platform_admin actions
+- Per-org activity graph (sparkline)
+- Inactive-orgs view
+- Announcements banner
+- Data export per org (GDPR)
+- Feature flags per org
+- Real email invites (SMTP/Resend)
+- Stripe billing
 
-**What we deliberately deferred** (still worth doing when you have paying customers):
-- **Real email invites** — replace the "temp password reveal" with a Supabase Auth invite email (needs SMTP configured in Supabase, or Resend/similar for prettier emails).
-- **Stripe billing** — plans, seat limits, invoice-past-due auto-suspend.
-- **Audit log** — record every platform_admin action (create org, suspend, delete) for compliance.
-- **Public-flow org scoping** — the anonymous `/report` and `/track` pages currently work across all orgs; they need per-org URLs so an anonymous submission attaches to the right org.
-
-Tell me which of those you want to tackle next, or say "done for now" and I'll leave the roadmap here.
+Tell me which one to tackle next, or say "done for now" and I'll stop here.

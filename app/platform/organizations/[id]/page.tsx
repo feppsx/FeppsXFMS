@@ -4,6 +4,8 @@ import { ArrowLeft, Users, Ticket, Receipt, Building2 } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Organization, Profile } from "@/lib/db-types";
 import { OrgDetailActions } from "@/components/OrgDetailActions";
+import { PlatformTeamActions } from "@/components/PlatformTeamActions";
+import { PlatformInviteMemberButton } from "@/components/PlatformInviteMemberButton";
 
 export const dynamic = "force-dynamic";
 
@@ -75,8 +77,9 @@ export default async function OrgDetailPage({
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-200">
+        <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-900">Team members</h2>
+          <PlatformInviteMemberButton orgId={org.id} />
         </div>
         {members.length === 0 ? (
           <div className="px-5 py-8 text-center text-sm text-slate-500">No members yet.</div>
@@ -86,6 +89,7 @@ export default async function OrgDetailPage({
               <tr>
                 <th className="text-left px-5 py-2">Name</th>
                 <th className="text-left px-5 py-2">Role</th>
+                <th className="text-right px-5 py-2">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -93,6 +97,9 @@ export default async function OrgDetailPage({
                 <tr key={m.id}>
                   <td className="px-5 py-2 text-slate-900">{m.full_name}</td>
                   <td className="px-5 py-2 text-slate-600 capitalize">{m.role.replace("_", " ")}</td>
+                  <td className="px-5 py-2">
+                    <PlatformTeamActions userId={m.id} userName={m.full_name} />
+                  </td>
                 </tr>
               ))}
             </tbody>

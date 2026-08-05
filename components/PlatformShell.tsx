@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Building2, LogOut, ShieldCheck } from "lucide-react";
+import { PlatformSearchBar } from "./PlatformSearchBar";
 
 const NAV = [
   { href: "/platform",              label: "Dashboard",     icon: LayoutDashboard },
@@ -66,6 +67,9 @@ export function PlatformShell({
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto">
+        <div className="border-b border-slate-200 bg-white px-6 py-3 flex items-center gap-4">
+          <PlatformSearchBar />
+        </div>
         <div className="max-w-6xl mx-auto px-6 py-6">{children}</div>
       </main>
     </div>
