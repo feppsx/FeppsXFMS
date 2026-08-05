@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { LogIn, KeyRound, Copy, Check, X } from "lucide-react";
 import { impersonateUser, resetUserPassword } from "@/lib/actions/platform-admin";
+import { createClient } from "@/lib/supabase/client";
 
 export function PlatformTeamActions({
   userId,
@@ -20,13 +21,25 @@ export function PlatformTeamActions({
     if (!confirm(`Sign out and log in as ${userName}? You'll need to sign back in as yourself when done.`)) return;
     setBusy("impersonate");
     setError(null);
+
+    // Server generates a magic-link token for the target user.
     const res = await impersonateUser(userId);
     if (res?.error) { setError(res.error); setBusy(null); return; }
-    if (res?.url) {
-      // Navigate to Supabase's magic-link URL (external). This signs us in
-      // as the target user and Supabase then redirects back to `/`.
-      window.location.href = res.url;
-    }
+    if (!res?.tokenHash) { setError("No token returned."); setBusy(null); return; }
+
+    // Verify the token client-side. This overwrites the platform admin's
+    // session cookie with the impersonated user's session in one call, on
+    // our own domain — no external redirect, no PKCE mismatch.
+    const supabase = createClient();
+    const { error: otpErr } = await supabase.auth.verifyOtp({
+      token_hash: res.tokenHash,
+      type: "magiclink",
+    });
+    if (otpErr) { setError(`Impersonation failed: ${otpErr.message}`); setBusy(null); return; }
+
+    // Hard reload to `/` so the server components re-render with the new
+    // session cookie. Root page routes us to the target user's home.
+    window.location.href = "/";
   }
 
   async function doReset() {

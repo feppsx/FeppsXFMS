@@ -8,7 +8,6 @@
 // All guarded by requirePlatformAdmin.
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { requirePlatformAdmin } from "@/lib/guard";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/lib/db-types";
@@ -22,20 +21,17 @@ function randomPassword(): string {
   return s + "!";
 }
 
-async function siteUrl(): Promise<string> {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "https";
-  return `${proto}://${host}`;
-}
-
 // ---------------------------------------------------------------------------
 // 1. Impersonate a tenant user (support flow).
 // Signs the platform admin out, then redirects to a one-time magic link that
 // signs in as the target user. Platform admin ends the impersonation by
 // signing out (which returns them to /login).
 // ---------------------------------------------------------------------------
-export async function impersonateUser(userId: string): Promise<{ error?: string; url?: string }> {
+export async function impersonateUser(userId: string): Promise<{
+  error?: string;
+  email?: string;
+  tokenHash?: string;
+}> {
   await requirePlatformAdmin();
   const admin = createAdminClient();
 
@@ -44,21 +40,23 @@ export async function impersonateUser(userId: string): Promise<{ error?: string;
     return { error: `Could not find user: ${getErr?.message ?? "no email"}` };
   }
 
-  // redirectTo points at /auth/callback so the exchangeCodeForSession helper
-  // there sets a fresh session cookie for the impersonated user on OUR
-  // domain (which automatically replaces the platform admin's cookie).
+  // Generate a magic-link token. We return the hashed_token so the client
+  // can call supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })
+  // directly — bypassing the URL redirect round-trip (which fails under PKCE
+  // because there's no matching client-side verifier for a server-generated
+  // link). verifyOtp sets the session cookie for the target user immediately.
   const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
     type: "magiclink",
     email: target.user.email,
-    options: { redirectTo: `${await siteUrl()}/auth/callback` },
   });
-  if (linkErr || !link?.properties?.action_link) {
-    return { error: `Could not generate impersonation link: ${linkErr?.message ?? "unknown"}` };
+  if (linkErr || !link?.properties?.hashed_token) {
+    return { error: `Could not generate impersonation token: ${linkErr?.message ?? "unknown"}` };
   }
 
-  // We can't `redirect()` to an external URL from a server action (Next.js
-  // blocks it). Return the URL and let the client navigate.
-  return { url: link.properties.action_link };
+  return {
+    email: target.user.email,
+    tokenHash: link.properties.hashed_token,
+  };
 }
 
 // ---------------------------------------------------------------------------

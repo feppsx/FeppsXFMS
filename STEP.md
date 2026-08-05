@@ -1,12 +1,11 @@
-# Current step: Fix Impersonate (properly this time)
+# Current step: Fix Impersonate (third time, real fix)
 
-Two problems in the previous attempt:
-1. `redirectTo` pointed at `/` instead of `/auth/callback`. Without going through the callback, Supabase's magic link doesn't set a session cookie on our domain — so you land on `/` with no session and get bounced to `/login`.
-2. The manual `supabase.auth.signOut()` on the server was redundant and disruptive — the callback already replaces the cookie with the impersonated user's session.
+The previous two approaches hit a Supabase PKCE flow limitation — when the platform admin's browser generates the magic link server-side, there's no matching `code_verifier` for the browser to complete the exchange with. So the click round-trip fails silently.
 
-Fixed. Now the flow is: click Impersonate → server returns Supabase magic link URL → browser navigates to it → Supabase verifies → redirects to `/auth/callback?code=xxx` → callback exchanges the code → app now has the target user's session cookie → landed at `/` which routes to their home.
-
-**No SQL changes.** Code only.
+Fix — bypass the URL round-trip entirely:
+1. **Server** generates a magic-link `token_hash` (via `admin.auth.admin.generateLink`) and returns it.
+2. **Client** calls `supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })` — this sets a fresh session cookie for the target user on our own domain in one call, no external redirect.
+3. Client hard-navigates to `/` — root page routes the (now different) user to their home.
 
 ---
 
@@ -14,7 +13,7 @@ Fixed. Now the flow is: click Impersonate → server returns Supabase magic link
 
 ```bash
 git add .
-git commit -m "Fix impersonate: point magic link at /auth/callback and stop pre-signout"
+git commit -m "Fix impersonate: use verifyOtp with token_hash instead of magic-link redirect"
 git push
 ```
 
@@ -26,12 +25,14 @@ Wait 2-4 min for Vercel.
 
 1. Log in as `feppsx@gmail.com`.
 2. Open any org detail page → click **Impersonate** on a team member → confirm.
-3. Browser will briefly show Supabase's URL, then land inside that user's admin/technician/client view.
-4. Check the sidebar — top-left should show the impersonated user's org (Wipro / Acme / 360 Integrated depending on who you impersonated).
-5. To exit: sign out. You'll land on `/login`. Sign back in as `feppsx@gmail.com`.
+3. Brief spinner, then you land inside that user's home (`/admin`, `/technician/jobs`, or `/client/tickets`).
+4. Sidebar shows the impersonated user's org name (Wipro / Acme / etc.).
+5. To exit: sign out → sign in again as `feppsx@gmail.com`.
+
+If it still misbehaves, open browser dev tools **Console** tab, click Impersonate, and paste any red text here.
 
 ---
 
 ## When Step 2 works
 
-Tell me and we can either move on to the next feature from the deferred list, or you can just leave it here.
+Tell me and we can either move to the next power-tool feature or stop here.
