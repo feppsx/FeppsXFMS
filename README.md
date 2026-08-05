@@ -174,13 +174,13 @@ Helper functions in Postgres:
 
 | Phase | What | Status |
 |---|---|---|
-| 1 | Multi-tenant schema (`v3.sql`) | in progress |
-| 2 | Session + query scoping (middleware + guard helpers) | pending |
-| 3 | Platform admin panel (`/platform/*`) | pending |
-| 4 | Invite flow (`invitations` table + `/invite/[token]`) | pending |
-| 5 | Rebrand + per-org settings + delete `/signup` | pending |
-| 6 | Suspended-org gate + polish | pending |
-| Later | Billing (Stripe) + plan limits + audit log | deferred |
+| 1 | Multi-tenant schema (`v3.sql`) | done |
+| 2 | Session + query scoping (middleware + guard helpers) | done |
+| 3 | Platform admin panel (`/platform/*`) | done |
+| 4 | Invite flow (unified `/admin/team`) | done |
+| 5 | Rebrand + per-org settings + delete `/signup` | done |
+| 6 | Suspended-org gate + polish | done |
+| Later | Billing (Stripe) + plan limits + audit log + email invites | deferred |
 
 ---
 

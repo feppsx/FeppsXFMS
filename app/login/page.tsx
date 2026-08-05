@@ -21,9 +21,15 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const inviteOnly = searchParams.get("invite_only") === "1";
+  const inviteOnly    = searchParams.get("invite_only") === "1";
+  const orgSuspended  = searchParams.get("org_suspended") === "1";
+  const deactivated   = searchParams.get("deactivated") === "1";
   const [error, setError] = useState<string | null>(
-    inviteOnly
+    orgSuspended
+      ? "Your organization is currently suspended. Please contact FeppsXFMS support."
+      : deactivated
+      ? "Your account has been deactivated. Contact your organization admin."
+      : inviteOnly
       ? "FeppsXFMS is invite-only. Ask your admin for an invitation."
       : errorFromUrl === "no-profile"
       ? "Your account isn't linked to a profile yet. Contact your admin."

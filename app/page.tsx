@@ -27,12 +27,28 @@ export default async function Home() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id, is_active")
     .eq("id", user.id)
-    .maybeSingle();
+    .maybeSingle<{ role: string; organization_id: string; is_active: boolean }>();
 
   if (!profile) {
     return <NoProfileNotice email={user.email ?? ""} userId={user.id} />;
+  }
+
+  if (!profile.is_active) {
+    await supabase.auth.signOut();
+    redirect("/login?deactivated=1");
+  }
+
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("is_active, is_suspended")
+    .eq("id", profile.organization_id)
+    .maybeSingle<{ is_active: boolean; is_suspended: boolean }>();
+
+  if (org && (org.is_suspended || !org.is_active)) {
+    await supabase.auth.signOut();
+    redirect("/login?org_suspended=1");
   }
 
   redirect(homeForRole(profile.role));

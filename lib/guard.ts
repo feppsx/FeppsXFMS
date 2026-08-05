@@ -38,6 +38,26 @@ export async function requireProfile(allowed: UserRole[]): Promise<Profile> {
     redirect("/");
   }
 
+  // Suspended-org gate: if the org is suspended or deactivated, sign the user
+  // out and bounce them to /login with a message. Platform admins bypass this
+  // (they're in platform_admins, not profiles, so they never get here).
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("is_active, is_suspended, name")
+    .eq("id", profile.organization_id)
+    .maybeSingle<{ is_active: boolean; is_suspended: boolean; name: string }>();
+
+  if (org && (org.is_suspended || !org.is_active)) {
+    await supabase.auth.signOut();
+    redirect("/login?org_suspended=1");
+  }
+
+  // Deactivated individual user — same treatment.
+  if (!profile.is_active) {
+    await supabase.auth.signOut();
+    redirect("/login?deactivated=1");
+  }
+
   return profile;
 }
 
