@@ -93,10 +93,23 @@ function navFor(role: UserRole): NavItem[] {
 const useIsoLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-export function Sidebar({ profile }: { profile: Profile }) {
+export function Sidebar({
+  profile,
+  logoUrl,
+  logoDarkUrl,
+  companyName,
+}: {
+  profile: Profile;
+  logoUrl?: string | null;
+  logoDarkUrl?: string | null;
+  companyName?: string;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const items = navFor(profile.role);
+  const displayName = companyName?.trim() || "FeppsXFMS";
+  const lightLogo = logoUrl || null;
+  const darkLogo  = logoDarkUrl || logoUrl || null;
 
   // Preserve sidebar scroll across router.refresh() calls.
   const navRef = useRef<HTMLElement>(null);
@@ -127,24 +140,32 @@ export function Sidebar({ profile }: { profile: Profile }) {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <Image
-          src="/logo.png"
-          alt="FeppsXFMS"
-          width={100}
-          height={28}
-          className="h-7 w-auto object-contain logo-live dark:hidden"
-          unoptimized
-          priority
-        />
-        <Image
-          src="/logo-dark.png"
-          alt="FeppsXFMS"
-          width={100}
-          height={28}
-          className="h-7 w-auto object-contain logo-live hidden dark:block"
-          unoptimized
-          priority
-        />
+        {lightLogo ? (
+          <>
+            <Image
+              src={lightLogo}
+              alt={displayName}
+              width={100}
+              height={28}
+              className="h-7 w-auto object-contain dark:hidden"
+              unoptimized
+              priority
+            />
+            <Image
+              src={darkLogo ?? lightLogo}
+              alt={displayName}
+              width={100}
+              height={28}
+              className="h-7 w-auto object-contain hidden dark:block"
+              unoptimized
+              priority
+            />
+          </>
+        ) : (
+          <span className="font-semibold text-slate-900 dark:text-slate-100 truncate">
+            {displayName}
+          </span>
+        )}
         <div className="ml-auto">
           <ThemeToggle compact />
         </div>
@@ -167,24 +188,32 @@ export function Sidebar({ profile }: { profile: Profile }) {
         {/* Logo block */}
         <div className="flex items-center justify-between md:block">
           <div className="px-6 py-5 border-b border-slate-100">
-            <Image
-              src="/logo.png"
-              alt="FeppsXFMS"
-              width={160}
-              height={44}
-              className="h-11 w-auto object-contain logo-live dark:hidden"
-              unoptimized
-              priority
-            />
-            <Image
-              src="/logo-dark.png"
-              alt="FeppsXFMS"
-              width={160}
-              height={44}
-              className="h-11 w-auto object-contain logo-live hidden dark:block"
-              unoptimized
-              priority
-            />
+            {lightLogo ? (
+              <>
+                <Image
+                  src={lightLogo}
+                  alt={displayName}
+                  width={160}
+                  height={44}
+                  className="h-11 w-auto object-contain dark:hidden"
+                  unoptimized
+                  priority
+                />
+                <Image
+                  src={darkLogo ?? lightLogo}
+                  alt={displayName}
+                  width={160}
+                  height={44}
+                  className="h-11 w-auto object-contain hidden dark:block"
+                  unoptimized
+                  priority
+                />
+              </>
+            ) : (
+              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100 truncate">
+                {displayName}
+              </div>
+            )}
           </div>
           <button
             type="button"

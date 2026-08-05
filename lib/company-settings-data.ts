@@ -35,27 +35,45 @@ export async function getCompanyBranding(): Promise<CompanyBranding> {
     .limit(1)
     .maybeSingle<CompanySettings>();
 
+  // Fallback if the org hasn't set up Branding yet. Fetch their own org name
+  // so PDFs don't render "Your Company Name" for a fresh customer.
+  let orgName = "Your Company Name";
+  const { data: profile } = await supabase.auth.getUser();
+  if (profile.user) {
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("organization_id")
+      .eq("id", profile.user.id)
+      .maybeSingle<{ organization_id: string }>();
+    if (prof?.organization_id) {
+      const { data: org } = await supabase
+        .from("organizations")
+        .select("name")
+        .eq("id", prof.organization_id)
+        .maybeSingle<{ name: string }>();
+      if (org?.name) orgName = org.name;
+    }
+  }
+
   const fallback: CompanySettings = {
     id: "",
     logo_path: null,
     logo_dark_path: null,
     stamp_path: null,
-    company_name: "360 INTEGRATED FM & SM PTE. LTD.",
-    tagline: "Facilities Management & Strata Management is our Key",
-    uen: "202212959Z",
-    gst_reg: "202212959Z",
-    address_line: "71 Bukit Batok Cres #06-11 Prestige Centre, Singapore 658071",
-    phone_office: "6677 0360",
-    phone_hotline: "8757 3360 / 8758 3360",
-    phone_whatsapp: "8757 3360 / 9340 1360",
-    email: "support@360maintenance.sg",
-    website: "www.360maintenance.sg",
-    badges_line: "bizSAFE · STR · LAS · TOP Prestige 100",
-    invoice_terms:
-      "30% deposit payable upon confirmation of works order\nBalance amount payable upon completion of works order\nDeposit non-refundable if order cancelled after confirmation\nGoods delivered are not returnable & sold are not exchangeable",
-    quotation_terms:
-      "This quotation is valid for 30 days from the date of issue.\n30% deposit payable upon confirmation of works order.\nBalance amount payable upon completion of works order.\nPrices subject to change without prior notice after validity period.",
-    paynow_text: "Paynow UEN 202212959Z",
+    company_name: orgName,
+    tagline: null,
+    uen: "",
+    gst_reg: null,
+    address_line: null,
+    phone_office: null,
+    phone_hotline: null,
+    phone_whatsapp: null,
+    email: null,
+    website: null,
+    badges_line: null,
+    invoice_terms: null,
+    quotation_terms: null,
+    paynow_text: null,
   };
 
   const s = data ?? fallback;
