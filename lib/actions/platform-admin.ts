@@ -10,7 +10,6 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { requirePlatformAdmin } from "@/lib/guard";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/lib/db-types";
 
@@ -45,19 +44,17 @@ export async function impersonateUser(userId: string): Promise<{ error?: string;
     return { error: `Could not find user: ${getErr?.message ?? "no email"}` };
   }
 
+  // redirectTo points at /auth/callback so the exchangeCodeForSession helper
+  // there sets a fresh session cookie for the impersonated user on OUR
+  // domain (which automatically replaces the platform admin's cookie).
   const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
     type: "magiclink",
     email: target.user.email,
-    options: { redirectTo: `${await siteUrl()}/` },
+    options: { redirectTo: `${await siteUrl()}/auth/callback` },
   });
   if (linkErr || !link?.properties?.action_link) {
     return { error: `Could not generate impersonation link: ${linkErr?.message ?? "unknown"}` };
   }
-
-  // Kill the platform admin's session so the browser cleanly picks up the
-  // impersonated user's cookies from the callback.
-  const supabase = await createClient();
-  await supabase.auth.signOut();
 
   // We can't `redirect()` to an external URL from a server action (Next.js
   // blocks it). Return the URL and let the client navigate.

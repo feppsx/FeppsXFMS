@@ -1,48 +1,37 @@
-# Current step: Fix — "unexpected response" on Impersonate
+# Current step: Fix Impersonate (properly this time)
 
-Root cause: server actions in Next.js can't `redirect()` to an **external** URL, and Supabase's magic-link is on `*.supabase.co`. Fix — the action now returns the URL and the client does `window.location.href = url`.
+Two problems in the previous attempt:
+1. `redirectTo` pointed at `/` instead of `/auth/callback`. Without going through the callback, Supabase's magic link doesn't set a session cookie on our domain — so you land on `/` with no session and get bounced to `/login`.
+2. The manual `supabase.auth.signOut()` on the server was redundant and disruptive — the callback already replaces the cookie with the impersonated user's session.
 
----
+Fixed. Now the flow is: click Impersonate → server returns Supabase magic link URL → browser navigates to it → Supabase verifies → redirects to `/auth/callback?code=xxx` → callback exchanges the code → app now has the target user's session cookie → landed at `/` which routes to their home.
 
-## Step 1 — Confirm Supabase auth URLs are set
-
-The magic link only works if Supabase is allowed to redirect back to your app.
-
-1. Supabase → **Authentication → URL Configuration**.
-2. **Site URL:** set to your Vercel URL, e.g. `https://feppsxfms.vercel.app`.
-3. **Redirect URLs:** add these two (one per line):
-   ```
-   https://feppsxfms.vercel.app/**
-   http://localhost:3000/**
-   ```
-4. Click **Save**.
-
-If you skip this, the magic-link click will land on a Supabase error page instead of your app.
+**No SQL changes.** Code only.
 
 ---
 
-## Step 2 — Push the code fix
+## Step 1 — Push
 
 ```bash
 git add .
-git commit -m "Fix: return magic-link URL from impersonateUser instead of server redirect"
+git commit -m "Fix impersonate: point magic link at /auth/callback and stop pre-signout"
 git push
 ```
 
-Vercel auto-deploys in 2-4 min.
+Wait 2-4 min for Vercel.
 
 ---
 
-## Step 3 — Retry impersonate
+## Step 2 — Test
 
 1. Log in as `feppsx@gmail.com`.
-2. Open any org's detail page.
-3. Click **Impersonate** on a team member → confirm.
-4. You'll be sent to Supabase's magic-link URL for a split second, then land inside that user's app at `/admin` (or `/technician/jobs`) as them.
-5. Sign out to return to `/login`, sign back in as yourself.
+2. Open any org detail page → click **Impersonate** on a team member → confirm.
+3. Browser will briefly show Supabase's URL, then land inside that user's admin/technician/client view.
+4. Check the sidebar — top-left should show the impersonated user's org (Wipro / Acme / 360 Integrated depending on who you impersonated).
+5. To exit: sign out. You'll land on `/login`. Sign back in as `feppsx@gmail.com`.
 
 ---
 
-## When Step 3 works
+## When Step 2 works
 
-Tell me and pick the next feature from the list at the bottom of the previous STEP.md.
+Tell me and we can either move on to the next feature from the deferred list, or you can just leave it here.
