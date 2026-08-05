@@ -6,6 +6,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { requireProfile } from "@/lib/guard";
+import { checkAddEstate } from "@/lib/plans";
 
 function readFields(formData: FormData) {
   const rawCategory = (formData.get("category") as string | null)?.trim() ?? "MCST";
@@ -25,10 +27,14 @@ function readFields(formData: FormData) {
 }
 
 export async function createClientRecord(formData: FormData) {
+  const profile = await requireProfile(["org_admin"]);
   const supabase = await createClient();
   const fields = readFields(formData);
   if (!fields.name)     return { error: "Name is required." };
   if (!fields.location) return { error: "Location is required." };
+
+  const check = await checkAddEstate(profile.organization_id);
+  if (!check.ok) return { error: check.error };
 
   const { error } = await supabase.from("clients").insert(fields);
   if (error) return { error: error.message };

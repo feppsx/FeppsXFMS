@@ -6,6 +6,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { checkFeature } from "@/lib/plans";
+
+async function gatePdfs(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<{ error?: string }> {
+  const { data: prof } = await supabase
+    .from("profiles").select("organization_id").eq("id", userId).maybeSingle<{ organization_id: string }>();
+  if (!prof?.organization_id) return { error: "Missing organization context." };
+  const check = await checkFeature(prof.organization_id, "pdfDocuments");
+  return check.ok ? {} : { error: check.error };
+}
 
 export interface InvoiceItemInput {
   description: string;
@@ -40,6 +49,8 @@ export async function createInvoice(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
+  const gate = await gatePdfs(supabase, user.id);
+  if (gate.error) return { error: gate.error };
 
   const items = input.items
     .map((i) => ({ description: i.description.trim(), unit_price: num(i.unit_price) }))
@@ -133,6 +144,8 @@ export async function createManualInvoice(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
+  const gate = await gatePdfs(supabase, user.id);
+  if (gate.error) return { error: gate.error };
 
   if (!input.customer_name?.trim()) return { error: "Customer name is required." };
   if (input.category !== "Retail" && input.category !== "MCST" && input.category !== "SBS") {

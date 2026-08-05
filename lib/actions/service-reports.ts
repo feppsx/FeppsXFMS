@@ -2,6 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { checkFeature } from "@/lib/plans";
+
+async function gatePdfs(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<{ error?: string }> {
+  const { data: prof } = await supabase
+    .from("profiles").select("organization_id").eq("id", userId).maybeSingle<{ organization_id: string }>();
+  if (!prof?.organization_id) return { error: "Missing organization context." };
+  const check = await checkFeature(prof.organization_id, "pdfDocuments");
+  return check.ok ? {} : { error: check.error };
+}
 
 export interface CreateServiceReportInput {
   client_id?: string | null;
@@ -38,6 +47,8 @@ export async function createServiceReport(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
+  const gate = await gatePdfs(supabase, user.id);
+  if (gate.error) return { error: gate.error };
   if (!input.project_name?.trim()) return { error: "Project / Name is required." };
 
   const { data: inserted, error } = await supabase

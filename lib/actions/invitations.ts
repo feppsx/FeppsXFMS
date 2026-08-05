@@ -13,6 +13,7 @@ import { revalidatePath } from "next/cache";
 import { requireProfile } from "@/lib/guard";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/lib/db-types";
+import { checkAddStaff, STAFF_ROLES } from "@/lib/plans";
 
 const ALLOWED_ROLES: UserRole[] = ["org_admin", "manager", "technician", "requester"];
 
@@ -48,6 +49,12 @@ export async function inviteTeamMember(formData: FormData): Promise<{
   if (!email.includes("@")) return { error: "Please enter a valid email." };
   if (fullName.length < 2)  return { error: "Please enter the person's full name." };
   if (!ALLOWED_ROLES.includes(role)) return { error: "Pick a valid role." };
+
+  // Plan enforcement — only for staff roles. Requesters are always free.
+  if ((STAFF_ROLES as unknown as string[]).includes(role)) {
+    const check = await checkAddStaff(profile.organization_id);
+    if (!check.ok) return { error: check.error };
+  }
 
   const password = randomPassword();
 

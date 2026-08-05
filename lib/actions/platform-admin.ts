@@ -308,6 +308,38 @@ export async function platformInviteMember(
 }
 
 // ---------------------------------------------------------------------------
+// 5. Change an org's plan (manual — before Stripe).
+// ---------------------------------------------------------------------------
+export async function changeOrgPlan(
+  orgId: string,
+  plan: string
+): Promise<{ error?: string }> {
+  const platformAdmin = await requirePlatformAdmin();
+  const admin = createAdminClient();
+
+  if (!["free", "pro", "business", "enterprise"].includes(plan)) {
+    return { error: "Unknown plan." };
+  }
+
+  const { error } = await admin
+    .from("organizations")
+    .update({ plan })
+    .eq("id", orgId);
+  if (error) return { error: error.message };
+
+  await logAudit({
+    actorId: platformAdmin.id,
+    actorEmail: platformAdmin.email,
+    action: "change_org_plan",
+    targetOrgId: orgId,
+    meta: { new_plan: plan },
+  });
+
+  revalidatePath(`/platform/organizations/${orgId}`);
+  return {};
+}
+
+// ---------------------------------------------------------------------------
 // 4. Toggle the per-org "require consent for impersonation" flag.
 // ---------------------------------------------------------------------------
 export async function setOrgConsentRequired(

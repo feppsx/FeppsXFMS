@@ -7,6 +7,7 @@ import { OrgDetailActions } from "@/components/OrgDetailActions";
 import { PlatformTeamActions } from "@/components/PlatformTeamActions";
 import { PlatformInviteMemberButton } from "@/components/PlatformInviteMemberButton";
 import { OrgConsentToggle } from "@/components/OrgConsentToggle";
+import { OrgPlanSelect } from "@/components/OrgPlanSelect";
 
 export const dynamic = "force-dynamic";
 
@@ -77,8 +78,11 @@ export default async function OrgDetailPage({
         <MiniStat icon={Building2} label="Estates"  value={clientsRes.count ?? 0} />
       </div>
 
-      <div className="mb-8">
-        <OrgConsentToggle orgId={org.id} required={org.require_impersonation_consent} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <OrgPlanSelect orgId={org.id} currentPlan={org.plan} />
+        <div className="md:col-span-2">
+          <OrgConsentToggle orgId={org.id} required={org.require_impersonation_consent} />
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">

@@ -47,6 +47,7 @@ function navFor(role: UserRole): NavItem[] {
         { href: "/admin/managers",         label: "Managers",       icon: ShieldCheck },
         { href: "/admin/categories",       label: "Categories",     icon: Tag },
         { href: "/admin/branding",         label: "Branding",       icon: Palette },
+        { href: "/admin/billing",          label: "Billing & plan", icon: Receipt },
         { href: "/admin/qr",               label: "Report QR",      icon: QrCode },
         { href: "/admin/feedback",         label: "Customer feedback", icon: MessageSquare },
       ];

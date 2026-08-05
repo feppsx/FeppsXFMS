@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { TicketStatus } from "@/lib/db-types";
+import { checkTicketMonthlyCap } from "@/lib/plans";
 
 // ---------------------------------------------------------------------------
 // Create a ticket (requester).
@@ -32,6 +33,18 @@ export async function createTicket(formData: FormData) {
   if (!title || title.length < 3) return { error: "Please enter a short title." };
   if (!description) return { error: "Please describe the problem." };
   if (!client_id)   return { error: "Please pick a client (Location)." };
+
+  // Plan enforcement: Free tier caps tickets/month. Look up the requester's
+  // org from their profile.
+  const { data: prof } = await supabase
+    .from("profiles")
+    .select("organization_id")
+    .eq("id", user.id)
+    .maybeSingle<{ organization_id: string }>();
+  if (prof?.organization_id) {
+    const check = await checkTicketMonthlyCap(prof.organization_id);
+    if (!check.ok) return { error: check.error };
+  }
 
   const { data: inserted, error } = await supabase
     .from("tickets")
