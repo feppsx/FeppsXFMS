@@ -21,8 +21,12 @@ export function PlatformTeamActions({
     setBusy("impersonate");
     setError(null);
     const res = await impersonateUser(userId);
-    // On success, redirect() runs on server; if we get a result, it's an error.
-    if (res?.error) { setError(res.error); setBusy(null); }
+    if (res?.error) { setError(res.error); setBusy(null); return; }
+    if (res?.url) {
+      // Navigate to Supabase's magic-link URL (external). This signs us in
+      // as the target user and Supabase then redirects back to `/`.
+      window.location.href = res.url;
+    }
   }
 
   async function doReset() {

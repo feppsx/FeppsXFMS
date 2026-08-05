@@ -8,7 +8,6 @@
 // All guarded by requirePlatformAdmin.
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { requirePlatformAdmin } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
@@ -37,7 +36,7 @@ async function siteUrl(): Promise<string> {
 // signs in as the target user. Platform admin ends the impersonation by
 // signing out (which returns them to /login).
 // ---------------------------------------------------------------------------
-export async function impersonateUser(userId: string): Promise<{ error?: string }> {
+export async function impersonateUser(userId: string): Promise<{ error?: string; url?: string }> {
   await requirePlatformAdmin();
   const admin = createAdminClient();
 
@@ -60,7 +59,9 @@ export async function impersonateUser(userId: string): Promise<{ error?: string 
   const supabase = await createClient();
   await supabase.auth.signOut();
 
-  redirect(link.properties.action_link);
+  // We can't `redirect()` to an external URL from a server action (Next.js
+  // blocks it). Return the URL and let the client navigate.
+  return { url: link.properties.action_link };
 }
 
 // ---------------------------------------------------------------------------
