@@ -9,6 +9,23 @@ import { redirect } from "next/navigation";
 import { requirePlatformAdmin } from "@/lib/guard";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+async function logAudit(input: {
+  actorId: string;
+  actorEmail: string | null;
+  action: string;
+  targetOrgId?: string | null;
+  meta?: Record<string, unknown> | null;
+}): Promise<void> {
+  const admin = createAdminClient();
+  await admin.from("platform_audit_log").insert({
+    actor_id: input.actorId,
+    actor_email: input.actorEmail,
+    action: input.action,
+    target_org_id: input.targetOrgId ?? null,
+    meta: input.meta ?? null,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -35,7 +52,7 @@ function randomPassword(): string {
 export async function createOrganization(formData: FormData): Promise<
   { error?: string; orgId?: string; adminEmail?: string; tempPassword?: string }
 > {
-  await requirePlatformAdmin();
+  const platformAdmin = await requirePlatformAdmin();
 
   const name  = (formData.get("name")  as string | null)?.trim() || "";
   const slug  = slugify((formData.get("slug") as string | null) || name);
@@ -87,6 +104,14 @@ export async function createOrganization(formData: FormData): Promise<
     company_name: name,
   });
 
+  await logAudit({
+    actorId: platformAdmin.id,
+    actorEmail: platformAdmin.email,
+    action: "create_org",
+    targetOrgId: org.id,
+    meta: { name, slug, plan, first_admin_email: email },
+  });
+
   revalidatePath("/platform/organizations");
   return { orgId: org.id, adminEmail: email, tempPassword: password };
 }
@@ -98,13 +123,19 @@ export async function setOrgSuspended(
   orgId: string,
   suspended: boolean
 ): Promise<{ error?: string }> {
-  await requirePlatformAdmin();
+  const platformAdmin = await requirePlatformAdmin();
   const admin = createAdminClient();
   const { error } = await admin
     .from("organizations")
     .update({ is_suspended: suspended, is_active: !suspended })
     .eq("id", orgId);
   if (error) return { error: error.message };
+  await logAudit({
+    actorId: platformAdmin.id,
+    actorEmail: platformAdmin.email,
+    action: suspended ? "suspend_org" : "reactivate_org",
+    targetOrgId: orgId,
+  });
   revalidatePath(`/platform/organizations/${orgId}`);
   revalidatePath("/platform/organizations");
   return {};
@@ -114,7 +145,7 @@ export async function setOrgSuspended(
 // Delete (permanent).
 // ---------------------------------------------------------------------------
 export async function deleteOrganization(orgId: string): Promise<{ error?: string }> {
-  await requirePlatformAdmin();
+  const platformAdmin = await requirePlatformAdmin();
   const admin = createAdminClient();
 
   // Prevent deleting the default 360 Integrated org.
@@ -138,6 +169,14 @@ export async function deleteOrganization(orgId: string): Promise<{ error?: strin
   if (memberRows.length) {
     await Promise.all(memberRows.map((m) => admin.auth.admin.deleteUser(m.id)));
   }
+
+  await logAudit({
+    actorId: platformAdmin.id,
+    actorEmail: platformAdmin.email,
+    action: "delete_org",
+    targetOrgId: null,
+    meta: { deleted_org_id: orgId, members_deleted: memberRows.length },
+  });
 
   revalidatePath("/platform/organizations");
   redirect("/platform/organizations");

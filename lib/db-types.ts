@@ -15,6 +15,7 @@ export interface Organization {
   plan: string;              // 'free' | 'pro' | 'enterprise'
   is_active: boolean;
   is_suspended: boolean;
+  require_impersonation_consent: boolean;
   created_at: string;
   updated_at: string;
 }

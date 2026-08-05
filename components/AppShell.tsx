@@ -1,17 +1,15 @@
 import type { Profile } from "@/lib/db-types";
 import { Sidebar } from "./Sidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { ImpersonationConsent } from "./ImpersonationConsent";
 import { getCompanyBranding } from "@/lib/company-settings-data";
 
 /**
  * Responsive signed-in shell.
- *   - Desktop (md+): existing left sidebar + wide content area (unchanged).
- *   - Mobile (< md): sidebar is hidden by its own CSS; instead the page
- *     provides its own MobileHeader (via each page), and this shell renders
- *     the fixed red bottom nav. Bottom padding leaves room for the nav.
  *
  * Fetches the org's own branding (logo + name) so the sidebar shows the
- * customer's brand, not FeppsXFMS or another tenant.
+ * customer's brand, and mounts ImpersonationConsent so any pending
+ * impersonation request pops up as a modal.
  */
 export async function AppShell({
   profile,
@@ -33,6 +31,7 @@ export async function AppShell({
         <div className="max-w-6xl mx-auto px-4 py-6 md:py-6">{children}</div>
       </main>
       <MobileBottomNav role={profile.role} />
+      <ImpersonationConsent userId={profile.id} />
     </div>
   );
 }

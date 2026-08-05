@@ -4,12 +4,13 @@
 // Sidebar with Dashboard + Organizations, header with sign-out.
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Building2, LogOut, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Building2, LogOut, ShieldCheck, ScrollText } from "lucide-react";
 import { PlatformSearchBar } from "./PlatformSearchBar";
 
 const NAV = [
   { href: "/platform",              label: "Dashboard",     icon: LayoutDashboard },
   { href: "/platform/organizations", label: "Organizations", icon: Building2 },
+  { href: "/platform/audit",         label: "Audit log",     icon: ScrollText },
 ];
 
 export function PlatformShell({
